@@ -10,7 +10,7 @@
 23. Nguyễn Phước Nam
 24. Hồ Trọng Nghĩa 
 28. Nguyễn Tấn Nhân
-29. LêThanh Nhật
+29. Lê Thanh Nhật
 30. Ngô Quý Long Nhật
 33. Nguyễn An Phú
 35. Nguyễn Hoàng Thiên Phúc
@@ -22,13 +22,42 @@
 4. Bùi Chí Diệu
 35. Nguyễn Hoàng Thiên Phúc
 39. Lê Anh Quân
+60. Phan Thanh Vũ
+50 Vox Vieetj Dungx 2
 5.Hoàng Nhật Duy
 
 50 Vox Vieetj Dungx 2
 48 Dương Hữu Tiến
 53. Trần Dương Quách Tĩnh
 31. Trương Ngọc Ý Nhi
-20. Thân Hoàng Phước Minh
 51. Trần Quang Tiến
 50. Nguyễn Văn Tiến
+2. Bùi Chí Diệu
+3. Lê Đức Duy
+4. Nguyễn Đức Dương
+5. Lê Trần Hải Đạt
+6. Lê Gia Huy
+7. Nguyễn Quang Hùng
+8. Hồ Gia Long
+9. Trần Văn Mỹ
+10. Nguyễn Phước Nam
+11. Hồ Trọng Nghĩa 
+12. Nguyễn Tấn Nhân
+13. Lê Thanh Nhật
+14. Ngô Quý Long Nhật
+15. Nguyễn An Phú
+16. Nguyễn Hoàng Thiên Phúc
+17. Trương Trường Phúc
+18. Lê Tăng Phước
+19. Phan Văn Hữu Thắng
+20. Nguyễn Huỳnh Minh Tiến
+21. Bùi Chí Diệu
+22. Nguyễn Hoàng Thiên Phúc
+23. Lê Anh Quân
+24. Hoàng Nhật Duy
+25  Dương Hữu Tiến
+26. Trần Dương Quách Tĩnh
+27. Trương Ngọc Ý Nhi
+28. Trần Quang Tiến
+29.Nguyễn Văn Tiến
 
