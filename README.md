@@ -1,2 +1,42 @@
+
+
+
 # 2025-2026.2.TIN4024.003
-Phát triển ứng dụng IoT
+
+## Phát triển ứng dụng IoT
+
+## WiFi Lab: CNTT-MMT/13572468
+
+  
+
+-  #### WOKWI - World's most advanced ESP32 simulator
+
+	Đăng ký tài khoản tại [wokwi.com](https://wokwi.com/)
+	>Dùng để thiết kế mạch IoT cho việc mô phỏng
+
+-  #### Your code editor
+
+	Cài đặt [Visual Studio Code](https://code.visualstudio.com/)
+	>Lập trình cho mạch đã thiết kế, chạy mô phỏng và nạp vào vi mạch thực hành
+
+-  #### Your Gateway to Embedded Software Development Excellence
+
+	Cài đặt [PlatformIO Extension](https://platformio.org/) cho VSCode
+
+	> Biên dịch mã nguồn c/c++ cho thiết bị vi mạch
+
+-  #### Wokwi Embedded Simulator
+
+	Cài đặt [Wokwi Simulator](https://marketplace.visualstudio.com/items?itemName=Wokwi.wokwi-vscode) cho VSCode
+	>Chạy mô phỏng mạch kết hợp
+  
+-  #### Reference videos - Wokwi, PlatformIO, VS Code
+
+	- [Mô phỏng các dự án IoT trong VS Code | Wokwi, PlatformIO, VSCode](https://www.youtube.com/watch?v=9pTZL934k2s)
+	- [Bắt đầu lập trình Arduino, ESP32 với PlatformIO trên VSCode](https://www.youtube.com/watch?v=20eakkralUs)
+---
+
+#### [Đăng ký tài khoản Github, nhóm thực hành](https://docs.google.com/spreadsheets/d/1AYRu1G8-8MHzO_bBbn2DuxU_Bzcy306O/edit?usp=sharing&ouid=100313771319244626917&rtpof=true&sd=true)
+
+---
+
