@@ -40,9 +40,30 @@
 
 ---
 
-
 #### [Tổng quan về sơ đồ chân ESP32 và Ngoại vi](https://khuenguyencreator.com/tong-quan-ve-so-do-chan-esp32-va-ngoai-vi/)
 
 #### [Lập trình ESP32 từ A tới Z](https://khuenguyencreator.com/lap-trinh-esp32-tu-a-toi-z/)
 
 #### [Lập trình ESP32 GPIO Digital Input và Digital Output](https://khuenguyencreator.com/lap-trinh-esp32-gpio-digital-input-va-digital-output/)
+
+---
+
+#### Tham khảo
+
+  
++ [Tạo một dự án lập trình ESP32 với PlatformIO](https://khuenguyencreator.com/huong-dan-cai-dat-platform-io-lap-trinh-esp32/#Huong_dan_su_dung_Platform_IO_lap_trinh_ESP32)
+
+  
++ [Wokwi for VS Code](https://docs.wokwi.com/vscode/getting-started)
+
+  
++ [Cài đặt thư viện cho PlatformIO](https://khuenguyencreator.com/huong-dan-cai-dat-platform-io-lap-trinh-esp32/#Cai_dat_thu_vien_cho_Platformio)
+-------------------------------
+
+![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/diagram_one.png)
+
+-------------------------------
+
+![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/diagram_two.png)
+
+-------------------------------
