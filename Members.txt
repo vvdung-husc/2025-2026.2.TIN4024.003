@@ -16,6 +16,7 @@
 35. Nguyễn Hoàng Thiên Phúc
 36. Trương Trường Phúc
 37. Lê Tăng Phước
+41. Trần Nguyễn Hoàng Quân
 42. Nguyễn Trọng Quý
 46. Phan Văn Hữu Thắng
 49. Nguyễn Huỳnh Minh Tiến
@@ -27,7 +28,7 @@
 50 Vox Vieetj Dungx 2
 5.Hoàng Nhật Duy
 40.Phạm Văn Quân
-
+41.Đinh Tuấn Anh
 50 Vox Vieetj Dungx 2
 48 Dương Hữu Tiến
 53. Trần Dương Quách Tĩnh
@@ -70,4 +71,11 @@
 35. Nguyễn Hồng Sơn.
 36. Trần Hoàng Lộc.
 37.Nguyễn Trọng Quý
+38. Nguyễn Thắng
+39. Hồ Bảo Toàn
+40. Nguyễn Văn Nhật Quang
+41. Nguyễn Vỹ Nguyên
+42. Đinh Tuấn Anh
+58. Nguyễn Phú Tuấn
+59. Đặng Văn Phi
 
