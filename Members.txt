@@ -72,6 +72,10 @@
 36. Trần Hoàng Lộc.
 37. Nguyễn Trọng Quý
 38. Nguyễn Thắng
+<<<<<<< HEAD
+54. Hồ Bảo Toàn
+39.Phan Bá Hóa
+=======
 39. Hồ Bảo Toàn
 40. Nguyễn Văn Nhật Quang
 41. Nguyễn Vỹ Nguyên
@@ -79,3 +83,5 @@
 58. Nguyễn Phú Tuấn
 59. Đặng Văn Phi
 44. Hoàng Văn Thắng
+62. Đặng Tấn Phát
+>>>>>>> 810b9baf891d6db9bef40de48e8d71f498914aff
