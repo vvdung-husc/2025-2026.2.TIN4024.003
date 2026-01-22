@@ -60,6 +60,14 @@
 + [Cài đặt thư viện cho PlatformIO](https://khuenguyencreator.com/huong-dan-cai-dat-platform-io-lap-trinh-esp32/#Cai_dat_thu_vien_cho_Platformio)
 -------------------------------
 
+## [***1 - Dự án - LED BLINK***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/Project_LED_Blink.md)
+
+-------------------------------
+
+![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/esp32-devkitC-v4-pinout.png)
+
+-------------------------------
+
 ![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/diagram_one.png)
 
 -------------------------------
