@@ -1,18 +1,19 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+// Pin số có đèn LED kết nối
+#define LED_PIN 17
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  // Khởi tạo chân LED là đầu ra
+  pinMode(LED_PIN, OUTPUT);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  // Bật đèn LED
+  digitalWrite(LED_PIN, HIGH);
+  delay(500);  // Chờ 500ms
+  
+  // Tắt đèn LED
+  digitalWrite(LED_PIN, LOW);
+  delay(500);  // Chờ 500ms
 }
