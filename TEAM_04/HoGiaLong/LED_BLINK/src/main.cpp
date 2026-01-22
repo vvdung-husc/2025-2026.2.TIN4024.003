@@ -15,6 +15,7 @@ void setup() {
   pinMode(LED_RED, OUTPUT); // Set GPIO18 as an output pin
 }
 
+//non blocking
 unsigned long ulTimer = 0;
 bool bLEDStatus = false;
 void loop() {
@@ -23,6 +24,9 @@ void loop() {
     digitalWrite(LED_RED, bLEDStatus ? HIGH : LOW); 
   }
 }
+
+
+//Blocking
 // void loop() {
 //   // put your main code here, to run repeatedly:
 //   printf("[LED_RED] => HIGH\n");
@@ -32,5 +36,3 @@ void loop() {
 //   digitalWrite(LED_RED, LOW); // Turn LED OFF
 //   delay(500); // Wait for 500 milliseconds  
 // }
-
-
