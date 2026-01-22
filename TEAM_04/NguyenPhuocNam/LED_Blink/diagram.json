@@ -1,0 +1,26 @@
+{
+    "version": 1,
+    "author": "Nguyen Phuoc Nam",
+    "editor": "wokwi",
+    "parts": [
+      { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 38.4, "left": -91.16, "attrs": {} },
+
+      { "type": "wokwi-potentiometer", "id": "pot1", "top": -1.3, "left": -249.8, "attrs": {} },
+      { "type": "wokwi-led", "id": "led1", "top": -138, "left": 109.4, "attrs": { "color": "red" } },
+
+      { "type": "wokwi-resistor", "id": "res1", "top": -60, "left": 50, "attrs": { "value": "220" } }
+    ],
+    "connections": [
+      [ "esp:TX", "$serialMonitor:RX", "", [] ],
+      [ "esp:RX", "$serialMonitor:TX", "", [] ],
+      [ "pot1:GND", "esp:GND.1", "black", [] ],
+      [ "pot1:VCC", "esp:3V3", "red", [] ],
+      [ "pot1:SIG", "esp:34", "green", [] ],
+      
+
+      [ "esp:23", "res1:1", "red", [] ],   
+      [ "res1:2", "led1:A", "red", [] ],
+      [ "led1:C", "esp:GND.2", "black", [] ]
+    ],
+    "dependencies": {}
+  }
