@@ -6,29 +6,26 @@
 #define green_led  23
 #define red_led    19 
 #define yellow_led 18
-bool change = false;
 int colors = 1;
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 Adafruit_SSD1306 SSDScreen(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
-void count(String color){
-  change = true;
+void count(String color, int x){
   int i = 3;
-  if (change){
-    while(i >= 0){
-      SSDScreen.clearDisplay(); 
-      SSDScreen.setCursor(0, 10);
-      SSDScreen.setTextSize(2);      
-      SSDScreen.setTextColor(WHITE);
-      SSDScreen.println(color);
-      SSDScreen.print(i);
-      SSDScreen.display();
-      delay(1000);
-      i--;
-    }
+  while(i >= 0){
+    SSDScreen.clearDisplay(); 
+    SSDScreen.setCursor(x, 10);
+    SSDScreen.setTextSize(2);      
+    SSDScreen.setTextColor(WHITE);
+    SSDScreen.println(color);
+    SSDScreen.setCursor(60, 30);
+    SSDScreen.setTextSize(3); 
+    SSDScreen.print(i);
+    SSDScreen.display();
+    delay(1000);
+    i--;
   }
-  change = false;
 }
 
 
@@ -50,34 +47,32 @@ void setup() {
   SSDScreen.setTextColor(WHITE);
 }
 
-void screen(String color){
+void screen(String color, int x){
   SSDScreen.clearDisplay();
-  // SSDScreen.setCursor(0,10);
-  count(color);
+  SSDScreen.setCursor(0,10);
+  count(color, x);
 }
 
 void loop() {
-  if(!change){
-    if(colors == 1){
-      digitalWrite(green_led, HIGH);
-      digitalWrite(red_led, LOW);
-      digitalWrite(yellow_led, LOW);
-      screen("green");
-      colors++;
-    }
-    else if(colors == 2){
-      digitalWrite(green_led, LOW);
-      digitalWrite(red_led, HIGH);
-      digitalWrite(yellow_led, LOW);
-      screen("red");
-      colors++;
-    }
-    else if(colors == 3){
-      digitalWrite(green_led, LOW);
-      digitalWrite(red_led, LOW);
-      digitalWrite(yellow_led, HIGH);
-      screen("yellow");
-      colors = 1;
-    }
+  if(colors == 1){
+    digitalWrite(green_led, HIGH);
+    digitalWrite(red_led, LOW);
+    digitalWrite(yellow_led, LOW);
+    screen("Green", 40);
+    colors++;
+  }
+  else if(colors == 3){
+    digitalWrite(green_led, LOW);
+    digitalWrite(red_led, HIGH);
+    digitalWrite(yellow_led, LOW);
+    screen("Red", 50);
+    colors = 1;
+  }
+  else if(colors == 2){
+    digitalWrite(green_led, LOW);
+    digitalWrite(red_led, LOW);
+    digitalWrite(yellow_led, HIGH);
+    screen("Yellow", 35);
+    colors ++;
   }
 }
