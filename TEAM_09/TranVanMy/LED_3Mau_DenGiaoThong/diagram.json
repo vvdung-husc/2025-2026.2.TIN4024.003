@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "author": "TranVanMy",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 60, "left": 60, "attrs": {} },
+
+    { "type": "wokwi-led", "id": "ledR", "top": -13.2, "left": 282.2, "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "ledY", "top": -13.2, "left": 339.8, "attrs": { "color": "yellow" } },
+    { "type": "wokwi-led", "id": "ledG", "top": -13.2, "left": 397.4, "attrs": { "color": "green" } },
+
+    { "type": "wokwi-resistor", "id": "rR", "top": 120, "left": 277.85, "rotate": 90, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "rY", "top": 129.6, "left": 335.45, "rotate": 90, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "rG", "top": 139.2, "left": 393.05, "rotate": 90, "attrs": { "value": "220" } }
+  ],
+  "connections": [
+    [ "esp:D25", "rR:2", "red", [] ],
+    [ "rR:1", "ledR:A", "red", [] ],
+    [ "ledR:C", "esp:GND", "black", [] ],
+
+    [ "esp:D26", "rY:2", "yellow", [] ],
+    [ "rY:1", "ledY:A", "yellow", [] ],
+    [ "ledY:C", "esp:GND", "black", [] ],
+
+    [ "esp:D27", "rG:2", "green", [] ],
+    [ "rG:1", "ledG:A", "green", [] ],
+    [ "ledG:C", "esp:GND", "black", [] ]
+  ],
+  "dependencies": {}
+}
