@@ -1,36 +1,26 @@
 #include <Arduino.h>
 
-uint8_t LED_RED = 17;
+// Define LED pin
+const int ledPin = 17;
 
-//Non-blocking
-bool IsReady(unsigned long &ulTimer, uint32_t millisecond) {
-  if (millis() - ulTimer < millisecond) return false;
-  ulTimer = millis();
-  return true;
-}
+// put function declarations here:
+int myFunction(int, int);
 
 void setup() {
   // put your setup code here, to run once:
-  printf("Welcome IoT\n");
-  pinMode(LED_RED, OUTPUT); // Set GPIO18 as an output pin
+  pinMode(ledPin, OUTPUT);  // Set LED pin as output
+  int result = myFunction(2, 3);
 }
 
-// unsigned long ulTimer = 0;
-// bool bLEDStatus = false;
-// void loop() {
-//   if (IsReady(ulTimer,1000)){
-//     bLEDStatus = !bLEDStatus;
-//     digitalWrite(LED_RED, bLEDStatus ? HIGH : LOW); 
-//   }
-// }
 void loop() {
   // put your main code here, to run repeatedly:
-  printf("[LED_RED] => HIGH\n");
-  digitalWrite(LED_RED, HIGH); // Turn LED ON
-  delay(500); // Wait for 500 milliseconds
-  printf("[LED_RED] => LOW\n");
-  digitalWrite(LED_RED, LOW); // Turn LED OFF
-  delay(500); // Wait for 500 milliseconds  
+  digitalWrite(ledPin, HIGH);  // Turn LED on
+  delay(1000);                 // Wait 1 second
+  digitalWrite(ledPin, LOW);   // Turn LED off
+  delay(1000);                 // Wait 1 second
 }
 
-
+// put function definitions here:
+int myFunction(int x, int y) {
+  return x + y;
+}
