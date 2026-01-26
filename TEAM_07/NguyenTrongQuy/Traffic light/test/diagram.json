@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "author": "ESP32 Traffic Blink",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-led", "id": "red", "top": -140, "left": -160, "attrs": { "color": "red" } },
+    {
+      "type": "wokwi-led",
+      "id": "yellow",
+      "top": -80,
+      "left": -160,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "green",
+      "top": -20,
+      "left": -160,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": -140,
+      "left": -100,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": -80,
+      "left": -100,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": -20,
+      "left": -100,
+      "attrs": { "value": "220" }
+    }
+  ],
+  "connections": [
+    [ "red:A", "r1:1", "red", [] ],
+    [ "r1:2", "esp:25", "red", [] ],
+    [ "yellow:A", "r2:1", "yellow", [] ],
+    [ "r2:2", "esp:26", "yellow", [] ],
+    [ "green:A", "r3:1", "green", [] ],
+    [ "r3:2", "esp:27", "green", [] ],
+    [ "red:C", "esp:GND.1", "black", [] ],
+    [ "yellow:C", "esp:GND.1", "black", [] ],
+    [ "green:C", "esp:GND.1", "black", [] ]
+  ],
+  "dependencies": {}
+}
