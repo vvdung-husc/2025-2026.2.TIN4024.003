@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "author": "GiaHuy",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": 177.5,
+      "left": -14.6,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledRed",
+      "top": 54,
+      "left": 195.8,
+      "attrs": {
+        "color": "red"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rRed",
+      "top": 139.2,
+      "left": 220.25,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledYellow",
+      "top": 54,
+      "left": 291.8,
+      "attrs": {
+        "color": "yellow"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rYellow",
+      "top": 148.8,
+      "left": 316.25,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledGreen",
+      "top": 54,
+      "left": 397.4,
+      "attrs": {
+        "color": "green"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rGreen",
+      "top": 157.55,
+      "left": 432,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    }
+  ],
+  "connections": [
+    ["esp:D25", "rRed:2", "red", []],
+    ["rRed:1", "ledRed:A", "red", []],
+    ["ledRed:C", "esp:GND", "black", []],
+    ["esp:D26", "rYellow:2", "orange", []],
+    ["rYellow:1", "ledYellow:A", "orange", []],
+    ["ledYellow:C", "esp:GND", "black", []],
+    ["esp:D27", "rGreen:2", "green", []],
+    ["rGreen:1", "ledGreen:A", "green", []],
+    ["ledGreen:C", "esp:GND", "black", []]
+  ],
+  "dependencies": {}
+}
