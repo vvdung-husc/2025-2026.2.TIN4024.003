@@ -1,67 +1,67 @@
 {
     "version": 1,
-    "author": "ESP32 Traffic Light + TM1637 + Button + LDR (FULL)",
+    "author": "TranVanMy (updated by ChatGPT)",
     "editor": "wokwi",
     "parts": [
         {
             "type": "wokwi-esp32-devkit-v1",
             "id": "esp",
-            "top": 190,
-            "left": 40,
+            "top": 60,
+            "left": 60,
             "attrs": {}
         },
         {
             "type": "wokwi-led",
-            "id": "ledRed",
-            "top": 40,
-            "left": 340,
+            "id": "ledR",
+            "top": -13.2,
+            "left": 282.2,
             "attrs": {
                 "color": "red"
             }
         },
         {
-            "type": "wokwi-resistor",
-            "id": "rRed",
-            "top": 110,
-            "left": 360,
-            "rotate": 90,
-            "attrs": {
-                "value": "220"
-            }
-        },
-        {
             "type": "wokwi-led",
-            "id": "ledYellow",
-            "top": 40,
-            "left": 430,
+            "id": "ledY",
+            "top": -13.2,
+            "left": 339.8,
             "attrs": {
                 "color": "yellow"
             }
         },
         {
-            "type": "wokwi-resistor",
-            "id": "rYellow",
-            "top": 110,
-            "left": 450,
-            "rotate": 90,
-            "attrs": {
-                "value": "220"
-            }
-        },
-        {
             "type": "wokwi-led",
-            "id": "ledGreen",
-            "top": 40,
-            "left": 520,
+            "id": "ledG",
+            "top": -13.2,
+            "left": 397.4,
             "attrs": {
                 "color": "green"
             }
         },
         {
             "type": "wokwi-resistor",
-            "id": "rGreen",
-            "top": 110,
-            "left": 540,
+            "id": "rR",
+            "top": 120,
+            "left": 277.85,
+            "rotate": 90,
+            "attrs": {
+                "value": "220"
+            }
+        },
+        {
+            "type": "wokwi-resistor",
+            "id": "rY",
+            "top": 129.6,
+            "left": 335.45,
+            "rotate": 90,
+            "attrs": {
+                "value": "220"
+            }
+        },
+        {
+            "type": "wokwi-resistor",
+            "id": "rG",
+            "top": 139.2,
+            "left": 393.05,
             "rotate": 90,
             "attrs": {
                 "value": "220"
@@ -69,18 +69,18 @@
         },
         {
             "type": "wokwi-led",
-            "id": "ledStreet",
-            "top": 40,
-            "left": 610,
+            "id": "ledIndicator",
+            "top": 92,
+            "left": 389,
             "attrs": {
                 "color": "blue"
             }
         },
         {
             "type": "wokwi-resistor",
-            "id": "rStreet",
-            "top": 110,
-            "left": 630,
+            "id": "rInd",
+            "top": 150,
+            "left": 389,
             "rotate": 90,
             "attrs": {
                 "value": "220"
@@ -89,96 +89,97 @@
         {
             "type": "wokwi-pushbutton",
             "id": "btn",
-            "top": 70,
-            "left": 80,
+            "top": 48,
+            "left": 420,
             "attrs": {
-                "color": "blue"
+                "color": "blue",
+                "bounce": "0"
             }
         },
         {
             "type": "wokwi-tm1637-7segment",
             "id": "tm",
-            "top": 20,
-            "left": 730,
+            "top": -10,
+            "left": 560,
             "attrs": {}
         },
         {
             "type": "wokwi-photoresistor-sensor",
             "id": "ldr",
-            "top": 360,
-            "left": 720,
+            "top": 220,
+            "left": -10,
             "attrs": {}
         }
     ],
     "connections": [
         [
             "esp:D25",
-            "rRed:2",
+            "rR:2",
             "red",
             []
         ],
         [
-            "rRed:1",
-            "ledRed:A",
+            "rR:1",
+            "ledR:A",
             "red",
             []
         ],
         [
-            "ledRed:C",
+            "ledR:C",
             "esp:GND",
             "black",
             []
         ],
         [
             "esp:D26",
-            "rYellow:2",
-            "orange",
+            "rY:2",
+            "yellow",
             []
         ],
         [
-            "rYellow:1",
-            "ledYellow:A",
-            "orange",
+            "rY:1",
+            "ledY:A",
+            "yellow",
             []
         ],
         [
-            "ledYellow:C",
+            "ledY:C",
             "esp:GND",
             "black",
             []
         ],
         [
             "esp:D27",
-            "rGreen:2",
+            "rG:2",
             "green",
             []
         ],
         [
-            "rGreen:1",
-            "ledGreen:A",
+            "rG:1",
+            "ledG:A",
             "green",
             []
         ],
         [
-            "ledGreen:C",
+            "ledG:C",
             "esp:GND",
             "black",
             []
         ],
         [
             "esp:D33",
-            "rStreet:2",
+            "rInd:2",
             "blue",
             []
         ],
         [
-            "rStreet:1",
-            "ledStreet:A",
+            "rInd:1",
+            "ledIndicator:A",
             "blue",
             []
         ],
         [
-            "ledStreet:C",
+            "ledIndicator:C",
             "esp:GND",
             "black",
             []
@@ -186,23 +187,11 @@
         [
             "btn:1.l",
             "esp:D14",
-            "blue",
+            "green",
             []
         ],
         [
             "btn:2.l",
-            "esp:GND",
-            "black",
-            []
-        ],
-        [
-            "tm:VCC",
-            "esp:5V",
-            "red",
-            []
-        ],
-        [
-            "tm:GND",
             "esp:GND",
             "black",
             []
@@ -217,6 +206,18 @@
             "tm:DIO",
             "esp:D19",
             "green",
+            []
+        ],
+        [
+            "tm:VCC",
+            "esp:3V3",
+            "red",
+            []
+        ],
+        [
+            "tm:GND",
+            "esp:GND",
+            "black",
             []
         ],
         [
