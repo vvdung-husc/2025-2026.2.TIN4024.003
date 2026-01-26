@@ -127,8 +127,8 @@ bool ProcessLEDTrafficWaitTime()
 void ProcessButtonPressed(){
   static ulong ulTimer = 0;
   
-  if (!IsReady(ulTimer, 10)) return;
-
+  if (!IsReady(ulTimer, 100)) return;
+// Read the value of pin 8.
   int newValue = digitalRead(PIN_BUTTON_DISPLAY);
   if (newValue == valueButtonDisplay) return;
   
