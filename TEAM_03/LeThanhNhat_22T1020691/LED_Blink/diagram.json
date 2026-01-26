@@ -3,11 +3,43 @@
   "author": "Le Thanh Nhat",
   "editor": "wokwi",
   "parts": [
-    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": -100, "attrs": {} },
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 0,
+      "left": -120,
+      "attrs": {}
+    },
 
-    { "type": "wokwi-led", "id": "led_red", "top": -40, "left": 80, "attrs": { "color": "red" } },
-    { "type": "wokwi-led", "id": "led_yellow", "top": 0, "left": 80, "attrs": { "color": "yellow" } },
-    { "type": "wokwi-led", "id": "led_green", "top": 40, "left": 80, "attrs": { "color": "green" } }
+    {
+      "type": "wokwi-led",
+      "id": "led_red",
+      "top": -60,
+      "left": 120,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_yellow",
+      "top": 0,
+      "left": 120,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_green",
+      "top": 60,
+      "left": 120,
+      "attrs": { "color": "green" }
+    },
+
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot1",
+      "top": 120,
+      "left": 120,
+      "attrs": {}
+    }
   ],
 
   "connections": [
@@ -17,6 +49,10 @@
 
     ["led_red:A", "esp:17", "red"],
     ["led_yellow:A", "esp:16", "yellow"],
-    ["led_green:A", "esp:4", "green"]
+    ["led_green:A", "esp:4", "green"],
+
+    ["pot1:VCC", "esp:3V3", "red"],
+    ["pot1:GND", "esp:GND.2", "black"],
+    ["pot1:SIG", "esp:34", "green"]
   ]
 }
