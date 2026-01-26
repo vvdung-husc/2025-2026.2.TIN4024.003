@@ -1,35 +1,40 @@
 #include <Arduino.h>
 
-uint8_t LED_RED = 17;
+// Chân LED (an toàn cho ESP32)
+#define LED_RED     17
+#define LED_YELLOW  5
+#define LED_GREEN   18
 
-//Non-blocking
-bool IsReady(unsigned long &ulTimer, uint32_t millisecond) {
-  if (millis() - ulTimer < millisecond) return false;
-  ulTimer = millis();
-  return true;
-}
 
 void setup() {
-  // put your setup code here, to run once:
-  printf("Welcome IoT\n");
-  pinMode(LED_RED, OUTPUT); // Set GPIO18 as an output pin
+  Serial.begin(115200);
+
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_YELLOW, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
+
+  Serial.println("Traffic Light Started");
 }
 
-// unsigned long ulTimer = 0;
-// bool bLEDStatus = false;
-// void loop() {
-//   if (IsReady(ulTimer,1000)){
-//     bLEDStatus = !bLEDStatus;
-//     digitalWrite(LED_RED, bLEDStatus ? HIGH : LOW); 
-//   }
-// }
 void loop() {
-  // put your main code here, to run repeatedly:
-  printf("[LED_RED] => HIGH\n");
-  digitalWrite(LED_RED, HIGH); // Turn LED ON
-  delay(500); // Wait for 500 milliseconds
-  printf("[LED_RED] => LOW\n");
-  digitalWrite(LED_RED, LOW); // Turn LED OFF
-  delay(500); // Wait for 500 milliseconds  
-}
+  // 🔴 Đèn đỏ
+  digitalWrite(LED_RED, HIGH);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_GREEN, LOW);
+  Serial.println("RED");
+  delay(2000);
 
+  // 🟡 Đèn vàng
+  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_YELLOW, HIGH);
+  digitalWrite(LED_GREEN, LOW);
+  Serial.println("YELLOW");
+  delay(1000);
+
+  // 🟢 Đèn xanh
+  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_GREEN, HIGH);
+  Serial.println("GREEN");
+  delay(2000);
+}
