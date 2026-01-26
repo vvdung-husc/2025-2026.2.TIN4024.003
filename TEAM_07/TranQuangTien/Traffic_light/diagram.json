@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "author": "Trần Quang Tiến",
+  "author": "Dũng Võ Việt",
   "editor": "wokwi",
   "parts": [
     { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 48, "left": -91.16, "attrs": {} },
