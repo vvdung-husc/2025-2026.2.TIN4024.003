@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 28.8,
+      "left": -4.76,
+      "attrs": { "builder": "esp-idf" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -157.2,
+      "left": 176.6,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led2",
+      "top": -157.2,
+      "left": 147.8,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led3",
+      "top": -157.2,
+      "left": 119,
+      "attrs": { "color": "green", "flip": "" }
+    },
+    {
+      "type": "board-ssd1306",
+      "id": "oled2",
+      "top": -112.06,
+      "left": 115.43,
+      "attrs": { "i2cAddress": "0x3c" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "esp:GND.2", "oled2:GND", "black", [ "h153.6", "v-172.8", "h-96" ] ],
+    [ "oled2:VCC", "esp:3V3", "red", [ "v-9.6", "h-134.25", "v172.8" ] ],
+    [ "led1:C", "esp:GND.2", "green", [ "h-162.8", "v172.8" ] ],
+    [ "led2:C", "esp:GND.2", "green", [ "h-134", "v182.4" ] ],
+    [ "led1:A", "esp:19", "green", [ "h48", "v172.8", "h-153.6" ] ],
+    [ "led3:C", "esp:GND.2", "green", [ "h-105.2", "v172.8" ] ],
+    [ "led3:A", "esp:23", "green", [ "h-115.2", "v182.4" ] ],
+    [ "led2:A", "esp:18", "green", [ "h76.8", "v172.8", "h-153.6" ] ],
+    [ "oled2:SCL", "esp:22", "green", [ "h77.1", "v163.2", "h-153.6" ] ],
+    [ "oled2:SDA", "esp:21", "green", [ "h67.27", "v163.2", "h-153.6" ] ]
+  ],
+  "dependencies": {}
+}

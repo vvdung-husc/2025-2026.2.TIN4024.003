@@ -13,16 +13,34 @@
     {
       "type": "wokwi-led",
       "id": "led1",
-      "top": -22.8,
+      "top": -80.4,
       "left": 157.4,
       "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led2",
+      "top": -80.4,
+      "left": 215,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led3",
+      "top": -80.4,
+      "left": 272.6,
+      "attrs": { "color": "green" }
     }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
     [ "esp:RX", "$serialMonitor:TX", "", [] ],
     [ "esp:GND.2", "led1:C", "black", [ "h72.04", "v-9.6" ] ],
-    [ "led1:A", "esp:17", "red", [ "v0" ] ]
+    [ "led1:A", "esp:17", "red", [ "v0" ] ],
+    [ "led2:C", "esp:GND.2", "black", [ "v0" ] ],
+    [ "led2:A", "esp:16", "gold", [ "v0" ] ],
+    [ "led3:A", "esp:18", "green", [ "v0" ] ],
+    [ "led3:C", "esp:GND.2", "black", [ "v0" ] ]
   ],
   "dependencies": {}
 }
