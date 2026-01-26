@@ -40,6 +40,7 @@ const uint8_t LED_GREEN = 18;
 const uint32_t RED_DURATION = 5000;      // 5 giây
 const uint32_t YELLOW_DURATION = 2000;   // 2 giây
 const uint32_t GREEN_DURATION = 5000;    // 5 giây
+const uint32_t BLINK_INTERVAL = 250;     // Nhấp nháy mỗi 250ms
 
 // ========== TRẠNG THÁI ĐÈN GIAO THÔNG ==========
 enum TrafficLightState {
@@ -50,7 +51,9 @@ enum TrafficLightState {
 
 // ========== BIẾN TOÀN CỤC ==========
 TrafficLightState currentState = RED_LIGHT;
-unsigned long ulTimer = 0;
+unsigned long ulStateTimer = 0;    // Timer cho chuyển trạng thái
+unsigned long ulBlinkTimer = 0;    // Timer cho nhấp nháy
+bool bLEDStatus = false;
 
 // ========== HÀM TIMER KHÔNG CHẶN ==========
 bool isReady(unsigned long &ulTimer, uint32_t milliseconds) {
@@ -61,11 +64,11 @@ bool isReady(unsigned long &ulTimer, uint32_t milliseconds) {
   return false;
 }
 
-// ========== HÀM ĐIỀU KHIỂN ĐÈN ==========
-void setTrafficLight(bool red, bool yellow, bool green) {
-  digitalWrite(LED_RED, red ? HIGH : LOW);
-  digitalWrite(LED_YELLOW, yellow ? HIGH :  LOW);
-  digitalWrite(LED_GREEN, green ? HIGH : LOW);
+// ========== HÀM TẮT TẤT CẢ ĐÈN ==========
+void turnOffAllLEDs() {
+  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_GREEN, LOW);
 }
 
 // ========== HÀM SETUP ==========
@@ -78,48 +81,62 @@ void setup() {
   pinMode(LED_GREEN, OUTPUT);
   
   // Tắt tất cả đèn ban đầu
-  setTrafficLight(false, false, false);
+  turnOffAllLEDs();
   
   Serial.println("=================================");
-  Serial.println("   HỆ THỐNG ĐÈN GIAO THÔNG");
+  Serial.println("   ĐÈN GIAO THÔNG NHẤP NHÁY");
   Serial.println("=================================");
   Serial.println("Đỏ: 5s | Vàng: 2s | Xanh: 5s");
   Serial.println("=================================");
   
   // Khởi động với đèn đỏ
   currentState = RED_LIGHT;
-  setTrafficLight(true, false, false);
-  Serial.println("🔴 ĐÈN ĐỎ - DỪNG LẠI!");
+  Serial.println("🔴 ĐÈN ĐỎ NHẤP NHÁY - DỪNG LẠI!");
 }
 
 // ========== HÀM LOOP ==========
 void loop() {
-  switch (currentState) {
+  // Xử lý nhấp nháy
+  if (isReady(ulBlinkTimer, BLINK_INTERVAL)) {
+    bLEDStatus = !bLEDStatus;
     
+    // Nhấp nháy đèn theo trạng thái hiện tại
+    turnOffAllLEDs();
+    if (bLEDStatus) {
+      switch (currentState) {
+        case RED_LIGHT:
+          digitalWrite(LED_RED, HIGH);
+          break;
+        case YELLOW_LIGHT:
+          digitalWrite(LED_YELLOW, HIGH);
+          break;
+        case GREEN_LIGHT:
+          digitalWrite(LED_GREEN, HIGH);
+          break;
+      }
+    }
+  }
+  
+  // Xử lý chuyển trạng thái
+  switch (currentState) {
     case RED_LIGHT:
-      // Đèn đỏ sáng trong 5 giây
-      if (isReady(ulTimer, RED_DURATION)) {
+      if (isReady(ulStateTimer, RED_DURATION)) {
         currentState = GREEN_LIGHT;
-        setTrafficLight(false, false, true);
-        Serial.println("🟢 ĐÈN XANH - ĐI!");
+        Serial.println("🟢 ĐÈN XANH NHẤP NHÁY - ĐI!");
       }
       break;
     
     case GREEN_LIGHT:
-      // Đèn xanh sáng trong 5 giây
-      if (isReady(ulTimer, GREEN_DURATION)) {
+      if (isReady(ulStateTimer, GREEN_DURATION)) {
         currentState = YELLOW_LIGHT;
-        setTrafficLight(false, true, false);
-        Serial.println("🟡 ĐÈN VÀNG - CHÚ Ý!");
+        Serial.println("🟡 ĐÈN VÀNG NHẤP NHÁY - CHÚ Ý!");
       }
       break;
     
-    case YELLOW_LIGHT: 
-      // Đèn vàng sáng trong 2 giây
-      if (isReady(ulTimer, YELLOW_DURATION)) {
+    case YELLOW_LIGHT:
+      if (isReady(ulStateTimer, YELLOW_DURATION)) {
         currentState = RED_LIGHT;
-        setTrafficLight(true, false, false);
-        Serial.println("🔴 ĐÈN ĐỎ - DỪNG LẠI!");
+        Serial.println("🔴 ĐÈN ĐỎ NHẤP NHÁY - DỪNG LẠI!");
       }
       break;
   }

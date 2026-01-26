@@ -1,78 +1,134 @@
 #include <Arduino.h>
+#include <TM1637Display.h>
 
-#define LED_RED     27
-#define LED_YELLOW  26
-#define LED_GREEN   25
-#define LED_BLUE    21   // Đèn báo hiệu (người đi bộ/âm thanh)
-#define BTN_PIN     23   // Nút nhấn
-#define MIC_PIN     34   // Chân Analog đọc cảm biến âm thanh (Biến trở)
+// Hàm kiểm tra thời gian đã trôi qua - Non-Blocking
+bool IsReady(unsigned long &ulTimer, uint32_t millisecond)
+{
+  if (millis() - ulTimer < millisecond) return false;
+  ulTimer = millis();
+  return true;
+}
+// Định dạng chuỗi %s,%d,...
+String StringFormat(const char *fmt, ...)
+{
+  va_list vaArgs;
+  va_start(vaArgs, fmt);
+  va_list vaArgsCopy;
+  va_copy(vaArgsCopy, vaArgs);
+  const int iLen = vsnprintf(NULL, 0, fmt, vaArgsCopy);
+  va_end(vaArgsCopy);
+  int iSize = iLen + 1;
+  char *buff = (char *)malloc(iSize);
+  vsnprintf(buff, iSize, fmt, vaArgs);
+  va_end(vaArgs);
+  String s = buff;
+  free(buff);
+  return String(s);
+}
 
-#define CLK 18
-#define DIO 19
+#define PIN_LED_RED     25
+#define PIN_LED_YELLOW  33
+#define PIN_LED_GREEN   32
 
+// Module connection pins (Digital Pins)
+#define CLK 15
+#define DIO 2
 
-const int SOUND_THRESHOLD = 2000; 
+TM1637Display display(CLK, DIO);
 
-void setup() {
-  // Cấu hình các chân LED là Output
-  pinMode(LED_RED, OUTPUT);
-  pinMode(LED_YELLOW, OUTPUT);
-  pinMode(LED_GREEN, OUTPUT);
-  pinMode(LED_BLUE, OUTPUT);
+const char* LEDString(uint8_t pin)
+{
+  switch (pin)
+  {
+    case PIN_LED_RED:     return "RED";
+    case PIN_LED_YELLOW:  return "YELLOW";
+    case PIN_LED_GREEN:   return "GREEN";
+    default:              return "UNKNOWN";
+  }  
+}
 
-  // Cấu hình nút nhấn (INPUT_PULLUP: không nhấn = HIGH, nhấn = LOW)
-  pinMode(BTN_PIN, INPUT_PULLUP);
+void Init_LED_Traffic()
+{
+  pinMode(PIN_LED_RED, OUTPUT);
+  pinMode(PIN_LED_YELLOW, OUTPUT);  
+  pinMode(PIN_LED_GREEN, OUTPUT);
+}
+
+bool ProcessLEDTraffic()
+{
+  static unsigned long ulTimer = 0;
+  static uint8_t idxLED = 0;
+  static uint8_t LEDs[3] = {PIN_LED_GREEN, PIN_LED_YELLOW, PIN_LED_RED};
+  if (!IsReady(ulTimer, 1000)) return false;
+
+  for (size_t i = 0; i < 3; i++)
+  {
+    if (i == idxLED) digitalWrite(LEDs[i], HIGH);
+    else digitalWrite(LEDs[i], LOW);
+  }
   
-  // Cấu hình chân mic
-  pinMode(MIC_PIN, INPUT);
-
+  idxLED = (idxLED + 1) % 3;// Next LED => idxLED = 0,1,2,...
+  
+  return true;
 }
 
-// Hàm kiểm tra các cảm biến (Nút nhấn & Âm thanh)
-void checkSensors() {
-  // 1. Đọc nút nhấn
-  bool isButtonPressed = (digitalRead(BTN_PIN) == LOW);
+bool ProcessLEDTrafficWaitTime()
+{
+  static unsigned long ulTimer = 0;
+  static uint8_t idxLED = 0;//PIN_LED_GREEN
+  static uint8_t LEDs[3] = {PIN_LED_GREEN, PIN_LED_YELLOW, PIN_LED_RED};
+  static uint32_t waitTime[3] = {7000, 3000, 5000};// Green, Yellow, Red
+  static uint32_t count = waitTime[idxLED];
+  static bool ledStatus = false;
+  static int secondCount = 0;
 
-  // 2. Đọc cảm biến âm thanh (Giả lập bằng biến trở trong Wokwi)
-  // Giá trị analog từ 0 đến 4095
-  int soundLevel = analogRead(MIC_PIN);
-  bool isLoud = (soundLevel > SOUND_THRESHOLD);
+  if (!IsReady(ulTimer, 500)) return false;
 
-  // Nếu nhấn nút HOẶC ồn -> Bật đèn Blue
-  if (isButtonPressed || isLoud) {
-    digitalWrite(LED_BLUE, HIGH);
-  } else {
-    digitalWrite(LED_BLUE, LOW);
+  if (count == waitTime[idxLED])
+  {
+    secondCount = (count / 1000) - 1;
+
+    ledStatus = true;
+    for (size_t i = 0; i < 3; i++)
+    {
+      if (i == idxLED){
+        digitalWrite(LEDs[i], HIGH);
+        printf("LED [%-6s] ON => %d Seconds\n", LEDString(LEDs[i]), count/1000);
+      }
+      else digitalWrite(LEDs[i], LOW);
+    }    
   }
-}
-
-// Hàm chạy một pha đèn giao thông
-// ledPin: Chân đèn cần bật
-// seconds: Thời gian sáng (giây)
-void trafficPhase(int ledPin, int seconds) {
-  digitalWrite(ledPin, HIGH); // Bật đèn hiện tại
-
-  // Vòng lặp đếm ngược từng giây
-  for (int i = seconds; i >= 0; i--) {
-
-    // Trong 1 giây chờ đợi (delay 1000ms), ta chia nhỏ ra
-    // để kiểm tra nút bấm liên tục (giúp phản hồi nhạy hơn)
-    for (int j = 0; j < 100; j++) {
-      checkSensors(); // Kiểm tra nút/mic
-      delay(10);      // 10ms * 100 lần = 1000ms = 1 giây
-    }
+  else {
+    ledStatus = !ledStatus;
+    digitalWrite(LEDs[idxLED], ledStatus ? HIGH : LOW);
   }
 
-  digitalWrite(ledPin, LOW); // Tắt đèn sau khi hết giờ
+  if (ledStatus) {
+    printf(" [%s] => seconds: %d \n",LEDString(LEDs[idxLED]), secondCount);
+    display.showNumberDec(secondCount);    
+    --secondCount;
+  }
+
+  count -= 500;
+  if (count > 0) return true;
+
+  idxLED = (idxLED + 1) % 3;// Next LED => idxLED = 0,1,2,...
+  count = waitTime[idxLED];
+
+  return true;
+}
+void setup()
+{
+  // put your setup code here, to run once:
+  printf("*** PROJECT LED TRAFFIC ***\n");
+  Init_LED_Traffic();
+  display.setBrightness(0x0a);
 }
 
-void loop() {
-  // 1. Đèn ĐỎ sáng 10 giây
-  trafficPhase(LED_RED, 10);
 
-  // 2. Đèn XANH sáng 10 giây
-  trafficPhase(LED_GREEN, 10);
-
-  // 3. Đèn VÀNG sáng 3 giây
-  trafficPhase(LED_YELLOW, 3);
+void loop()
+{
+  // put your main code here, to run repeatedly:
+  //ProcessLEDTraffic();
+  ProcessLEDTrafficWaitTime();
 }
