@@ -1,17 +1,17 @@
 #include <Arduino.h>
 #include <Wire.h>
-#include <Adafruit_GFX.h> // Thư viện để vẽ lên màn hình
+#include <Adafruit_GFX.h> 
 #include <Adafruit_SSD1306.h>
 
 #define green_led  23
-#define red_led    19 
-#define yellow_led 18
+#define red_led    18 
+#define yellow_led 19
 int colors = 1;
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 Adafruit_SSD1306 SSDScreen(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
-void count(String color, int x){
+void count(String color, int x, int pox ){
   int i = 3;
   while(i >= 0){
     SSDScreen.clearDisplay(); 
@@ -23,7 +23,14 @@ void count(String color, int x){
     SSDScreen.setTextSize(3); 
     SSDScreen.print(i);
     SSDScreen.display();
-    delay(1000);
+    digitalWrite(pox, HIGH); 
+    delay(250);              
+    digitalWrite(pox, LOW);  
+    delay(250);
+    digitalWrite(pox, HIGH); 
+    delay(250);              
+    digitalWrite(pox, LOW);  
+    delay(250);
     i--;
   }
 }
@@ -47,10 +54,10 @@ void setup() {
   SSDScreen.setTextColor(WHITE);
 }
 
-void screen(String color, int x){
+void screen(String color, int x, int pox){
   SSDScreen.clearDisplay();
   SSDScreen.setCursor(0,10);
-  count(color, x);
+  count(color, x, pox);
 }
 
 void loop() {
@@ -58,21 +65,21 @@ void loop() {
     digitalWrite(green_led, HIGH);
     digitalWrite(red_led, LOW);
     digitalWrite(yellow_led, LOW);
-    screen("Green", 40);
+    screen("Green", 40, 23);
     colors++;
   }
   else if(colors == 3){
     digitalWrite(green_led, LOW);
     digitalWrite(red_led, HIGH);
     digitalWrite(yellow_led, LOW);
-    screen("Red", 50);
+    screen("Red", 50, 18);
     colors = 1;
   }
   else if(colors == 2){
     digitalWrite(green_led, LOW);
     digitalWrite(red_led, LOW);
     digitalWrite(yellow_led, HIGH);
-    screen("Yellow", 35);
+    screen("Yellow", 35, 19);
     colors ++;
   }
 }
