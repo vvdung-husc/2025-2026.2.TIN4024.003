@@ -6,6 +6,10 @@ const uint8_t GreenLedPin = 04;
 
 uint8_t lightState = 0;
 
+const unsigned long redInterval = 10000;    // 10 seconds
+const unsigned long yellowInterval = 3000;  // 3 seconds
+const unsigned long greenInterval = 5000;   // 5 seconds
+
 
 bool isReady(unsigned long interval)
 {
@@ -35,17 +39,29 @@ void setup()
 
 void loop()
 {
-    if (isReady(3000))
+    
+    unsigned long currentInterval;
+    if (lightState == 0)
     {
+        currentInterval = redInterval;
+    }
+    else if (lightState == 1)
+    {
+        currentInterval = yellowInterval;
+    }
+    else
+    {
+        currentInterval = greenInterval;
+    }
 
+    if (isReady(currentInterval))
+    {
         digitalWrite(RedLedPin, LOW);
         digitalWrite(YellowLedPin, LOW);
         digitalWrite(GreenLedPin, LOW);
 
-        // Move to next state
         lightState = (lightState + 1) % 3;
 
-        // Turn on the appropriate LED
         if (lightState == 0)
         {
             digitalWrite(RedLedPin, HIGH);
