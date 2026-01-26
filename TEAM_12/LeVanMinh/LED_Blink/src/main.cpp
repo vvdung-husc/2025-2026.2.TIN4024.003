@@ -1,35 +1,40 @@
 #include <Arduino.h>
 
-#define RED_LED    17
-#define GREEN_LED  16
-#define YELLOW_LED 25
+// Chân LED (an toàn cho ESP32)
+#define LED_RED     17
+#define LED_YELLOW  5
+#define LED_GREEN   18
+
 
 void setup() {
-  pinMode(RED_LED, OUTPUT);
-  pinMode(GREEN_LED, OUTPUT);
-  pinMode(YELLOW_LED, OUTPUT);
+  Serial.begin(115200);
+
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_YELLOW, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
+
+  Serial.println("Traffic Light Started");
 }
 
 void loop() {
-  digitalWrite(GREEN_LED, HIGH);
-  digitalWrite(YELLOW_LED, LOW);
-  digitalWrite(RED_LED, LOW);
-  delay(4000);
-
-  for (int i = 0; i < 3; i++) {
-    digitalWrite(GREEN_LED, LOW);
-    delay(300);
-    digitalWrite(GREEN_LED, HIGH);
-    delay(300);
-  }
-
-  digitalWrite(GREEN_LED, LOW);
-  digitalWrite(YELLOW_LED, HIGH);
-  digitalWrite(RED_LED, LOW);
+  // 🔴 Đèn đỏ
+  digitalWrite(LED_RED, HIGH);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_GREEN, LOW);
+  Serial.println("RED");
   delay(2000);
 
-  digitalWrite(GREEN_LED, LOW);
-  digitalWrite(YELLOW_LED, LOW);
-  digitalWrite(RED_LED, HIGH);
-  delay(5000);
+  // 🟡 Đèn vàng
+  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_YELLOW, HIGH);
+  digitalWrite(LED_GREEN, LOW);
+  Serial.println("YELLOW");
+  delay(1000);
+
+  // 🟢 Đèn xanh
+  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_GREEN, HIGH);
+  Serial.println("GREEN");
+  delay(2000);
 }
