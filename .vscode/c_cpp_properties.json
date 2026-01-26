@@ -3,7 +3,8 @@
         {
             "name": "Mac",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "C:/Users/ADMIN/.platformio/packages/framework-arduinoespressif32/cores/esp32"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
