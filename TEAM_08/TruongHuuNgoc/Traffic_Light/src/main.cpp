@@ -5,6 +5,7 @@
 #define LED_RED     27
 #define LED_YELLOW  26
 #define LED_GREEN   25
+#define LED_BLUE    21
 
 #define BUTTON_PIN  23
 #define LDR_PIN     13     // cảm biến ánh sáng
@@ -56,6 +57,8 @@ void setup()
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_YELLOW, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
+  pinMode(LED_BLUE, OUTPUT);
+
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   display.setBrightness(7);
@@ -98,6 +101,7 @@ void loop()
   static bool lastBtn = HIGH;
   bool btn = digitalRead(BUTTON_PIN);
 
+  digitalWrite(LED_BLUE, !showDisplay);
   if (lastBtn == HIGH && btn == LOW)
   {
     showDisplay = !showDisplay;
