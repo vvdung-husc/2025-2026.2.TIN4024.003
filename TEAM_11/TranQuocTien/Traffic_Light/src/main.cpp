@@ -27,7 +27,6 @@ void led_traffict(int color1, int color2, int color3){
 }
 
 void showScreen(int i){
-  display.clear();
   display.showNumberDec(i, true);
 }
 
@@ -39,12 +38,14 @@ void setup_screen(){
   delay(1000);
 }
 
-void cout(int color1, int color2, int color3){
-  for(int i = 0; i < 3; i++){
-    led_traffict(color1, color2, color3);
-    delay(1000);
+void count(int color1, int color2, int color3){
+  led_traffict(color1, color2, color3);
+  for(int i = 0; i <= 3; i++){
     showScreen(i);
+    delay(1000);
   }
+  digitalWrite(color1, LOW);
+  delay(100);
 }
   
 
@@ -63,5 +64,17 @@ void setup() {
 }
 
 void loop() {
-
+  int i = 1;
+  if(i == 1){
+    count(green, red, yellow);
+    i++;
+  }
+  if(i == 2){
+    count(yellow, green, red);
+    i++;
+  }
+  if(i == 3){
+    count(red, yellow, green);
+    i++;
+  } 
 }
