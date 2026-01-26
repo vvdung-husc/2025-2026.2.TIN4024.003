@@ -39,7 +39,8 @@
     [ "led1:A", "esp:17", "red", [ "v0" ] ],
     [ "led2:C", "esp:GND.2", "black", [ "v0" ] ],
     [ "led2:A", "esp:16", "gold", [ "v0" ] ],
-    [ "led3:A", "esp:18", "green", [ "v0" ] ]
+    [ "led3:A", "esp:18", "green", [ "v0" ] ],
+    [ "led3:C", "esp:GND.2", "black", [ "v0" ] ]
   ],
   "dependencies": {}
 }

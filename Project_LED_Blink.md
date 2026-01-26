@@ -9,4 +9,9 @@
 ## Cấu hình tập tin wokwi.toml
 ![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/wokwi_config.png)
 
+--------------------------
 
+# Dự án đèn giao thông nhấp nháy - Traffic Blink
+![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/Traffic_Blink.png)
+
+--------------------------
