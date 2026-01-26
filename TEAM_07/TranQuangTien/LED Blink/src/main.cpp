@@ -1,37 +1,34 @@
 #include <Arduino.h>
 
-#define LED_GREEN  16
-#define LED_YELLOW 17
-#define LED_RED    18
+#define LED_RED     25
+#define LED_YELLOW  26
+#define LED_GREEN   27
+
+void blinkLed(int pin, int times, const char* name) {
+  Serial.printf("LED [%s] BLINK => %d Times\n", name, times);
+
+  for (int i = 1; i <= times; i++) {
+    digitalWrite(pin, HIGH);
+    Serial.printf("  %s blink %d\n", name, i);
+    delay(500);          // ON 0.5s
+
+    digitalWrite(pin, LOW);
+    delay(500);          // OFF 0.5s
+  }
+}
 
 void setup() {
   Serial.begin(115200);
-  printf("Traffic Light System Start\n");
 
-  pinMode(LED_GREEN, OUTPUT);
-  pinMode(LED_YELLOW, OUTPUT);
   pinMode(LED_RED, OUTPUT);
+  pinMode(LED_YELLOW, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
+
+  Serial.println("Traffic Light Blink Started");
 }
 
 void loop() {
-  // ===== GREEN =====
-  printf("GREEN ON (3.5s)\n");
-  digitalWrite(LED_GREEN, HIGH);
-  digitalWrite(LED_YELLOW, LOW);
-  digitalWrite(LED_RED, LOW);
-  delay(3500);
-
-  // ===== YELLOW =====
-  printf("YELLOW ON (1s)\n");
-  digitalWrite(LED_GREEN, LOW);
-  digitalWrite(LED_YELLOW, HIGH);
-  digitalWrite(LED_RED, LOW);
-  delay(1000);
-
-  // ===== RED =====
-  printf("RED ON (3.5s)\n");
-  digitalWrite(LED_GREEN, LOW);
-  digitalWrite(LED_YELLOW, LOW);
-  digitalWrite(LED_RED, HIGH);
-  delay(3500);
+  blinkLed(LED_RED, 5, "RED");
+  blinkLed(LED_YELLOW, 3, "YELLOW");
+  blinkLed(LED_GREEN, 7, "GREEN");
 }
