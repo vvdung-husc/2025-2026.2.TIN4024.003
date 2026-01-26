@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "author": "Nguyen Quang Hung",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 0, "left": 200, "attrs": {} },
+    {
+      "type": "wokwi-led",
+      "id": "led_red",
+      "top": -58.8,
+      "left": 35.4,
+      "rotate": 270,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_yellow",
+      "top": -0.8,
+      "left": 39.8,
+      "rotate": 270,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_green",
+      "top": 56.8,
+      "left": 39.8,
+      "rotate": 270,
+      "attrs": { "color": "green" }
+    }
+  ],
+  "connections": [
+    [ "led_red:A", "esp:D25", "green", [ "h120" ] ],
+    [ "led_yellow:A", "esp:D33", "green", [ "h120" ] ],
+    [ "led_green:A", "esp:D32", "green", [ "h120" ] ],
+    [ "led_red:C", "esp:GND.1", "black", [ "h120" ] ],
+    [ "led_yellow:C", "esp:GND.1", "black", [ "h120" ] ],
+    [ "led_green:C", "esp:GND.1", "black", [ "h120" ] ]
+  ],
+  "dependencies": {}
+}
