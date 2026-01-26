@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "author": "Gemini Assistant",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 60, "left": 0 },
+    { "type": "wokwi-led", "id": "led-red", "top": -80, "left": 60, "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "led-yellow", "top": -30, "left": 60, "attrs": { "color": "yellow" } },
+    { "type": "wokwi-led", "id": "led-green", "top": 20, "left": 60, "attrs": { "color": "green" } },
+    { "type": "wokwi-resistor", "id": "res1", "top": 0, "left": -20, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "res2", "top": 50, "left": -20, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "res3", "top": 100, "left": -20, "attrs": { "value": "220" } }
+  ],
+  "connections": [
+    [ "esp:GND.1", "led-red:C", "black", [ "v-20", "h-100", "v-160", "h240" ] ],
+    [ "esp:GND.1", "led-yellow:C", "black", [ "v-20", "h-100", "v-110", "h240" ] ],
+    [ "esp:GND.1", "led-green:C", "black", [ "v-20", "h-100", "v-60", "h240" ] ],
+    [ "esp:D25", "res1:1", "red", [ "h-20", "v-120" ] ],
+    [ "res1:2", "led-red:A", "red", [ "v-20", "h80" ] ],
+    [ "esp:D33", "res2:1", "yellow", [ "h-10", "v-100" ] ],
+    [ "res2:2", "led-yellow:A", "yellow", [ "v-20", "h60" ] ],
+    [ "esp:D32", "res3:1", "green", [ "h-5", "v-80" ] ],
+    [ "res3:2", "led-green:A", "green", [ "v-20", "h40" ] ]
+  ]
+}
