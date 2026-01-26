@@ -33,25 +33,16 @@ void blinkOnce(int pin) {
 
 void loop() {
   // Màu xanh trong GREEN_DURATION giây
-  // Tắt LED khác trước khi nháy
-  digitalWrite(YELLOW_PIN, LOW);
-  digitalWrite(RED_PIN, LOW);
   for (unsigned int i = 0; i < GREEN_DURATION; ++i) {
     blinkOnce(GREEN_PIN);
   }
 
   // Màu vàng trong YELLOW_DURATION giây
-  // Tắt LED khác trước khi nháy
-  digitalWrite(GREEN_PIN, LOW);
-  digitalWrite(RED_PIN, LOW);
   for (unsigned int i = 0; i < YELLOW_DURATION; ++i) {
     blinkOnce(YELLOW_PIN);
   }
 
   // Màu đỏ trong RED_DURATION giây
-  // Tắt LED khác trước khi nháy
-  digitalWrite(GREEN_PIN, LOW);
-  digitalWrite(YELLOW_PIN, LOW);
   for (unsigned int i = 0; i < RED_DURATION; ++i) {
     blinkOnce(RED_PIN);
   }
