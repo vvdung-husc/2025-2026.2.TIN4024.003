@@ -1,250 +1,234 @@
 #include <Arduino.h>
 #include <TM1637Display.h>
 
-// ======================= PIN MAP =======================
-// Traffic LEDs
-#define LED_RED 25
-#define LED_YELLOW 26
-#define LED_GREEN 27
+// ====================== PIN CONFIG (ESP32) ======================
+static const int LED_RED    = 25;
+static const int LED_YELLOW = 26;
+static const int LED_GREEN  = 27;
 
-// Street light LED (controlled by LDR)
-#define LED_STREET 33
+static const int BUTTON_PIN = 14;   // PushButton (nút xanh) - dùng INPUT_PULLUP
+static const int INDICATOR_LED = 33; // LED xanh nước báo trạng thái chạy/pause
 
-// Push button: toggle display ON/OFF
-#define BTN_TOGGLE 14 // dùng PULLUP, nút nối về GND
+static const int TM_CLK = 18;       // TM1637 CLK
+static const int TM_DIO = 19;       // TM1637 DIO
 
-// TM1637
-#define TM_CLK 18
-#define TM_DIO 19
+static const int LDR_PIN = 34;      // Photoresistor sensor (Analog input only)
+
+// ====================== TM1637 ======================
 TM1637Display display(TM_CLK, TM_DIO);
 
-// LDR analog pin (ESP32 ADC)
-#define LDR_AO 34
+// ====================== TRAFFIC LIGHT TIMING (seconds) ======================
+static const uint16_t T_RED_S    = 3;
+static const uint16_t T_YELLOW_S = 2;
+static const uint16_t T_GREEN_S  = 4;
 
-// ======================= CONFIG =======================
-// Durations (ms)
-const uint32_t DUR_RED = 2000;
-const uint32_t DUR_YELLOW = 3000;
-const uint32_t DUR_GREEN = 5000;
+// ====================== LDR THRESHOLD ======================
+// Giá trị analog ESP32: 0..4095
+// Bạn có thể chỉnh các ngưỡng này theo thực tế trong Wokwi.
+static const int LDR_ON_THRESHOLD  = 2000; // <= ngưỡng này coi là TỐI -> bật hệ thống
+static const int LDR_OFF_THRESHOLD = 2300; // >= ngưỡng này coi là SÁNG -> tắt hệ thống (hysteresis)
 
-// Blink interval for active traffic LED
-const uint32_t BLINK_INTERVAL = 200; // ms
+// ====================== STATE MACHINE ======================
+enum Phase : uint8_t { PHASE_RED, PHASE_YELLOW, PHASE_GREEN };
 
-// LDR threshold (0..4095). Tối < threshold => bật đèn đường
-// Bạn có thể chỉnh 1500/2000 tùy cảm nhận
-const int LDR_THRESHOLD = 1800;
+static Phase currentPhase = PHASE_RED;
 
-// ======================= STATE =======================
-enum Phase
-{
-  PHASE_RED,
-  PHASE_YELLOW,
-  PHASE_GREEN
-};
-Phase currentPhase = PHASE_RED;
+// running = true: hệ thống đang chạy (không pause)
+static bool running = true;
 
-uint32_t phaseStartMs = 0;
-uint32_t phaseDurationMs = DUR_RED;
+// enabledByLdr = true: LDR cho phép chạy (trời tối), false: trời sáng -> tắt hệ thống
+static bool enabledByLdr = true;
 
-// blink
-uint32_t lastBlinkMs = 0;
-bool blinkState = false;
+// Thời điểm bắt đầu phase (millis)
+static uint32_t phaseStartMs = 0;
 
-// countdown
-uint32_t lastCountdownMs = 0;
-int lastShownSeconds = -1;
+// ====================== BUTTON DEBOUNCE ======================
+static bool lastButtonRead = HIGH;
+static bool buttonStableState = HIGH;
+static uint32_t lastDebounceMs = 0;
+static const uint32_t DEBOUNCE_MS = 40;
 
-// display toggle
-bool displayEnabled = true;
+// ====================== DISPLAY UPDATE ======================
+static uint32_t lastDisplayUpdateMs = 0;
+static const uint32_t DISPLAY_UPDATE_MS = 150;
 
-// button debounce
-bool lastBtnReading = HIGH;
-bool btnStableState = HIGH;
-uint32_t lastDebounceMs = 0;
-const uint32_t DEBOUNCE_MS = 35;
-
-// ======================= HELPERS =======================
-void allTrafficOff()
-{
+// ====================== HELPERS ======================
+static void allOff() {
   digitalWrite(LED_RED, LOW);
   digitalWrite(LED_YELLOW, LOW);
   digitalWrite(LED_GREEN, LOW);
 }
 
-int activeLedPin()
-{
-  switch (currentPhase)
-  {
-  case PHASE_RED:
-    return LED_RED;
-  case PHASE_YELLOW:
-    return LED_YELLOW;
-  case PHASE_GREEN:
-    return LED_GREEN;
+static uint16_t phaseDurationSeconds(Phase p) {
+  switch (p) {
+    case PHASE_RED:    return T_RED_S;
+    case PHASE_YELLOW: return T_YELLOW_S;
+    case PHASE_GREEN:  return T_GREEN_S;
   }
-  return LED_RED;
+  return 1;
 }
 
-uint32_t activeDuration()
-{
-  switch (currentPhase)
-  {
-  case PHASE_RED:
-    return DUR_RED;
-  case PHASE_YELLOW:
-    return DUR_YELLOW;
-  case PHASE_GREEN:
-    return DUR_GREEN;
+static void setPhaseLights(Phase p) {
+  allOff();
+  switch (p) {
+    case PHASE_RED:    digitalWrite(LED_RED, HIGH); break;
+    case PHASE_YELLOW: digitalWrite(LED_YELLOW, HIGH); break;
+    case PHASE_GREEN:  digitalWrite(LED_GREEN, HIGH); break;
   }
-  return DUR_RED;
 }
 
-void nextPhase()
-{
-  if (currentPhase == PHASE_RED)
-    currentPhase = PHASE_YELLOW;
-  else if (currentPhase == PHASE_YELLOW)
-    currentPhase = PHASE_GREEN;
-  else
-    currentPhase = PHASE_RED;
+static void nextPhase() {
+  if (currentPhase == PHASE_RED) currentPhase = PHASE_YELLOW;
+  else if (currentPhase == PHASE_YELLOW) currentPhase = PHASE_GREEN;
+  else currentPhase = PHASE_RED;
 
   phaseStartMs = millis();
-  phaseDurationMs = activeDuration();
-
-  // reset blink
-  blinkState = false;
-  lastBlinkMs = 0;
-
-  // reset countdown display update
-  lastShownSeconds = -1;
+  setPhaseLights(currentPhase);
 }
 
-void updateTrafficBlink()
-{
-  uint32_t now = millis();
-  if (now - lastBlinkMs >= BLINK_INTERVAL)
-  {
-    lastBlinkMs = now;
-    blinkState = !blinkState;
+static void showCountdownSeconds(uint16_t sec) {
+  // TM1637 4 digits: hiển thị dạng 0003, 0012, 0123, 1234...
+  if (sec > 9999) sec = 9999;
+  display.showNumberDec(sec, true); // leading zeros = true
+}
 
-    allTrafficOff(); // đảm bảo chỉ 1 đèn hoạt động
-    digitalWrite(activeLedPin(), blinkState ? HIGH : LOW);
+static void displayOff() {
+  display.clear();
+  display.setBrightness(0, false); // tắt display
+}
+
+static void displayOn() {
+  display.setBrightness(7, true);  // bật display, độ sáng 0..7
+}
+
+static void applyRunningIndicator() {
+  // LED xanh nước báo trạng thái: chạy -> sáng, pause -> tắt
+  digitalWrite(INDICATOR_LED, running ? HIGH : LOW);
+}
+
+static void updateLdrEnable() {
+  int ldr = analogRead(LDR_PIN);
+
+  // Hysteresis: tránh nhấp nháy on/off khi gần ngưỡng
+  if (enabledByLdr) {
+    // đang bật, nếu quá sáng thì tắt
+    if (ldr >= LDR_OFF_THRESHOLD) enabledByLdr = false;
+  } else {
+    // đang tắt, nếu đủ tối thì bật lại
+    if (ldr <= LDR_ON_THRESHOLD) enabledByLdr = true;
   }
 }
 
-void updateCountdownDisplay()
-{
-  // nếu tắt hiển thị thì clear và không update nữa
-  if (!displayEnabled)
-  {
-    display.clear();
-    return;
-  }
+static void handleButton() {
+  bool reading = digitalRead(BUTTON_PIN);
 
-  uint32_t now = millis();
-  if (now - lastCountdownMs < 200)
-    return; // update vừa đủ mượt
-  lastCountdownMs = now;
-
-  uint32_t elapsed = now - phaseStartMs;
-  int remainMs = (int)phaseDurationMs - (int)elapsed;
-  if (remainMs < 0)
-    remainMs = 0;
-
-  // làm tròn lên thành giây còn lại (vd: 1.2s -> 2s)
-  int remainSeconds = (remainMs + 999) / 1000;
-
-  if (remainSeconds != lastShownSeconds)
-  {
-    lastShownSeconds = remainSeconds;
-
-    // Hiển thị 0..9999 (ở đây tối đa 5 giây)
-    // Nếu muốn đẹp hơn: hiển thị dạng 00:05 => dùng showNumberDecEx
-    // Nhưng đề bài chỉ cần “thời gian” nên hiển thị số giây là ok.
-    display.showNumberDec(remainSeconds, true, 4, 0);
-  }
-}
-
-void updateButtonToggle()
-{
-  bool reading = digitalRead(BTN_TOGGLE);
-
-  if (reading != lastBtnReading)
-  {
+  if (reading != lastButtonRead) {
     lastDebounceMs = millis();
-    lastBtnReading = reading;
+    lastButtonRead = reading;
   }
 
-  if (millis() - lastDebounceMs > DEBOUNCE_MS)
-  {
-    if (reading != btnStableState)
-    {
-      btnStableState = reading;
+  if ((millis() - lastDebounceMs) > DEBOUNCE_MS) {
+    if (reading != buttonStableState) {
+      buttonStableState = reading;
 
-      // Nhấn nút (PULLUP => nhấn là LOW)
-      if (btnStableState == LOW)
-      {
-        displayEnabled = !displayEnabled;
+      // Nút nhấn kiểu INPUT_PULLUP: nhấn = LOW
+      if (buttonStableState == LOW) {
+        // Toggle pause/resume
+        running = !running;
 
-        if (!displayEnabled)
-          display.clear();
-        // nếu bật lại thì cập nhật ngay
-        lastShownSeconds = -1;
+        // Khi resume: cần “bù” lại phaseStartMs để thời gian không bị nhảy.
+        // Cách làm: nếu pause thì lưu lại remaining; nhưng đơn giản nhất:
+        // ta dùng biến phaseStartMs và khi pause không cập nhật, khi resume ta reset start = now - elapsedPaused?
+        // -> dễ hơn: khi pause, ta lưu remainingSec; khi resume, ta start lại phase với đúng remaining.
+        // Ở đây dùng cách: giữ nguyên phaseStartMs và có biến frozenElapsedMs.
+
+        // Vì ta không dùng frozenElapsedMs ở trên, nên ta xử lý đơn giản:
+        // Khi pause: lưu lại phần đã chạy (elapsedMs)
+        // Khi resume: đặt phaseStartMs = now - elapsedMs đã lưu
+        static uint32_t savedElapsedMs = 0;
+
+        if (!running) {
+          // chuyển sang pause: lưu elapsed
+          savedElapsedMs = millis() - phaseStartMs;
+        } else {
+          // resume: khôi phục start để elapsed tiếp tục đúng chỗ
+          phaseStartMs = millis() - savedElapsedMs;
+        }
+
+        applyRunningIndicator();
       }
     }
   }
 }
 
-void updateLdrStreetLight()
-{
-  int ldrValue = analogRead(LDR_AO); // 0..4095
-  bool isDark = (ldrValue < LDR_THRESHOLD);
-
-  digitalWrite(LED_STREET, isDark ? HIGH : LOW);
-}
-
-// ======================= SETUP/LOOP =======================
-void setup()
-{
-  // pins
+void setup() {
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_YELLOW, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
-  pinMode(LED_STREET, OUTPUT);
 
-  pinMode(BTN_TOGGLE, INPUT_PULLUP);
+  pinMode(INDICATOR_LED, OUTPUT);
 
-  allTrafficOff();
-  digitalWrite(LED_STREET, LOW);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
 
-  // display
-  display.setBrightness(7, true); // 0..7
+  // ESP32 ADC input: không cần pinMode cho analogRead, nhưng vẫn ok
+  // pinMode(LDR_PIN, INPUT);
+
+  allOff();
+
+  displayOn();
   display.clear();
 
-  // start phase
   currentPhase = PHASE_RED;
   phaseStartMs = millis();
-  phaseDurationMs = activeDuration();
+  setPhaseLights(currentPhase);
+
+  running = true;
+  enabledByLdr = true;
+  applyRunningIndicator();
 }
 
-void loop()
-{
-  // 1) đọc nút bật/tắt hiển thị
-  updateButtonToggle();
+void loop() {
+  handleButton();
+  updateLdrEnable();
 
-  // 2) LDR điều khiển đèn đường
-  updateLdrStreetLight();
-
-  // 3) nháy đèn giao thông theo pha hiện tại
-  updateTrafficBlink();
-
-  // 4) hiển thị đếm ngược
-  updateCountdownDisplay();
-
-  // 5) chuyển pha khi hết thời gian
-  uint32_t now = millis();
-  if (now - phaseStartMs >= phaseDurationMs)
-  {
-    nextPhase();
+  // Nếu LDR đang báo "trời sáng" -> tắt toàn bộ
+  if (!enabledByLdr) {
+    allOff();
+    displayOff();
+    // LED báo nút vẫn phản ánh running/pause, bạn có thể đổi nếu muốn:
+    applyRunningIndicator();
+    delay(30); // nhẹ CPU
+    return;
+  } else {
+    displayOn();
   }
+
+  // Nếu đang chạy thì cập nhật phase theo thời gian
+  if (running) {
+    uint32_t now = millis();
+    uint32_t elapsedMs = now - phaseStartMs;
+    uint32_t durationMs = (uint32_t)phaseDurationSeconds(currentPhase) * 1000UL;
+
+    if (elapsedMs >= durationMs) {
+      nextPhase();
+    }
+  }
+
+  // Cập nhật hiển thị countdown theo phase hiện tại
+  if (millis() - lastDisplayUpdateMs >= DISPLAY_UPDATE_MS) {
+    lastDisplayUpdateMs = millis();
+
+    uint32_t now = millis();
+    uint32_t elapsedMs = now - phaseStartMs;
+    uint32_t durationMs = (uint32_t)phaseDurationSeconds(currentPhase) * 1000UL;
+
+    uint32_t remainingMs = 0;
+    if (elapsedMs >= durationMs) remainingMs = 0;
+    else remainingMs = durationMs - elapsedMs;
+
+    uint16_t remainingSec = (uint16_t)((remainingMs + 999) / 1000); // làm tròn lên để thấy 3,2,1
+    showCountdownSeconds(remainingSec);
+  }
+
+  delay(5);
 }

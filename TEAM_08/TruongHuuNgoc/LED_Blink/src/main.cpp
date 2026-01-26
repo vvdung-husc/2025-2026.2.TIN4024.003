@@ -11,7 +11,6 @@ unsigned long blinkTimer = 0;
 bool blinkState = false;
 int blinkCount = 0;
 
-
 enum TrafficState
 {
   RED,
@@ -55,25 +54,15 @@ void loop()
   {
   case RED:
     if (IsReady(timer, 5000))
-    { 
+    {
       SetLight(0, 0, 1);
       state = GREEN;
       Serial.println("GREEN");
     }
-    if(IsReady(blinkTimer, 500))
+    if (IsReady(blinkTimer, 500))
     {
       blinkState = !blinkState;
       digitalWrite(LED_RED, blinkState ? HIGH : LOW);
-      if(blinkState == false)
-      {
-        blinkCount++;
-      }
-      if(blinkCount >= 3)
-      {
-        blinkCount = 0;
-        // reset to solid red
-        digitalWrite(LED_RED, HIGH);
-      }
     }
     break;
 
@@ -82,50 +71,35 @@ void loop()
     {
       SetLight(0, 1, 0);
       state = YELLOW;
+
+      blinkCount = 0;
+      blinkState = false;
+      blinkTimer = millis();
+
       Serial.println("YELLOW");
     }
-    if(IsReady(blinkTimer, 500))
+    if (IsReady(blinkTimer, 500))
     {
       blinkState = !blinkState;
       digitalWrite(LED_GREEN, blinkState ? HIGH : LOW);
-      if(blinkState == false)
-      {
-        blinkCount++;
-      }
-      if(blinkCount >= 3)
-      {
-        blinkCount = 0;
-        // reset to solid green
-        digitalWrite(LED_GREEN, HIGH);
-      }
     }
     break;
 
   case YELLOW:
-
-  if (blinkCount == 0)
-  {
-    // reset khi mới vào vàng
-    blinkState = false;
-    blinkTimer = millis();
-  }
 
   if (IsReady(blinkTimer, 500))
   {
     blinkState = !blinkState;
     digitalWrite(LED_YELLOW, blinkState ? HIGH : LOW);
 
-    if (blinkState == false)
-    {
-      blinkCount++;
-    }
+    if (!blinkState) blinkCount++;
 
     if (blinkCount >= 3)
     {
       blinkCount = 0;
       blinkState = false;
 
-      SetLight(1, 0, 0);   // sang đỏ
+      SetLight(1, 0, 0);
       timer = millis();
       state = RED;
 
