@@ -47,55 +47,69 @@ bool IsReady(unsigned long &ulTimer, uint32_t millisecond) {
   return true;
 }
 
-void setup() {
-  printf("Welcome IoT - Traffic Light\n");
+uint8_t trafficState = 0;   // 0: RED, 1: GREEN, 2: YELLOW
+uint8_t blinkCount = 0;     // số lần đã nhấp nháy
+bool ledStatus = false;     // trạng thái ON/OFF hiện tại
+unsigned long blinkTimer = 0;
 
-  pinMode(LED_RED, OUTPUT);
-  pinMode(LED_YELLOW, OUTPUT);
-  pinMode(LED_GREEN, OUTPUT);
-
-  // Ban đầu bật đèn đỏ
-  digitalWrite(LED_RED, HIGH);
+void turnOffAll() {
+  digitalWrite(LED_RED, LOW);
   digitalWrite(LED_YELLOW, LOW);
   digitalWrite(LED_GREEN, LOW);
 }
 
-// 0: Đỏ | 1: Xanh | 2: Vàng
-uint8_t trafficState = 0;
-unsigned long ulTimer = 0;
+void setup() {
+  printf("Traffic Light Blinking Mode\n");
+
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_YELLOW, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
+}
 
 void loop() {
+
+  // Mỗi 500ms đổi trạng thái LED
+  if (!IsReady(blinkTimer, 500)) return;
+
+  ledStatus = !ledStatus;   // đảo trạng thái
+  if (ledStatus) blinkCount++;  // chỉ tính khi LED bật
+
   switch (trafficState) {
 
-    // 🔴 ĐÈN ĐỎ - 30s
+    // ================= RED =================
     case 0:
-      if (IsReady(ulTimer, 10000)) {
-        digitalWrite(LED_RED, LOW);
-        digitalWrite(LED_GREEN, HIGH);
+      turnOffAll();
+      digitalWrite(LED_RED, ledStatus);
+
+      if (blinkCount >= 5) {      // đủ 5 lần
+        blinkCount = 0;
         trafficState = 1;
-        printf("GREEN\n");
+        printf("-> GREEN\n");
       }
       break;
 
-    // 🟢 ĐÈN XANH - 27s
+    // ================= GREEN =================
     case 1:
-      if (IsReady(ulTimer, 7000)) {
-        digitalWrite(LED_GREEN, LOW);
-        digitalWrite(LED_YELLOW, HIGH);
+      turnOffAll();
+      digitalWrite(LED_GREEN, ledStatus);
+
+      if (blinkCount >= 7) {
+        blinkCount = 0;
         trafficState = 2;
-        printf("YELLOW\n");
+        printf("-> YELLOW\n");
       }
       break;
 
-    // 🟡 ĐÈN VÀNG - 3s
+    // ================= YELLOW =================
     case 2:
-      if (IsReady(ulTimer, 3000)) {
-        digitalWrite(LED_YELLOW, LOW);
-        digitalWrite(LED_RED, HIGH);
+      turnOffAll();
+      digitalWrite(LED_YELLOW, ledStatus);
+
+      if (blinkCount >= 3) {
+        blinkCount = 0;
         trafficState = 0;
-        printf("RED\n");
+        printf("-> RED\n");
       }
       break;
   }
 }
-
