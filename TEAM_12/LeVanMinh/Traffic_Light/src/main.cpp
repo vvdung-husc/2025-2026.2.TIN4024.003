@@ -1,107 +1,109 @@
 #include <Arduino.h>
 #include <TM1637Display.h>
 
-// --- Định nghĩa các chân (Pin Definitions) ---
-#define CLK 18
-#define DIO 19
+// Định nghĩa chân cắm (Khớp 100% với sơ đồ của bạn)
+#define PIN_CLK 18
+#define PIN_DIO 19
 #define LED_RED 27
 #define LED_YELLOW 26
 #define LED_GREEN 25
-#define LED_BLUE 21     // Đèn báo người đi bộ
-#define BTN_PIN 4       // Nút nhấn
-#define SENSOR_PIN 13   // Chân Analog (Potentiometer/Cảm biến)
+#define LED_BLUE_PED 22
+#define BTN_PEDESTRIAN 23
+#define LDR_SENSOR 13
 
-// --- Cấu hình hiển thị ---
-TM1637Display display(CLK, DIO);
+TM1637Display display(PIN_CLK, PIN_DIO);
 
-// --- Các biến toàn cục ---
-bool pedestrianRequest = false; // Trạng thái yêu cầu qua đường
+bool pedRequest = false; 
 
 void setup() {
+  // Khởi tạo Serial với tốc độ 115200 baud
   Serial.begin(115200);
+  delay(500); // Chờ một chút để Terminal kịp kết nối
+  
+  Serial.println("========================================");
+  Serial.println("HE THONG DEN GIAO THONG DANG KHOI DONG");
+  Serial.println("========================================");
 
-  // Cấu hình chân LED là OUTPUT
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_YELLOW, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
-  pinMode(LED_BLUE, OUTPUT);
-
-  // Cấu hình nút nhấn (INPUT_PULLUP: không nhấn = HIGH, nhấn = LOW)
-  pinMode(BTN_PIN, INPUT_PULLUP);
-
-  // Cấu hình màn hình
-  display.setBrightness(0x0f); // Độ sáng tối đa
-  display.clear();
+  pinMode(LED_BLUE_PED, OUTPUT);
+  pinMode(BTN_PEDESTRIAN, INPUT_PULLUP);
   
-  Serial.println("He thong den giao thong khoi dong...");
+  display.setBrightness(0x0f);
+  display.clear();
+
+  Serial.println("[OK] Cac thiet bi da san sang.");
 }
 
-// Hàm kiểm tra nút nhấn (trả về true nếu nút được nhấn)
-bool checkButton() {
-  if (digitalRead(BTN_PIN) == LOW) { // Nút nhấn kích hoạt mức thấp
-    digitalWrite(LED_BLUE, HIGH);    // Bật đèn xanh dương báo hiệu đã nhận lệnh
-    pedestrianRequest = true;
-    Serial.println("-> Nguoi di bo bam nut!");
-    return true;
-  }
-  return false;
-}
-
-// Hàm đếm ngược và hiển thị lên 7-segment
-// return true nếu bị ngắt bởi nút nhấn (chỉ áp dụng cho đèn xanh)
-bool countdown(int seconds, bool checkBtn) {
+// Hàm đếm ngược có thông báo ra Terminal từng giây
+void runCountdownWithLog(int seconds, String stateName, bool canInterrupt) {
+  Serial.println(">>> Bat dau pha: " + stateName + " (" + String(seconds) + "s)");
+  
   for (int i = seconds; i >= 0; i--) {
-    display.showNumberDec(i, true); // Hiển thị số giây
+    display.showNumberDec(i, true);
     
-    // Chia nhỏ delay 1 giây thành 10 lần 100ms để nút nhấn nhạy hơn
+    // In thông tin nhịp tim hệ thống ra Terminal mỗi giây
+    Serial.print("[" + stateName + "] Con lai: ");
+    Serial.print(i);
+    Serial.println(" giay...");
+
+    // Kiểm tra nút nhấn người đi bộ
     for (int j = 0; j < 10; j++) {
-      delay(100); 
-      if (checkBtn && checkButton()) {
-        return true; // Thoát sớm nếu có nút nhấn khi đang đèn xanh
+      if (digitalRead(BTN_PEDESTRIAN) == LOW) {
+        if (!pedRequest) {
+          pedRequest = true;
+          Serial.println("   [!] PHAT HIEN: Co nguoi nhan nut uu tien qua duong!");
+          digitalWrite(LED_BLUE_PED, HIGH); // Sáng đèn báo hiệu nhận lệnh
+        }
       }
+      delay(100);
+    }
+
+    // Nếu đang đèn xanh và có yêu cầu, rút ngắn thời gian
+    if (canInterrupt && pedRequest && i > 3) {
+      Serial.println("   [!] UU TIEN: Rut ngan thoi gian xanh de nhuong duong.");
+      i = 3; 
     }
   }
-  return false;
 }
 
 void loop() {
-  // 1. Đọc giá trị cảm biến để chỉnh thời gian đèn xanh
-  // Giá trị analog từ 0-4095, map sang thời gian từ 5 đến 15 giây
-  int sensorValue = analogRead(SENSOR_PIN);
-  int greenTime = map(sensorValue, 0, 4095, 5, 15); 
-  
-  Serial.print("Thoi gian den xanh: ");
-  Serial.print(greenTime);
-  Serial.println(" giay (Dieu chinh boi bien tro)");
+  // 1. Đọc cảm biến ánh sáng LDR
+  int ldrValue = analogRead(LDR_SENSOR);
+  Serial.println("----------------------------------------");
+  Serial.print("[SENSOR] Cuong do anh sang hien tai: ");
+  Serial.println(ldrValue);
+  if (ldrValue > 2500) Serial.println("[!] Thong bao: Troi dang toi.");
+  else Serial.println("[!] Thong bao: Troi dang sang.");
 
-  // --- TRẠNG THÁI: ĐÈN XANH ---
-  Serial.println("RED: OFF | YELLOW: OFF | GREEN: ON");
+  // 2. PHA ĐÈN XANH
   digitalWrite(LED_RED, LOW);
   digitalWrite(LED_YELLOW, LOW);
   digitalWrite(LED_GREEN, HIGH);
-  
-  // Chạy đếm ngược đèn xanh, kiểm tra nút nhấn
-  bool interrupted = countdown(greenTime, true);
+  runCountdownWithLog(10, "DEN XANH", true);
 
-  // Nếu có người đi bộ bấm nút, đèn xanh tắt ngay, chuyển sang vàng nhanh hơn
-  if (interrupted) {
-    pedestrianRequest = false; // Reset cờ sau khi xử lý
-    delay(500); // Chờ 1 chút cho mượt
-  }
-
-  // --- TRẠNG THÁI: ĐÈN VÀNG ---
-  Serial.println("RED: OFF | YELLOW: ON | GREEN: OFF");
+  // 3. PHA ĐÈN VÀNG
   digitalWrite(LED_GREEN, LOW);
   digitalWrite(LED_YELLOW, HIGH);
-  countdown(3, false); // Đèn vàng luôn là 3 giây, không check nút
+  runCountdownWithLog(3, "DEN VANG", false);
 
-  // --- TRẠNG THÁI: ĐÈN ĐỎ ---
-  Serial.println("RED: ON | YELLOW: OFF | GREEN: OFF");
+  // 4. PHA ĐÈN ĐỎ
   digitalWrite(LED_YELLOW, LOW);
   digitalWrite(LED_RED, HIGH);
   
-  // Tắt đèn báo người đi bộ (nếu đang bật) vì giờ xe dừng, người đi bộ đi
-  digitalWrite(LED_BLUE, LOW); 
+  // Xử lý đèn xanh dương cho người đi bộ
+  if (pedRequest) {
+    Serial.println("[ACTION] Cho phep nguoi di bo sang duong.");
+    digitalWrite(LED_BLUE_PED, HIGH);
+  } else {
+    digitalWrite(LED_BLUE_PED, LOW);
+  }
   
-  countdown(5, false); // Đèn đỏ 5 giây
+  runCountdownWithLog(12, "DEN DO", false);
+
+  // Reset trạng thái sau chu kỳ
+  pedRequest = false;
+  digitalWrite(LED_BLUE_PED, LOW);
+  Serial.println("[DONE] Hoan thanh 1 chu ky. Bat dau lai...");
 }
