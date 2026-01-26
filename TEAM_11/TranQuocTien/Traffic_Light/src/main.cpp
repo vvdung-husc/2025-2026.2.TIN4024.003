@@ -7,6 +7,11 @@ int8_t yellow = 26;
 int8_t blue = 21;
 int8_t button = 23;
 bool checkBtn = true;
+int8_t AO = 13;
+int Brightness = analogRead(AO);
+
+const int FREQ = 5000;   // Tần số chớp (5000Hz - rất nhanh, mắt ko thấy rung)
+const int RES = 8;       // Độ phân giải 8-bit (chỉnh từ 0-255)
 
 
 #define CLK 18
@@ -18,14 +23,18 @@ void setup_Button(){
   pinMode(button, INPUT_PULLUP);
 } 
 
-void Sensor(){
-
+void night(){
+    ledcSetup(3, 2500, RES);
+    ledcWrite(0, 0);
+    ledcWrite(1, 0);
+    ledcWrite(2, 255);
 }
 
-void led_traffict(int color1, int color2, int color3){
-  digitalWrite(color1, HIGH);
-  digitalWrite(color2, LOW);
-  digitalWrite(color3, LOW);
+void led_traffict(int light1, int light2, int light3){
+  ledcWrite(0, light1); // đỏ
+  ledcWrite(1, light2); // xanh
+  ledcWrite(2, light3); // vàng
+
 }
 
 void showScreen(int i){
@@ -47,13 +56,18 @@ void turn_on_Off(bool turn){
   display.setBrightness(7, turn);
 }
   
+void checkSensor(int light1, int light2, int light3){
+  if(Brightness <= 2800)
+    led_traffict(light1, light2, light3); 
+  else
+    night();
+}
 
-void count(int color1, int color2, int color3){
-
-  led_traffict(color1, color2, color3); 
+void count(int light1, int light2, int light3){
+  Brightness = analogRead(AO);
+  checkSensor(light1, light2, light3);
   for(int s = 3; s >= 0; s--){
-
-    if (checkBtn == true) {
+    if (checkBtn == true && Brightness <= 2800) {
       display.showNumberDec(s, true);
     } else {
       display.clear(); 
@@ -61,51 +75,63 @@ void count(int color1, int color2, int color3){
     }
 
     for (int k = 0; k < 50; k++) {
-        
+      Brightness = analogRead(AO);
+      Serial.println(Brightness);
+      checkSensor(light1, light2, light3);
       if (digitalRead(button) == 0) { 
           checkBtn = !checkBtn;
           turn_on_Off(checkBtn);
-          if (checkBtn){
+          if (checkBtn == true ){
             display.showNumberDec(s, true);
           }
 
           while(digitalRead(button) == 0);
       }
+
+      if(Brightness > 2800){
+        digitalWrite(blue, LOW);
+        display.setBrightness(7, false); 
+      } 
+      else {
+        if (checkBtn == true)
+          digitalWrite(blue, HIGH);
+        display.setBrightness(7, true); 
+      }
+        
       delay(20); 
     }
   }
   
-  digitalWrite(color1, LOW);
+  ledcWrite(0, 0);
+  ledcWrite(1, 0);
+  ledcWrite(2, 0);
   delay(50);
 }
-  
 
 void setup() {
   
   Serial.begin(9600);
-  pinMode(red, OUTPUT);
-  pinMode(green, OUTPUT);
+  // pinMode(red, OUTPUT);
+  // pinMode(green, OUTPUT);
   pinMode(blue, OUTPUT);
   pinMode(button, INPUT_PULLUP);
-  pinMode(yellow, OUTPUT);
+  // pinMode(yellow, OUTPUT);
   setup_screen();
   digitalWrite(blue, HIGH);
+  Serial.println(Brightness); // In thử coi sao
+  ledcSetup(0, FREQ, RES);
+  ledcSetup(1, FREQ, RES);
+  ledcSetup(2, FREQ, RES);
+  ledcAttachPin(red, 0);
+  ledcAttachPin(green, 1);
+  ledcAttachPin(yellow, 2);
 
 }
 
 void loop() {
-  int i = 1;
-  if(i == 1){
-    count(green, red, yellow);
-    i++;
-  }
-  if(i == 2){
-    count(yellow, green, red);
-    i++;
-  }
-  if(i == 3){
-    count(red, yellow, green);
-    i=1;
-  }
-  delay(50); 
+  count(0, 255, 0);
+
+  count(0, 0, 255);
+
+  count(255, 0, 0);
 }
