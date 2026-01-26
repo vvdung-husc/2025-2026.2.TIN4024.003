@@ -3,23 +3,118 @@
   "author": "GiaHuy",
   "editor": "wokwi",
   "parts": [
-    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 0, "left": 0 },
-    { "type": "wokwi-led", "id": "led_red", "top": -120, "left": 100, "attrs": { "color": "red" } },
-    { "type": "wokwi-led", "id": "led_yellow", "top": -80, "left": 100, "attrs": { "color": "yellow" } },
-    { "type": "wokwi-led", "id": "led_green", "top": -40, "left": 100, "attrs": { "color": "green" } },
-    { "type": "wokwi-resistor", "id": "res1", "top": -110, "left": 20, "attrs": { "value": "220" } },
-    { "type": "wokwi-resistor", "id": "res2", "top": -70, "left": 20, "attrs": { "value": "220" } },
-    { "type": "wokwi-resistor", "id": "res3", "top": -30, "left": 20, "attrs": { "value": "220" } }
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+
+    {
+      "type": "wokwi-tm1637-7segment",
+      "id": "tm1",
+      "top": -156.8,
+      "left": 133.4,
+      "attrs": {}
+    },
+
+    {
+      "type": "wokwi-led",
+      "id": "led_red",
+      "top": -166.8,
+      "left": -111.6,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_yellow",
+      "top": -118.8,
+      "left": -111.6,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_green",
+      "top": -70.8,
+      "left": -111.6,
+      "attrs": { "color": "green" }
+    },
+
+    {
+      "type": "wokwi-resistor",
+      "id": "res1",
+      "top": -100,
+      "left": -180,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "res2",
+      "top": -50,
+      "left": -180,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "res3",
+      "top": 0,
+      "left": -180,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": -22.2,
+      "left": 172.8,
+      "attrs": { "color": "blue" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_blue",
+      "top": 54,
+      "left": 176.6,
+      "attrs": { "color": "blue" }
+    },
+
+    {
+      "type": "wokwi-potentiometer",
+      "id": "mic_sim",
+      "top": 130,
+      "left": -160,
+      "attrs": { "label": "Sound Sensor" }
+    }
   ],
   "connections": [
-    [ "esp:D2", "res1:1", "red", [ "v0" ] ],
-    [ "res1:2", "led_red:A", "red", [ "h0" ] ],
-    [ "esp:D4", "res2:1", "yellow", [ "v0" ] ],
-    [ "res2:2", "led_yellow:A", "yellow", [ "h0" ] ],
-    [ "esp:D5", "res3:1", "green", [ "v0" ] ],
-    [ "res3:2", "led_green:A", "green", [ "h0" ] ],
-    [ "led_red:C", "esp:GND.1", "black", [ "v0" ] ],
-    [ "led_yellow:C", "esp:GND.1", "black", [ "v0" ] ],
-    [ "led_green:C", "esp:GND.1", "black", [ "v0" ] ]
+    ["esp:27", "res1:2", "red", ["h-50", "v-80"]],
+    ["res1:1", "led_red:A", "red", ["v-30", "h40"]],
+    ["led_red:C", "esp:GND.1", "black", ["h-10", "v170"]],
+
+    ["esp:26", "res2:2", "gold", ["h-40", "v-45"]],
+    ["res2:1", "led_yellow:A", "gold", ["v-30", "h40"]],
+    ["led_yellow:C", "esp:GND.1", "black", ["h-10", "v120"]],
+
+    ["esp:25", "res3:2", "green", ["h-30", "v-10"]],
+    ["res3:1", "led_green:A", "green", ["v-30", "h40"]],
+    ["led_green:C", "esp:GND.1", "black", ["h-10", "v70"]],
+
+    ["esp:18", "tm1:CLK", "green", ["h0"]],
+    ["esp:19", "tm1:DIO", "green", ["h0"]],
+    ["tm1:VCC", "esp:3V3", "red", ["h30", "v200"]],
+    ["tm1:GND", "esp:GND.2", "black", ["h40", "v150"]],
+
+    ["esp:23", "btn1:1.l", "blue", ["h20", "v-50"]],
+    ["btn1:2.l", "esp:GND.2", "black", ["h-20", "v20"]],
+
+    ["esp:21", "led_blue:A", "blue", ["h40", "v20"]],
+    ["led_blue:C", "esp:GND.2", "black", ["v0"]],
+
+    ["mic_sim:GND", "esp:GND.1", "black", ["v-20", "h100"]],
+    ["mic_sim:VCC", "esp:VIN", "red", ["v20", "h120"]],
+    ["mic_sim:SIG", "esp:34", "green", ["v-40", "h130"]]
   ]
 }
