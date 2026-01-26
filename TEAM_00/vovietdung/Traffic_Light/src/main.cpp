@@ -34,7 +34,11 @@ String StringFormat(const char *fmt, ...)
 #define CLK 15
 #define DIO 2
 
+#define PIN_BUTTON_DISPLAY 23
+#define PIN_LED_BLUE      21
+
 TM1637Display display(CLK, DIO);
+int valueButtonDisplay = LOW;
 
 const char* LEDString(uint8_t pin)
 {
@@ -104,8 +108,10 @@ bool ProcessLEDTrafficWaitTime()
   }
 
   if (ledStatus) {
-    printf(" [%s] => seconds: %d \n",LEDString(LEDs[idxLED]), secondCount);
-    display.showNumberDec(secondCount);    
+    if (valueButtonDisplay == HIGH){
+       printf(" [%s] => seconds: %d \n",LEDString(LEDs[idxLED]), secondCount);
+       display.showNumberDec(secondCount);  
+    }  
     --secondCount;
   }
 
@@ -117,12 +123,39 @@ bool ProcessLEDTrafficWaitTime()
 
   return true;
 }
+
+void ProcessButtonPressed(){
+  static ulong ulTimer = 0;
+  
+  if (!IsReady(ulTimer, 100)) return;
+// Read the value of pin 8.
+  int newValue = digitalRead(PIN_BUTTON_DISPLAY);
+  if (newValue == valueButtonDisplay) return;
+  
+  if (newValue == HIGH){
+    digitalWrite(PIN_LED_BLUE, HIGH);
+    printf("*** DISPLAY ON ***\n");
+  }
+  else {
+    digitalWrite(PIN_LED_BLUE, LOW);
+    display.clear();
+    printf("*** DISPLAY OFF ***\n");
+  }
+
+  valueButtonDisplay = newValue;
+}
+
 void setup()
 {
   // put your setup code here, to run once:
   printf("*** PROJECT LED TRAFFIC ***\n");
   Init_LED_Traffic();
+  
   display.setBrightness(0x0a);
+  display.clear();
+
+  pinMode(PIN_BUTTON_DISPLAY, INPUT);
+  pinMode(PIN_LED_BLUE, OUTPUT);
 }
 
 
@@ -130,5 +163,6 @@ void loop()
 {
   // put your main code here, to run repeatedly:
   //ProcessLEDTraffic();
+  ProcessButtonPressed();
   ProcessLEDTrafficWaitTime();
 }
