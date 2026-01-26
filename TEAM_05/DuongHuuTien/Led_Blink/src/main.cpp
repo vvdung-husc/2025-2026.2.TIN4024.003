@@ -1,75 +1,57 @@
-// #include <Arduino.h>
-
-// uint8_t LED_RED = 17;
-
-// //Non-blocking
-// bool IsReady(unsigned long &ulTimer, uint32_t millisecond) {
-//   if (millis() - ulTimer < millisecond) return false;
-//   ulTimer = millis();
-//   return true;
-// }
-
-// void setup() {
-//   // put your setup code here, to run once:
-//   printf("Welcome IoT\n");
-//   pinMode(LED_RED, OUTPUT); // Set GPIO18 as an output pin
-// }
-
-// // unsigned long ulTimer = 0;
-// // bool bLEDStatus = false;
-// // void loop() {
-// //   if (IsReady(ulTimer,1000)){
-// //     bLEDStatus = !bLEDStatus;
-// //     digitalWrite(LED_RED, bLEDStatus ? HIGH : LOW); 
-// //   }
-// // }
-// void loop() {
-//   // put your main code here, to run repeatedly:
-//   printf("[LED_RED] => HIGH\n");
-//   digitalWrite(LED_RED, HIGH); // Turn LED ON
-//   delay(500); // Wait for 500 milliseconds
-//   printf("[LED_RED] => LOW\n");
-//   digitalWrite(LED_RED, LOW); // Turn LED OFF
-//   delay(500); // Wait for 500 milliseconds  
-// }
 #include <Arduino.h>
 
-// Định nghĩa chân GPIO
 const uint8_t LED_RED = 17;
 const uint8_t LED_YELLOW = 16;
 const uint8_t LED_GREEN = 4;
 
-// Khai báo các trạng thái đèn
 enum TrafficState { RED, GREEN, YELLOW };
 TrafficState currentState = RED;
 
-unsigned long ulTimer = 0;
+unsigned long ulTimer = 0;       // Hẹn giờ chuyển trạng thái (Đỏ -> Xanh...)
+unsigned long ulBlinkTimer = 0;  // Hẹn giờ nhấp nháy
+bool ledStatus = HIGH;           // Trạng thái bật/tắt hiện tại của đèn nhấp nháy
 
-// Hàm kiểm tra thời gian không gây nghẽn (của bạn)
-bool IsReady(unsigned long &ulTimer, uint32_t millisecond) {
-  if (millis() - ulTimer < millisecond) return false;
-  ulTimer = millis();
+// Hàm không gây nghẽn
+bool IsReady(unsigned long &timer, uint32_t interval) {
+  if (millis() - timer < interval) return false;
+  timer = millis();
   return true;
+}
+
+// Hàm hỗ trợ nhấp nháy đèn bất kỳ
+void BlinkLED(uint8_t pin, uint32_t speed) {
+  if (IsReady(ulBlinkTimer, speed)) {
+    ledStatus = !ledStatus;
+    digitalWrite(pin, ledStatus);
+  }
+}
+
+// Tắt tất cả các đèn trước khi chuyển trạng thái
+void AllOff() {
+  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_GREEN, LOW);
+  ledStatus = HIGH; // Reset trạng thái để đèn sau bắt đầu bằng mức HIGH
 }
 
 void setup() {
   Serial.begin(115200);
-  printf("Traffic Light System Started\n");
-
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_YELLOW, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
   
-  // Trạng thái ban đầu: Đỏ
-  digitalWrite(LED_RED, HIGH);
+  digitalWrite(LED_RED, HIGH); // Bắt đầu với đèn Đỏ
 }
 
 void loop() {
   switch (currentState) {
     case RED:
-      // Đèn Đỏ sáng trong 5000ms (5 giây)
+      // Nhấp nháy đèn Đỏ mỗi 500ms
+      BlinkLED(LED_RED, 500);
+
+      // Sau 5 giây thì chuyển sang Xanh
       if (IsReady(ulTimer, 5000)) {
-        digitalWrite(LED_RED, LOW);
+        AllOff();
         digitalWrite(LED_GREEN, HIGH);
         currentState = GREEN;
         printf("[SWITCH] => GREEN\n");
@@ -77,9 +59,11 @@ void loop() {
       break;
 
     case GREEN:
-      // Đèn Xanh sáng trong 4000ms (4 giây)
+      // Nhấp nháy đèn Xanh mỗi 300ms (nhanh hơn chẳng hạn)
+      BlinkLED(LED_GREEN, 300);
+
       if (IsReady(ulTimer, 4000)) {
-        digitalWrite(LED_GREEN, LOW);
+        AllOff();
         digitalWrite(LED_YELLOW, HIGH);
         currentState = YELLOW;
         printf("[SWITCH] => YELLOW\n");
@@ -87,9 +71,11 @@ void loop() {
       break;
 
     case YELLOW:
-      // Đèn Vàng sáng trong 2000ms (2 giây)
+      // Nhấp nháy đèn Vàng mỗi 200ms
+      BlinkLED(LED_YELLOW, 200);
+
       if (IsReady(ulTimer, 2000)) {
-        digitalWrite(LED_YELLOW, LOW);
+        AllOff();
         digitalWrite(LED_RED, HIGH);
         currentState = RED;
         printf("[SWITCH] => RED\n");
@@ -97,4 +83,3 @@ void loop() {
       break;
   }
 }
-
