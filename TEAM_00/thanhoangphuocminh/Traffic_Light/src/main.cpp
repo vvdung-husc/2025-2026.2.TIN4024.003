@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <TM1637Display.h>
 
-// --- CẤU HÌNH CHÂN (Khớp với Diagram của bạn) ---
 #define CLK 18 
 #define DIO 19
 
@@ -9,7 +8,7 @@
 #define YELLOW_PIN 26
 #define GREEN_PIN  25
 
-#define BUTTON_PIN 23  // Chân nút bấm (Theo sơ đồ nối vào GPIO 23)
+#define BUTTON_PIN 23  // Chân nút bấm 
 
 // Khởi tạo màn hình
 TM1637Display display(CLK, DIO);
@@ -25,7 +24,7 @@ void setup() {
   pinMode(YELLOW_PIN, OUTPUT);
   pinMode(GREEN_PIN, OUTPUT);
 
-  // Cấu hình nút bấm (INPUT_PULLUP để không cần điện trở ngoài)
+  // Cấu hình nút bấm 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   // Cấu hình màn hình
@@ -61,53 +60,45 @@ void smartDelay(int seconds) {
     // Hiển thị số giây còn lại
     display.showNumberDec(i);
 
-    // Trong vòng 1 giây (1000ms), chia nhỏ ra để kiểm tra nút bấm
+    // Trong vòng 1 giây (1000ms)
     unsigned long startMillis = millis();
     while (millis() - startMillis < 1000) {
-      checkButton(); // Kiểm tra nút liên tục
+      checkButton(); 
 
-      // Nếu hệ thống bị tạm dừng (isRunning = false)
       while (!isRunning) {
-        checkButton(); // Vẫn phải kiểm tra nút để xem có bấm "Chạy tiếp" không
-        // Có thể nhấp nháy màn hình hoặc giữ nguyên số để báo hiệu đang Pause
-        // Ở đây mình giữ nguyên số đang đếm dở
+        checkButton(); 
       }
     }
   }
 }
 
 void loop() {
-  // Nếu chưa bấm nút Bắt đầu thì không làm gì cả, tắt hết đèn
+  // --- KIỂM TRA TRẠNG THÁI HỆ THỐNG ---
   if (!isRunning) {
     checkButton();
-    // Tắt hết đèn khi chưa chạy
     digitalWrite(RED_PIN, LOW);
     digitalWrite(YELLOW_PIN, LOW);
     digitalWrite(GREEN_PIN, LOW);
-    return; // Quay lại đầu hàm loop
+    return; 
   }
 
-  // --- QUY TRÌNH: ĐỎ -> VÀNG -> XANH (Theo yêu cầu của bạn) ---
+  // --- BẮT ĐẦU CHU TRÌNH: ĐỎ -> XANH -> VÀNG ---
 
   // 1. ĐÈN ĐỎ (10 giây)
-  digitalWrite(RED_PIN, HIGH);
-  digitalWrite(YELLOW_PIN, LOW);
-  digitalWrite(GREEN_PIN, LOW);
-  smartDelay(10); // Chờ 10s (có thể pause)
+  digitalWrite(RED_PIN, HIGH);  
+  digitalWrite(YELLOW_PIN, LOW); 
+  digitalWrite(GREEN_PIN, LOW);  
+  smartDelay(10); 
 
-  // 2. ĐÈN VÀNG (3 giây)
-  // Yêu cầu: "Đèn đỏ xong chuyển sang vàng"
-  digitalWrite(RED_PIN, LOW);
-  digitalWrite(YELLOW_PIN, HIGH);
-  digitalWrite(GREEN_PIN, LOW);
-  smartDelay(3); 
-
-  // 3. ĐÈN XANH (7 giây)
-  // Yêu cầu: "Đèn vàng xong chuyển sang xanh"
-  digitalWrite(RED_PIN, LOW);
-  digitalWrite(YELLOW_PIN, LOW);
-  digitalWrite(GREEN_PIN, HIGH);
+  // 2. ĐÈN XANH (7 giây)
+  digitalWrite(RED_PIN, LOW);    
+  digitalWrite(YELLOW_PIN, LOW); 
+  digitalWrite(GREEN_PIN, HIGH); 
   smartDelay(7);
   
-  // Sau đó vòng lặp loop() sẽ quay lại đầu -> Bật Đèn Đỏ lại.
+  // 3. ĐÈN VÀNG (3 giây)
+  digitalWrite(RED_PIN, LOW);  
+  digitalWrite(YELLOW_PIN, HIGH);
+  digitalWrite(GREEN_PIN, LOW);  
+  smartDelay(3); 
 }

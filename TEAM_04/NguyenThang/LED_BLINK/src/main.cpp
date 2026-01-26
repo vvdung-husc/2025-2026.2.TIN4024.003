@@ -29,3 +29,33 @@ void loop() {
   digitalWrite(LED_PIN, LOW);
   delay(delayTime);
 }
+
+#define RED_PIN 23
+#define YELLOW_PIN 22
+#define GREEN_PIN 21
+
+void setup() {
+  pinMode(RED_PIN, OUTPUT);
+  pinMode(YELLOW_PIN, OUTPUT);
+  pinMode(GREEN_PIN, OUTPUT);
+}
+
+void loop() {
+  // ĐỎ - 5s
+  digitalWrite(RED_PIN, HIGH);
+  digitalWrite(YELLOW_PIN, LOW);
+  digitalWrite(GREEN_PIN, LOW);
+  delay(5000);
+
+  // XANH - 5s
+  digitalWrite(RED_PIN, LOW);
+  digitalWrite(YELLOW_PIN, LOW);
+  digitalWrite(GREEN_PIN, HIGH);
+  delay(5000);
+
+  // VÀNG - 2s
+  digitalWrite(RED_PIN, LOW);
+  digitalWrite(YELLOW_PIN, HIGH);
+  digitalWrite(GREEN_PIN, LOW);
+  delay(2000);
+}

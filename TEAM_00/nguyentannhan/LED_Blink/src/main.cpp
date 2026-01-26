@@ -4,53 +4,51 @@
 #define LED2 18
 #define LED3 19
 
-unsigned long ulTimer = 0;
+unsigned long ulTimer;
 uint8_t currentLED = 0;
-const uint32_t INTERVAL = 1000; // 1 giây
+
+const uint32_t ledInterval[] = {
+  10000, // LED1
+  5000,  // LED2
+  3000   // LED3
+};
 
 void setup() {
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
 
-  // Tắt tất cả LED ban đầu
-  digitalWrite(LED1, LOW);
+  digitalWrite(LED1, HIGH);   
   digitalWrite(LED2, LOW);
   digitalWrite(LED3, LOW);
 
-  printf("Start LED sequence (Non-blocking)\n");
+  ulTimer = millis();
+
+  printf("LED1 ON (10s)\n");
 }
 
 void loop() {
-  if (millis() - ulTimer >= INTERVAL) {
+  if (millis() - ulTimer >= ledInterval[currentLED]) {
     ulTimer = millis();
 
-    // Tắt tất cả LED
     digitalWrite(LED1, LOW);
     digitalWrite(LED2, LOW);
     digitalWrite(LED3, LOW);
 
-    // Bật LED theo thứ tự
+    currentLED++;
+    if (currentLED > 2) currentLED = 0;
+
     if (currentLED == 0) {
       digitalWrite(LED1, HIGH);
-      printf("LED1 ON\n");
+      printf("LED1 ON (10s)\n");
     }
     else if (currentLED == 1) {
       digitalWrite(LED2, HIGH);
-      printf("LED2 ON\n");
+      printf("LED2 ON (5s)\n");
     }
-    else if (currentLED == 2) {
+    else {
       digitalWrite(LED3, HIGH);
-      printf("LED3 ON\n");
+      printf("LED3 ON (3s)\n");
     }
-
-    // Chuyển sang LED tiếp theo
-    currentLED++;
-    if (currentLED > 2) currentLED = 0;
   }
-
-  // 👇 chỗ này vẫn có thể làm việc khác
-  // đọc nút nhấn
-  // đọc cảm biến
-  // xử lý WiFi
 }
