@@ -59,3 +59,14 @@
 	![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/esp32_board.png)
 		
 ---
+
+## Thêm thư viện vào dự án
+
+### Ví dụ thêm thư viện TM1637 
+
+![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/Library_import_1.png)
+
+![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/Library_import_2.png)
+
+
+---
