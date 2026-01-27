@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "author": "Dang Tan Phat",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": -10,
+      "left": -40,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -10,
+      "left": 140,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 20,
+      "left": 90,
+      "attrs": { "value": "220" }
+    }
+  ],
+  "connections": [
+    [ "esp:GPIO2", "r1:1", "green" ],
+    [ "r1:2", "led1:A", "green" ],
+    [ "led1:C", "esp:GND", "black" ]
+  ]
+}

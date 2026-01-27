@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -5,35 +6,16 @@
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 
-#define OLED_SDA 17
-#define OLED_SCL 16
+#define SDA_PIN 17
+#define SCL_PIN 16
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-int leds[] = {21, 22, 23}; // đỏ, xanh, vàng
-const char* names[] = {"RED", "BLUE", "YELLOW"};
+const int ledR = 21;
+const int ledY = 22;
+const int ledG = 23;
 
-void setup() {
-  Serial.begin(115200);
-
-  for (int i = 0; i < 3; i++) {
-    pinMode(leds[i], OUTPUT);
-  }
-
-  // Khởi động I2C cho OLED
-  Wire.begin(OLED_SDA, OLED_SCL);
-
-  // Khởi động OLED
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-    Serial.println(" OLED not found");
-    while (1);
-  }
-
-  display.clearDisplay();
-  display.display();
-}
-
-void showCountdown(int sec, const char* label) {
+void showOLED(const char* label, int sec) {
   display.clearDisplay();
   display.setTextColor(SSD1306_WHITE);
 
@@ -42,27 +24,47 @@ void showCountdown(int sec, const char* label) {
   display.println(label);
 
   display.setTextSize(4);
-  display.setCursor(50, 25);
+  display.setCursor(54, 24);
   display.println(sec);
 
   display.display();
 }
 
-void loop() {
-  for (int i = 0; i < 3; i++) {
-
-    // Tắt hết đèn
-    for (int j = 0; j < 3; j++) {
-      digitalWrite(leds[j], LOW);
-    }
-
-    // Bật 1 đèn
-    digitalWrite(leds[i], HIGH);
-
-    // Đếm ngược 3 → 1
-    for (int s = 3; s >= 1; s--) {
-      showCountdown(s, names[i]);
-      delay(1000);
-    }
+// Nhấp nháy đúng 1 giây
+void blink1Second(int pin, int interval_ms = 250) {
+  int times = 1000 / interval_ms;
+  for (int k = 0; k < times; k++) {
+    digitalWrite(pin, !digitalRead(pin));
+    delay(interval_ms);
   }
+  digitalWrite(pin, LOW); // kết thúc 1 giây thì tắt 
+}
+
+void runLamp(const char* label, int pin) {
+  // chạy 3 giây: mỗi giây vừa hiển thị số, vừa nhấp nháy
+  for (int s = 3; s >= 1; s--) {
+    showOLED(label, s);
+    blink1Second(pin, 250);
+  }
+  digitalWrite(pin, LOW);
+}
+
+void setup() {
+  pinMode(ledR, OUTPUT);
+  pinMode(ledY, OUTPUT);
+  pinMode(ledG, OUTPUT);
+
+  Wire.begin(SDA_PIN, SCL_PIN);
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    while (true) delay(10);
+  }
+  display.clearDisplay();
+  display.display();
+}
+
+void loop() {
+  runLamp("RED", ledR);
+  runLamp("YELLOW", ledY);
+  runLamp("GREEN", ledG);
 }
