@@ -61,7 +61,6 @@
 -------------------------------
 
 ## [***1. Dự án - LED BLINK***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/Project_LED_Blink.md)
--------------------------------
 
 ## [***2. Dự án - TRAFFIC LIGHT***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/Project_Traffic_Light.md)
 
