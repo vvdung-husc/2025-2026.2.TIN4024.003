@@ -67,7 +67,7 @@ bool ProcessLEDTraffic()
     else digitalWrite(LEDs[i], LOW);
   }
   
-  idxLED = (idxLED + 1) % 3;// Next LED => idxLED = 0,1,2,...
+  idxLED = (idxLED + 1) % 3;
   
   return true;
 }
@@ -75,7 +75,7 @@ bool ProcessLEDTraffic()
 bool ProcessLEDTrafficWaitTime()
 {
   static unsigned long ulTimer = 0;
-  static uint8_t idxLED = 0;//PIN_LED_GREEN
+  static uint8_t idxLED = 0;
   static uint8_t LEDs[3] = {PIN_LED_GREEN, PIN_LED_YELLOW, PIN_LED_RED};
   static uint32_t waitTime[3] = {7000, 3000, 5000};// Green, Yellow, Red
   static uint32_t count = waitTime[idxLED];
@@ -112,7 +112,7 @@ bool ProcessLEDTrafficWaitTime()
   count -= 500;
   if (count > 0) return true;
 
-  idxLED = (idxLED + 1) % 3;// Next LED => idxLED = 0,1,2,...
+  idxLED = (idxLED + 1) % 3;
   count = waitTime[idxLED];
 
   return true;
