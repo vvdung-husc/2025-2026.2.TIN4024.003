@@ -5,13 +5,15 @@
 #define LED_YELLOW 26
 #define LED_GREEN  25
 
-#define BTN_PIN   23
-#define LED_BLUE  21 
+#define BTN_PIN    23
+#define LED_BLUE   21
 #define LED_BLUE_ON   HIGH
 #define LED_BLUE_OFF  LOW
 
 #define CLK 18
 #define DIO 19
+
+#define LDR_PIN 13  // AO của LDR
 
 TM1637Display display(CLK, DIO);
 
@@ -20,10 +22,40 @@ TrafficState currentState = RED;
 
 int remainSeconds = 3;
 
+// Nút bật/tắt hiển thị + led xanh dương
 bool buttonMode = false;
-bool lastBtnState = HIGH;
+bool lastBtnRaw = HIGH;
+bool btnStable = HIGH;
+unsigned long lastDebounceMs = 0;
+const unsigned long DEBOUNCE_MS = 30;
 
+// Timing
 unsigned long lastSecondMillis = 0;
+
+// LDR / Day-Night
+bool isNight = false;
+unsigned long lastLdrReadMs = 0;
+const unsigned long LDR_READ_MS = 100;   // đọc LDR mỗi 100ms
+
+// Ngưỡng (0..4095)
+const int LDR_TH_NIGHT = 1600; // <= là tối
+const int LDR_TH_DAY   = 1900; // >= là sáng (hysteresis)
+
+// Nháy vàng ban đêm
+unsigned long lastBlinkMs = 0;
+const unsigned long BLINK_MS = 500;
+bool yellowOn = false;
+
+// Display tối ưu: chỉ vẽ khi số thay đổi
+int lastShown = -9999;
+
+void showNumberIfNeeded(int v) {
+  if (!buttonMode) return;
+  if (v != lastShown) {
+    display.showNumberDec(v, true);
+    lastShown = v;
+  }
+}
 
 void applyState(TrafficState s) {
   currentState = s;
@@ -36,13 +68,105 @@ void applyState(TrafficState s) {
   if (s == GREEN)  remainSeconds = 5;
   if (s == YELLOW) remainSeconds = 2;
 
-  if (buttonMode) display.showNumberDec(remainSeconds, true);
+  showNumberIfNeeded(remainSeconds);
 }
 
 void nextState() {
   if (currentState == RED) applyState(GREEN);
   else if (currentState == GREEN) applyState(YELLOW);
   else applyState(RED);
+}
+
+//  dùng now truyền vào để tránh underflow khi chuyển tối->sáng
+void enterNightMode(unsigned long now) {
+  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_GREEN, LOW);
+  digitalWrite(LED_YELLOW, LOW);
+
+  yellowOn = false;
+  lastBlinkMs = now;
+
+  lastShown = -9999;
+  showNumberIfNeeded(0);
+}
+
+//  dùng now truyền vào để tránh underflow khi chuyển tối->sáng
+void enterDayMode(unsigned long now) {
+  lastShown = -9999;
+
+  applyState(RED);
+  lastSecondMillis = now;  // QUAN TRỌNG
+}
+
+void handleButton(unsigned long now) {
+  bool raw = digitalRead(BTN_PIN);
+
+  // debounce không blocking
+  if (raw != lastBtnRaw) {
+    lastDebounceMs = now;
+    lastBtnRaw = raw;
+  }
+
+  if (now - lastDebounceMs >= DEBOUNCE_MS) {
+    if (btnStable != raw) {
+      btnStable = raw;
+
+      // bắt cạnh xuống
+      if (btnStable == LOW) {
+        buttonMode = !buttonMode;
+
+        if (buttonMode) {
+          digitalWrite(LED_BLUE, LED_BLUE_ON);
+          lastShown = -9999;
+          if (isNight) showNumberIfNeeded(0);
+          else showNumberIfNeeded(remainSeconds);
+        } else {
+          digitalWrite(LED_BLUE, LED_BLUE_OFF);
+          display.clear();
+          lastShown = -9999;
+        }
+      }
+    }
+  }
+}
+
+void handleLdr(unsigned long now) {
+  if (now - lastLdrReadMs < LDR_READ_MS) return;
+  lastLdrReadMs = now;
+
+  int ldr = analogRead(LDR_PIN);
+
+  // hysteresis chống nhấp nháy chế độ
+  bool newNight = isNight;
+  if (!isNight && ldr <= LDR_TH_NIGHT) newNight = true;
+  else if (isNight && ldr >= LDR_TH_DAY) newNight = false;
+
+  if (newNight != isNight) {
+    isNight = newNight;
+    if (isNight) enterNightMode(now);
+    else enterDayMode(now);
+  }
+}
+
+void handleTrafficDay(unsigned long now) {
+  if (now - lastSecondMillis >= 1000) {
+    lastSecondMillis += 1000;
+
+    remainSeconds--;
+    if (remainSeconds <= 0) {
+      nextState();
+    } else {
+      showNumberIfNeeded(remainSeconds);
+    }
+  }
+}
+
+void handleNightBlink(unsigned long now) {
+  if (now - lastBlinkMs >= BLINK_MS) {
+    lastBlinkMs += BLINK_MS;
+    yellowOn = !yellowOn;
+    digitalWrite(LED_YELLOW, yellowOn ? HIGH : LOW);
+  }
 }
 
 void setup() {
@@ -65,31 +189,12 @@ void setup() {
 void loop() {
   unsigned long now = millis();
 
-  //NÚT TOGGLE
-  bool btnState = digitalRead(BTN_PIN);
-  if (lastBtnState == HIGH && btnState == LOW) {
-    buttonMode = !buttonMode;
+  handleButton(now);
+  handleLdr(now);
 
-    if (buttonMode) {
-      digitalWrite(LED_BLUE, LED_BLUE_ON);
-      display.showNumberDec(remainSeconds, true);
-    } else {
-      digitalWrite(LED_BLUE, LED_BLUE_OFF);
-      display.clear();
-    }
-    delay(30);
-  }
-  lastBtnState = btnState;
-
-  //TICK 1 GIÂY: đếm & đổi đèn
-  if (now - lastSecondMillis >= 1000) {
-    lastSecondMillis += 1000;
-
-    remainSeconds--;
-    if (remainSeconds <= 0) {
-      nextState(); // tự set lại remainSeconds theo pha mới
-    } else {
-      if (buttonMode) display.showNumberDec(remainSeconds, true);
-    }
+  if (isNight) {
+    handleNightBlink(now);
+  } else {
+    handleTrafficDay(now);
   }
 }
