@@ -15,7 +15,7 @@ TM1637Display display(CLK, DIO);
 
 // Cấu hình thời gian cho từng loại đèn
 const int RED_TIME = 5;
-const int YELLOW_TIME = 3;
+const int YELLOW_TIME = 5;
 const int GREEN_TIME = 5;
 
 // Biến quản lý
