@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "author": "Nguyễn AnPhu",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -106.8,
+      "left": -127.8,
+      "rotate": 90,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 42.35,
+      "left": -86.4,
+      "attrs": { "value": "1000" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led2",
+      "top": 73.2,
+      "left": -82.6,
+      "rotate": 90,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led3",
+      "top": -20.4,
+      "left": -108.6,
+      "rotate": 90,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": 128.75,
+      "left": -57.6,
+      "attrs": { "value": "1000" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": -34.45,
+      "left": -86.4,
+      "attrs": { "value": "1000" }
+    },
+    {
+      "type": "wokwi-tm1637-7segment",
+      "id": "sevseg1",
+      "top": -201.64,
+      "left": -88.97,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 111.8,
+      "left": 172.8,
+      "attrs": { "color": "blue", "xray": "1" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "esp:GND.1", "led1:C", "black", [ "h-158.21", "v-240.4" ] ],
+    [ "led1:A", "r3:1", "red", [ "v28.8", "h38.4" ] ],
+    [ "led3:A", "r1:1", "orange", [ "v0" ] ],
+    [ "led2:A", "r2:1", "green", [ "v0" ] ],
+    [ "r1:2", "esp:23", "orange", [ "v0" ] ],
+    [ "r2:2", "esp:5", "green", [ "v0" ] ],
+    [ "r3:2", "esp:27", "red", [ "v0" ] ],
+    [ "esp:GND.1", "led3:C", "black", [ "h-139.01", "v-154" ] ],
+    [ "esp:GND.1", "led2:C", "black", [ "h-110.21", "v-60.4" ] ],
+    [ "sevseg1:GND", "esp:GND.2", "black", [ "h0" ] ],
+    [ "esp:5V", "sevseg1:VCC", "red", [ "v28.8", "h302.59", "v-384" ] ],
+    [ "sevseg1:CLK", "esp:22", "green", [ "h240", "v220.8" ] ],
+    [ "sevseg1:DIO", "esp:21", "green", [ "h259.2", "v240" ] ],
+    [ "btn1:1.l", "esp:GND.2", "black", [ "h-28.8", "v-96" ] ],
+    [ "btn1:2.l", "esp:4", "green", [ "h0" ] ]
+  ],
+  "dependencies": {}
+}
