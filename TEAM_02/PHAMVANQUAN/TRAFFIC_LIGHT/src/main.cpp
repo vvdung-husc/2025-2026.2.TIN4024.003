@@ -2,11 +2,10 @@
 #include <TM1637Display.h>
 
 /* ===================== TIỆN ÍCH ===================== */
-// Hàm kiểm tra thời gian non-blocking
-bool IsReady(unsigned long &ulTimer, uint32_t millisecond)
+bool IsReady(unsigned long &timer, uint32_t ms)
 {
-  if (millis() - ulTimer < millisecond) return false;
-  ulTimer = millis();
+  if (millis() - timer < ms) return false;
+  timer = millis();
   return true;
 }
 
@@ -16,11 +15,14 @@ bool IsReady(unsigned long &ulTimer, uint32_t millisecond)
 #define PIN_LED_YELLOW  33
 #define PIN_LED_GREEN   32
 
-// LED trạng thái PAUSE
+// LED trạng thái
 #define PIN_LED_BLUE    21
 
 // Nút nhấn
 #define PIN_BUTTON      23
+
+// LDR
+#define PIN_LDR         13
 
 // TM1637
 #define CLK 15
@@ -28,23 +30,15 @@ bool IsReady(unsigned long &ulTimer, uint32_t millisecond)
 
 TM1637Display display(CLK, DIO);
 
+/* ===================== NGƯỠNG ÁNH SÁNG ===================== */
+// > 2200 ~ rất tối (~ < 80 lux)
+#define NIGHT_LDR_THRESHOLD 2200
+
 /* ===================== BIẾN HỆ THỐNG ===================== */
 bool isPause = false;
 
-/* ===================== TIỆN ÍCH HIỂN THỊ ===================== */
-const char* LEDString(uint8_t pin)
-{
-  switch (pin)
-  {
-    case PIN_LED_RED:     return "RED";
-    case PIN_LED_YELLOW:  return "YELLOW";
-    case PIN_LED_GREEN:   return "GREEN";
-    default:              return "UNKNOWN";
-  }
-}
-
-/* ===================== KHỞI TẠO ===================== */
-void Init_LED_Traffic()
+/* ===================== KHỞI TẠO LED ===================== */
+void InitLED()
 {
   pinMode(PIN_LED_RED, OUTPUT);
   pinMode(PIN_LED_YELLOW, OUTPUT);
@@ -68,87 +62,95 @@ void ProcessButton()
   if (lastState == HIGH && currentState == LOW)
   {
     isPause = !isPause;
-    printf("SYSTEM %s\n", isPause ? "PAUSE" : "RUN");
-    digitalWrite(PIN_LED_BLUE, isPause ? HIGH : LOW);
+    Serial.println(isPause ? "SYSTEM PAUSE" : "SYSTEM RUN");
   }
 
   lastState = currentState;
 }
 
-/* ===================== ĐÈN GIAO THÔNG + ĐẾM NGƯỢC ===================== */
-bool ProcessLEDTrafficWaitTime()
+/* ===================== ĐỌC LDR ===================== */
+uint16_t ReadLDR()
 {
-  static unsigned long ulTimer = 0;
-  static uint8_t idxLED = 0;
+  static unsigned long ldrTimer = 0;
+  static uint16_t value = 0;
 
-  static uint8_t LEDs[3] = {
+  if (IsReady(ldrTimer, 500))
+  {
+    value = analogRead(PIN_LDR);
+    Serial.print("LDR Value: ");
+    Serial.println(value);
+  }
+
+  return value;
+}
+
+/* ===================== NIGHT MODE ===================== */
+// Trời rất tối → đèn đỏ nhấp nháy
+void NightModeBlinkRed()
+{
+  static unsigned long blinkTimer = 0;
+  static bool state = false;
+
+  if (!IsReady(blinkTimer, 500)) return;
+
+  state = !state;
+
+  digitalWrite(PIN_LED_RED, state);
+  digitalWrite(PIN_LED_YELLOW, LOW);
+  digitalWrite(PIN_LED_GREEN, LOW);
+
+  display.showNumberDec(0, true); // 0000
+}
+
+/* ===================== ĐÈN GIAO THÔNG BÌNH THƯỜNG ===================== */
+void TrafficLightNormal()
+{
+  static unsigned long timer = 0;
+  static uint8_t step = 0;
+  static int countDown = 0;
+
+  const uint8_t LEDs[3] = {
     PIN_LED_GREEN,
     PIN_LED_YELLOW,
     PIN_LED_RED
   };
 
-  static uint32_t waitTime[3] = {
-    7000, // GREEN
-    3000, // YELLOW
-    5000  // RED
+  const uint8_t times[3] = {
+    7, // xanh 7s
+    3, // vàng 3s
+    5  // đỏ 5s
   };
 
-  static uint32_t count = waitTime[0];
-  static bool ledStatus = false;
-  static int secondCount = 0;
+  if (!IsReady(timer, 1000)) return;
 
-  if (!IsReady(ulTimer, 500)) return false;
-
-  // Bắt đầu chu kỳ LED mới
-  if (count == waitTime[idxLED])
+  if (countDown == 0)
   {
-    secondCount = (count / 1000) - 1;
-    ledStatus = true;
+    // Tắt tất cả LED
+    digitalWrite(PIN_LED_RED, LOW);
+    digitalWrite(PIN_LED_YELLOW, LOW);
+    digitalWrite(PIN_LED_GREEN, LOW);
 
-    for (int i = 0; i < 3; i++)
-    {
-      digitalWrite(LEDs[i], (i == idxLED) ? HIGH : LOW);
-    }
-
-    printf("LED [%s] ON (%d seconds)\n",
-           LEDString(LEDs[idxLED]), count / 1000);
-  }
-  else
-  {
-    ledStatus = !ledStatus;
-    digitalWrite(LEDs[idxLED], ledStatus ? HIGH : LOW);
+    // Bật LED hiện tại
+    digitalWrite(LEDs[step], HIGH);
+    countDown = times[step];
+    step = (step + 1) % 3;
   }
 
-  // Hiển thị đếm ngược
-  if (ledStatus)
-  {
-    display.showNumberDec(secondCount, true);
-    printf("[%s] remaining: %d\n",
-           LEDString(LEDs[idxLED]), secondCount);
-    secondCount--;
-  }
-
-  count -= 500;
-  if (count > 0) return true;
-
-  // Chuyển LED tiếp theo
-  idxLED = (idxLED + 1) % 3;
-  count = waitTime[idxLED];
-
-  return true;
+  display.showNumberDec(countDown, true);
+  countDown--;
 }
 
 /* ===================== SETUP ===================== */
 void setup()
 {
   Serial.begin(115200);
-  printf("\n*** LED TRAFFIC SYSTEM ***\n");
+  Serial.println("\n=== TRAFFIC LIGHT + LDR SYSTEM ===");
 
-  Init_LED_Traffic();
+  InitLED();
 
   pinMode(PIN_BUTTON, INPUT_PULLUP);
   pinMode(PIN_LED_BLUE, OUTPUT);
-  digitalWrite(PIN_LED_BLUE, LOW);
+  pinMode(PIN_LDR, INPUT);
 
   display.setBrightness(0x0a);
   display.clear();
@@ -159,8 +161,21 @@ void loop()
 {
   ProcessButton();
 
+  uint16_t ldrValue = ReadLDR();
+
+  // 🌙 Trời rất tối → NIGHT MODE
+  if (ldrValue > NIGHT_LDR_THRESHOLD)
+  {
+    digitalWrite(PIN_LED_BLUE, HIGH);
+    NightModeBlinkRed();
+    return;
+  }
+
+  // ☀️ Trời sáng → đèn giao thông bình thường
+  digitalWrite(PIN_LED_BLUE, isPause ? HIGH : LOW);
+
   if (!isPause)
   {
-    ProcessLEDTrafficWaitTime();
+    TrafficLightNormal();
   }
 }
