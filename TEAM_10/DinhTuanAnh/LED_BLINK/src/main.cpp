@@ -63,16 +63,15 @@
 
 
 
-// ====== CHÂN KẾT NỐI ======
+#include <Arduino.h>
+
 #define LED_RED     18
 #define LED_YELLOW  5
 #define LED_GREEN   17
 #define LDR_PIN     34
 
-// ====== NGƯỠNG PHÂN BIỆT SÁNG / TỐI ======
-int lightThreshold = 2000;  // THẤP = sáng, CAO = tối
+int lightThreshold = 2000;   // ngưỡng sáng/tối
 
-// ====== KHAI BÁO HÀM ======
 void blinkLED(int ledPin, const char* name);
 void nightMode();
 
@@ -80,36 +79,38 @@ void setup() {
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_YELLOW, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
-
   Serial.begin(115200);
 }
 
 void loop() {
-  int lightValue = analogRead(LDR_PIN);
-  Serial.print("Light Value: ");
+  int rawValue = analogRead(LDR_PIN);
+
+  // 🔥 ĐẢO GIÁ TRỊ (để thấp = sáng, cao = tối)
+  int lightValue = 4095 - rawValue;
+
+  Serial.print("Light Value (Adjusted): ");
   Serial.println(lightValue);
 
-  // ☀️ TRỜI SÁNG (giá trị thấp)
+  // ☀️ GIÁ TRỊ THẤP = SÁNG
   if (lightValue < lightThreshold) {
-    Serial.println("=== DAY MODE (Traffic Running) ===");
-
+    Serial.println("=== DAY MODE ===");
     blinkLED(LED_GREEN, "GREEN");
     blinkLED(LED_YELLOW, "YELLOW");
     blinkLED(LED_RED, "RED");
   }
-  // 🌙 TRỜI TỐI (giá trị cao)
+  // 🌙 GIÁ TRỊ CAO = TỐI
   else {
     nightMode();
   }
 }
 
-// ================= NHẤP NHÁY 1 ĐÈN TRONG 5 GIÂY =================
+// ====== NHẤP NHÁY 5 GIÂY ======
 void blinkLED(int ledPin, const char* name) {
   Serial.print("Blinking LED: ");
   Serial.println(name);
 
-  unsigned long startTime = millis();
-  while (millis() - startTime < 5000) {  // 5 giây
+  unsigned long start = millis();
+  while (millis() - start < 5000) {
     digitalWrite(ledPin, HIGH);
     delay(300);
     digitalWrite(ledPin, LOW);
@@ -117,9 +118,9 @@ void blinkLED(int ledPin, const char* name) {
   }
 }
 
-// ================= BAN ĐÊM =================
+// ====== CHẾ ĐỘ TỐI ======
 void nightMode() {
-  Serial.println("=== NIGHT MODE (Yellow Warning) ===");
+  Serial.println("=== NIGHT MODE (Yellow only) ===");
 
   digitalWrite(LED_GREEN, LOW);
   digitalWrite(LED_RED, LOW);
@@ -129,3 +130,4 @@ void nightMode() {
   digitalWrite(LED_YELLOW, LOW);
   delay(500);
 }
+
