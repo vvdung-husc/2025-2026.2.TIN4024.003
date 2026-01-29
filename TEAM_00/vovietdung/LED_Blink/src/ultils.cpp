@@ -49,8 +49,7 @@ void Trafic_Blink::blink(unsigned long interval, bool isDark)
     static int secondCount = 0;
     static bool prevDark = false;
 
-    if (!IsReady(_previousMillis, 500))
-        return;
+    if (!IsReady(_previousMillis, interval)) return;
 
     if (isDark)
     {
