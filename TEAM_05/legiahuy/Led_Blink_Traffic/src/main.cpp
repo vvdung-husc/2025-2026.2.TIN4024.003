@@ -1,134 +1,148 @@
 #include <Arduino.h>
 #include <TM1637Display.h>
 
-// Hàm kiểm tra thời gian đã trôi qua - Non-Blocking
-bool IsReady(unsigned long &ulTimer, uint32_t millisecond)
-{
-  if (millis() - ulTimer < millisecond) return false;
-  ulTimer = millis();
-  return true;
-}
-// Định dạng chuỗi %s,%d,...
-String StringFormat(const char *fmt, ...)
-{
-  va_list vaArgs;
-  va_start(vaArgs, fmt);
-  va_list vaArgsCopy;
-  va_copy(vaArgsCopy, vaArgs);
-  const int iLen = vsnprintf(NULL, 0, fmt, vaArgsCopy);
-  va_end(vaArgsCopy);
-  int iSize = iLen + 1;
-  char *buff = (char *)malloc(iSize);
-  vsnprintf(buff, iSize, fmt, vaArgs);
-  va_end(vaArgs);
-  String s = buff;
-  free(buff);
-  return String(s);
-}
-
+// ----------- LED PINS -----------
 #define PIN_LED_RED     25
 #define PIN_LED_YELLOW  33
 #define PIN_LED_GREEN   32
+#define PIN_LED_BLUE    21   // LED báo hệ thống chạy
 
-// Module connection pins (Digital Pins)
-#define CLK 15
-#define DIO 2
+// ----------- BUTTON -------------
+#define PIN_BUTTON 23   // nối GND, INPUT_PULLUP
 
+// ----------- TIME (ms) ----------
+#define TIME_RED     10000
+#define TIME_YELLOW  3000
+#define TIME_GREEN   7000
+
+#define BLINK_TIME   500
+#define COUNTDOWN_INTERVAL 1000
+
+// ----------- TM1637 -------------
+#define CLK 18
+#define DIO 19
 TM1637Display display(CLK, DIO);
 
-const char* LEDString(uint8_t pin)
-{
-  switch (pin)
-  {
-    case PIN_LED_RED:     return "RED";
-    case PIN_LED_YELLOW:  return "YELLOW";
-    case PIN_LED_GREEN:   return "GREEN";
-    default:              return "UNKNOWN";
-  }  
+// ----------- STATE --------------
+enum TrafficState {
+  RED,
+  GREEN,
+  YELLOW
+};
+
+TrafficState currentState = RED;
+
+// ----------- TIMER --------------
+unsigned long stateTimer = 0;
+unsigned long blinkTimer = 0;
+unsigned long countdownTimer = 0;
+
+// ----------- FLAG ---------------
+bool ledStatus = false;
+bool systemStarted = false;
+bool lastButtonState = HIGH;
+
+int remainingSeconds = 0;
+
+void allOff() {
+  digitalWrite(PIN_LED_RED, LOW);
+  digitalWrite(PIN_LED_YELLOW, LOW);
+  digitalWrite(PIN_LED_GREEN, LOW);
 }
 
-void Init_LED_Traffic()
-{
+
+void setState(TrafficState newState, int timeMs) {
+  currentState = newState;
+  stateTimer = millis();
+  countdownTimer = millis();
+  remainingSeconds = timeMs / 1000;
+  if(systemStarted)
+    display.showNumberDec(remainingSeconds, true);
+}
+
+void setup() {
+  Serial.begin(115200);
+
   pinMode(PIN_LED_RED, OUTPUT);
-  pinMode(PIN_LED_YELLOW, OUTPUT);  
+  pinMode(PIN_LED_YELLOW, OUTPUT);
   pinMode(PIN_LED_GREEN, OUTPUT);
+  pinMode(PIN_LED_BLUE, OUTPUT);
+
+  pinMode(PIN_BUTTON, INPUT_PULLUP);
+
+  display.setBrightness(0x0f);
+  display.clear();
+
+  allOff();
+  digitalWrite(PIN_LED_BLUE, LOW);
 }
 
-bool ProcessLEDTraffic()
-{
-  static unsigned long ulTimer = 0;
-  static uint8_t idxLED = 0;
-  static uint8_t LEDs[3] = {PIN_LED_GREEN, PIN_LED_YELLOW, PIN_LED_RED};
-  if (!IsReady(ulTimer, 1000)) return false;
+void loop() {
+  unsigned long now = millis();
 
-  for (size_t i = 0; i < 3; i++)
-  {
-    if (i == idxLED) digitalWrite(LEDs[i], HIGH);
-    else digitalWrite(LEDs[i], LOW);
+  bool buttonState = digitalRead(PIN_BUTTON);
+  if (lastButtonState == HIGH && buttonState == LOW) {
+    systemStarted = !systemStarted;
+
+    if (systemStarted) {
+      Serial.println("SYSTEM STARTED");
+      digitalWrite(PIN_LED_BLUE, HIGH);
+      setState(RED, TIME_RED);
+    } else {
+      Serial.println("SYSTEM STOPPED");
+      allOff();
+      digitalWrite(PIN_LED_BLUE, LOW);
+      display.clear();
+    }
+    delay(50); 
   }
-  
-  idxLED = (idxLED + 1) % 3;
-  
-  return true;
-}
+  lastButtonState = buttonState;
 
-bool ProcessLEDTrafficWaitTime()
-{
-  static unsigned long ulTimer = 0;
-  static uint8_t idxLED = 0;
-  static uint8_t LEDs[3] = {PIN_LED_GREEN, PIN_LED_YELLOW, PIN_LED_RED};
-  static uint32_t waitTime[3] = {7000, 3000, 5000};// Green, Yellow, Red
-  static uint32_t count = waitTime[idxLED];
-  static bool ledStatus = false;
-  static int secondCount = 0;
 
-  if (!IsReady(ulTimer, 500)) return false;
-
-  if (count == waitTime[idxLED])
-  {
-    secondCount = (count / 1000) - 1;
-
-    ledStatus = true;
-    for (size_t i = 0; i < 3; i++)
-    {
-      if (i == idxLED){
-        digitalWrite(LEDs[i], HIGH);
-        printf("LED [%-6s] ON => %d Seconds\n", LEDString(LEDs[i]), count/1000);
-      }
-      else digitalWrite(LEDs[i], LOW);
-    }    
-  }
-  else {
+  if (now - blinkTimer >= BLINK_TIME) {
+    blinkTimer = now;
     ledStatus = !ledStatus;
-    digitalWrite(LEDs[idxLED], ledStatus ? HIGH : LOW);
+
+    allOff();
+    if(systemStarted)
+      digitalWrite(PIN_LED_BLUE, ledStatus);
+
+    if (currentState == RED)
+      digitalWrite(PIN_LED_RED, ledStatus);
+    else if (currentState == GREEN)
+      digitalWrite(PIN_LED_GREEN, ledStatus);
+    else if (currentState == YELLOW)
+      digitalWrite(PIN_LED_YELLOW, ledStatus);
   }
 
-  if (ledStatus) {
-    printf(" [%s] => seconds: %d \n",LEDString(LEDs[idxLED]), secondCount);
-    display.showNumberDec(secondCount);    
-    --secondCount;
+  if (now - countdownTimer >= COUNTDOWN_INTERVAL && systemStarted) {
+    countdownTimer = now;
+
+    if (remainingSeconds > 0) {
+      remainingSeconds--;
+      display.showNumberDec(remainingSeconds, true);
+    }
   }
 
-  count -= 500;
-  if (count > 0) return true;
 
-  idxLED = (idxLED + 1) % 3;
-  count = waitTime[idxLED];
+  switch (currentState) {
 
-  return true;
-}
-void setup()
-{
-  // put your setup code here, to run once:
-  printf("*** PROJECT LED TRAFFIC ***\n");
-  Init_LED_Traffic();
-  display.setBrightness(0x0a);
-}
+    case RED:
+      if (now - stateTimer >= TIME_RED) {
+        setState(GREEN, TIME_GREEN);
+      }
+      break;
 
+    case GREEN:
+      if (now - stateTimer >= TIME_GREEN) {
+        setState(YELLOW, TIME_YELLOW);
+      }
+      break;
 
-void loop()
-{
-  // put your main code here, to run repeatedly:
-  //ProcessLEDTraffic();
-  ProcessLEDTrafficWaitTime();
+    case YELLOW:
+      if (now - stateTimer >= TIME_YELLOW) {
+        setState(RED, TIME_RED);
+      }
+      break;
+  }
 }
