@@ -17,17 +17,31 @@ const int RES = 8;       // Độ phân giải 8-bit (chỉnh từ 0-255)
 #define CLK 18
 #define DIO 19
 TM1637Display display(CLK, DIO);
- 
+
 
 void setup_Button(){
   pinMode(button, INPUT_PULLUP);
 } 
 
 void night(){
-    ledcSetup(3, 2500, RES);
-    ledcWrite(0, 0);
-    ledcWrite(1, 0);
-    ledcWrite(2, 255);
+  display.clear();
+  display.setBrightness(0, false); 
+  ledcWrite(0, 0);
+
+  ledcWrite(1, 0);
+  for (int i = 0; i < 60; i++) {
+      ledcWrite(2, 100);
+      delay(5);
+      Brightness = analogRead(AO);
+      if (Brightness <= 2800) return; 
+    }
+
+    for (int i = 0; i < 60; i++) {
+      ledcWrite(2, 0);
+      delay(5);
+      Brightness = analogRead(AO);
+      if (Brightness <= 2800) return;
+    }
 }
 
 void led_traffict(int light1, int light2, int light3){
@@ -90,7 +104,9 @@ void count(int light1, int light2, int light3){
 
       if(Brightness > 2800){
         digitalWrite(blue, LOW);
-        display.setBrightness(7, false); 
+        s = 4;
+        night();
+        // display.setBrightness(7, false); 
       } 
       else {
         if (checkBtn == true)
