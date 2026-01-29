@@ -13,7 +13,7 @@
 #define CLK 18
 #define DIO 19
 
-#define LDR_PIN 13  // AO của LDR
+#define LDR_PIN 13  // AO của LDR (ADC)
 
 TM1637Display display(CLK, DIO);
 
@@ -38,8 +38,9 @@ unsigned long lastLdrReadMs = 0;
 const unsigned long LDR_READ_MS = 100;   // đọc LDR mỗi 100ms
 
 // Ngưỡng (0..4095)
-const int LDR_TH_NIGHT = 1600; // <= là tối
-const int LDR_TH_DAY   = 1900; // >= là sáng (hysteresis)
+// Với Wokwi/module của bạn: GIÁ TRỊ THƯỜNG "CAO khi tối" => vào đêm khi >= NIGHT, ra ngày khi <= DAY
+const int LDR_TH_NIGHT = 2500; // >= là tối
+const int LDR_TH_DAY   = 2200; // <= là sáng (hysteresis)  (phải nhỏ hơn NIGHT)
 
 // Nháy vàng ban đêm
 unsigned long lastBlinkMs = 0;
@@ -77,7 +78,6 @@ void nextState() {
   else applyState(RED);
 }
 
-//  dùng now truyền vào để tránh underflow khi chuyển tối->sáng
 void enterNightMode(unsigned long now) {
   digitalWrite(LED_RED, LOW);
   digitalWrite(LED_GREEN, LOW);
@@ -87,15 +87,13 @@ void enterNightMode(unsigned long now) {
   lastBlinkMs = now;
 
   lastShown = -9999;
-  showNumberIfNeeded(0);
+  showNumberIfNeeded(0);   // nếu đang bật display thì hiện 0
 }
 
-//  dùng now truyền vào để tránh underflow khi chuyển tối->sáng
 void enterDayMode(unsigned long now) {
   lastShown = -9999;
-
   applyState(RED);
-  lastSecondMillis = now;  // QUAN TRỌNG
+  lastSecondMillis = now;  // reset mốc giây để không bị nhảy số
 }
 
 void handleButton(unsigned long now) {
@@ -111,7 +109,7 @@ void handleButton(unsigned long now) {
     if (btnStable != raw) {
       btnStable = raw;
 
-      // bắt cạnh xuống
+      // bắt cạnh xuống (nhấn)
       if (btnStable == LOW) {
         buttonMode = !buttonMode;
 
@@ -136,10 +134,10 @@ void handleLdr(unsigned long now) {
 
   int ldr = analogRead(LDR_PIN);
 
-  // hysteresis chống nhấp nháy chế độ
+  // hysteresis chống nhấp nháy chế độ (LOGIC ĐÃ ĐẢO: tối -> giá trị cao)
   bool newNight = isNight;
-  if (!isNight && ldr <= LDR_TH_NIGHT) newNight = true;
-  else if (isNight && ldr >= LDR_TH_DAY) newNight = false;
+  if (!isNight && ldr >= LDR_TH_NIGHT) newNight = true;      // vào đêm khi ldr cao
+  else if (isNight && ldr <= LDR_TH_DAY) newNight = false;   // ra ngày khi ldr thấp
 
   if (newNight != isNight) {
     isNight = newNight;
