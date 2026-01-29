@@ -1,14 +1,24 @@
 #include <Arduino.h>
-
-#define LED_PIN 2   // LED onboard ESP32
+#define LED_RED     26
+#define LED_YELLOW  25
+#define LED_GREEN   33
 
 void setup() {
-  pinMode(LED_PIN, OUTPUT);
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_YELLOW, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
 }
 
 void loop() {
-  digitalWrite(LED_PIN, HIGH);
-  delay(1000);
-  digitalWrite(LED_PIN, LOW);
-  delay(1000);
+  digitalWrite(LED_RED, HIGH);
+  delay(5000);
+  digitalWrite(LED_RED, LOW);
+
+  digitalWrite(LED_YELLOW, HIGH);
+  delay(3000);
+  digitalWrite(LED_YELLOW, LOW);
+
+  digitalWrite(LED_GREEN, HIGH);
+  delay(7000);
+  digitalWrite(LED_GREEN, LOW);
 }

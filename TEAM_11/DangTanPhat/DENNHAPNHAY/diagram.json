@@ -3,31 +3,28 @@
   "author": "Dang Tan Phat",
   "editor": "wokwi",
   "parts": [
-    {
-      "type": "wokwi-esp32-devkit-v1",
-      "id": "esp",
-      "top": -10,
-      "left": -40,
-      "attrs": {}
-    },
-    {
-      "type": "wokwi-led",
-      "id": "led1",
-      "top": -10,
-      "left": 140,
-      "attrs": { "color": "red" }
-    },
-    {
-      "type": "wokwi-resistor",
-      "id": "r1",
-      "top": 20,
-      "left": 90,
-      "attrs": { "value": "220" }
-    }
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 180, "left": 300 },
+
+    { "type": "wokwi-led", "id": "red", "top": 40, "left": 120, "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "yellow", "top": 90, "left": 120, "attrs": { "color": "yellow" } },
+    { "type": "wokwi-led", "id": "green", "top": 140, "left": 120, "attrs": { "color": "green" } },
+
+    { "type": "wokwi-resistor", "id": "r1", "top": 40, "left": 200, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "r2", "top": 90, "left": 200, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "r3", "top": 140, "left": 200, "attrs": { "value": "220" } }
   ],
+
   "connections": [
-    [ "esp:GPIO2", "r1:1", "green" ],
-    [ "r1:2", "led1:A", "green" ],
-    [ "led1:C", "esp:GND", "black" ]
+    ["esp:26", "r1:1", "red"],
+    ["r1:2", "red:A", "red"],
+    ["red:C", "esp:GND", "black"],
+
+    ["esp:25", "r2:1", "yellow"],
+    ["r2:2", "yellow:A", "yellow"],
+    ["yellow:C", "esp:GND", "black"],
+
+    ["esp:33", "r3:1", "green"],
+    ["r3:2", "green:A", "green"],
+    ["green:C", "esp:GND", "black"]
   ]
 }
