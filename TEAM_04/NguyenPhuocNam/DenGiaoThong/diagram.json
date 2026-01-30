@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "author": "Gemini User",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "wokwi-tm1637-7segment",
+      "id": "disp1",
+      "top": -182.44,
+      "left": -175.37,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-red",
+      "top": -90,
+      "left": -80.8,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-yellow",
+      "top": -42,
+      "left": -80.8,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-green",
+      "top": 6,
+      "left": -80.8,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-blue",
+      "top": -13.2,
+      "left": 205.4,
+      "attrs": { "color": "blue", "label": "Street Light" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 255.8,
+      "left": 28.8,
+      "attrs": { "color": "green", "label": "Walk" }
+    },
+    {
+      "type": "wokwi-photoresistor-sensor",
+      "id": "sensor1",
+      "top": 150,
+      "left": -150,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": -90,
+      "left": -140,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": -42,
+      "left": -140,
+      "attrs": { "value": "220" }
+    },
+    { "type": "wokwi-resistor", "id": "r3", "top": 6, "left": -140, "attrs": { "value": "220" } },
+    {
+      "type": "wokwi-resistor",
+      "id": "r4",
+      "top": 140,
+      "left": 220,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "disp1:VCC", "esp:5V", "red", [ "h0" ] ],
+    [ "disp1:GND", "esp:GND.2", "black", [ "h0" ] ],
+    [ "disp1:DIO", "esp:19", "green", [ "h0" ] ],
+    [ "disp1:CLK", "esp:18", "green", [ "h0" ] ],
+    [ "led-red:C", "esp:GND.1", "black", [ "v0" ] ],
+    [ "led-yellow:C", "esp:GND.1", "black", [ "v0" ] ],
+    [ "led-green:C", "esp:GND.1", "black", [ "v0" ] ],
+    [ "led-red:A", "r1:2", "red", [ "h-10" ] ],
+    [ "led-yellow:A", "r2:2", "gold", [ "h-10" ] ],
+    [ "led-green:A", "r3:2", "green", [ "h-10" ] ],
+    [ "r1:1", "esp:27", "red", [ "h-20", "v120" ] ],
+    [ "r2:1", "esp:26", "gold", [ "h-30", "v80" ] ],
+    [ "r3:1", "esp:25", "green", [ "h-40", "v40" ] ],
+    [ "btn1:1.r", "esp:4", "orange", [ "v20", "h86.6", "v-144.8" ] ],
+    [ "btn1:2.r", "esp:GND.2", "black", [ "v40", "h-120", "v-160" ] ],
+    [ "led-blue:A", "esp:21", "blue", [ "h-76.8", "v19.2" ] ],
+    [ "led-blue:C", "r4:1", "black", [ "v0" ] ],
+    [ "r4:2", "esp:GND.2", "black", [ "v20", "h-140" ] ],
+    [ "sensor1:VCC", "esp:3V3", "red", [ "v-60", "h120" ] ],
+    [ "sensor1:GND", "esp:GND.3", "black", [ "v-50", "h130" ] ],
+    [ "sensor1:AO", "esp:13", "purple", [ "v-40", "h110" ] ]
+  ],
+  "dependencies": {}
+}
