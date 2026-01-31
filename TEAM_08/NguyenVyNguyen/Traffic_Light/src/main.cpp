@@ -12,7 +12,7 @@ TM1637Display display(CLK, DIO);
 #define BUTTON_PIN 23
 
 // ===== TIME SIMULATION =====
-int currentHour = 23;   // ĐỔI GIỜ Ở ĐÂY để test
+int currentHour = 6;   // ĐỔI GIỜ Ở ĐÂY để test
 
 bool isNightTime() {
   return (currentHour >= 22 || currentHour < 6);
