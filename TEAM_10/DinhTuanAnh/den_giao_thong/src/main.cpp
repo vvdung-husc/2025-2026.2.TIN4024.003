@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <TM1637Display.h>
 
-// ===== CHÂN KẾT NỐI =====
+// ===== CHÂN =====
 #define RED 18
 #define YELLOW 5
 #define GREEN 17
@@ -16,22 +16,40 @@ TM1637Display display(CLK, DIO);
 
 #define DARK_THRESHOLD 2500  
 
-// ===== HÀM NHẤP NHÁY + ĐẾM NGƯỢC =====
-void blinkWithCountdown(int ledPin, int seconds) {
+// ===== KIỂM TRA CHUYỂN CHẾ ĐỘ =====
+bool isWarningMode() {
+  int lightValue = analogRead(LDR);
+  bool buttonPressed = digitalRead(BUTTON) == LOW;
+  return (buttonPressed || lightValue > DARK_THRESHOLD);
+}
+
+// ===== DELAY THÔNG MINH (có kiểm tra điều kiện) =====
+bool smartDelay(unsigned long ms) {
+  unsigned long start = millis();
+  while (millis() - start < ms) {
+    if (isWarningMode()) return true; // Thoát ngay
+    delay(10);
+  }
+  return false;
+}
+
+// ===== NHẤP NHÁY + ĐẾM NGƯỢC (có thể bị ngắt) =====
+bool blinkWithCountdown(int ledPin, int seconds) {
   for (int i = seconds; i > 0; i--) {
     display.showNumberDec(i, true);
 
     digitalWrite(ledPin, HIGH);
-    delay(300);
+    if (smartDelay(300)) return true;
+
     digitalWrite(ledPin, LOW);
-    delay(700);
+    if (smartDelay(700)) return true;
   }
+  return false;
 }
 
 // ===== CHẾ ĐỘ CẢNH BÁO =====
 void warningMode() {
   display.clear();
-
   digitalWrite(RED, LOW);
   digitalWrite(GREEN, LOW);
 
@@ -55,27 +73,25 @@ void setup() {
 }
 
 void loop() {
-  int lightValue = analogRead(LDR);
-  bool buttonPressed = digitalRead(BUTTON) == LOW;
 
-  // ===== CHẾ ĐỘ CẢNH BÁO =====
-  if (buttonPressed || lightValue > DARK_THRESHOLD) {
+  // Nếu đang ở chế độ cảnh báo → lặp liên tục
+  if (isWarningMode()) {
     warningMode();
     return;
   }
 
-  // ===== ĐÈN XANH =====
+  // ===== XANH =====
   digitalWrite(RED, LOW);
   digitalWrite(YELLOW, LOW);
-  blinkWithCountdown(GREEN, 3);
+  if (blinkWithCountdown(GREEN, 3)) return;
 
-  // ===== ĐÈN VÀNG =====
+  // ===== VÀNG =====
   digitalWrite(GREEN, LOW);
   digitalWrite(RED, LOW);
-  blinkWithCountdown(YELLOW, 3);
+  if (blinkWithCountdown(YELLOW, 3)) return;
 
-  // ===== ĐÈN ĐỎ =====
+  // ===== ĐỎ =====
   digitalWrite(GREEN, LOW);
   digitalWrite(YELLOW, LOW);
-  blinkWithCountdown(RED, 3);
+  if (blinkWithCountdown(RED, 3)) return;
 }
