@@ -1,72 +1,74 @@
-#include <Arduino.h>
+#include "main.h"
 
-/* ====== KHAI BÁO CHÂN LED ====== */
+//Định nghĩa chân cho đèn LED
 #define PIN_LED_RED     18
 #define PIN_LED_YELLOW  5
-#define PIN_LED_GREEN   17
+#define PIN_LED_GREEN    17
 
-/* ====== BIẾN THỜI GIAN ====== */
-unsigned long timerTraffic = 0;
+//Định nghĩa cho LDR (Light Dependent Resistor)
+#define PIN_LDR 34 // Analog ADC1 GPIO34 connected to LDR
 
-/* ====== TRẠNG THÁI ĐÈN ====== */
-enum TrafficState {
-  RED,
-  YELLOW,
-  GREEN
-};
+int DAY_ADC_THRESHOLD = 2000; // Ngưỡng ánh sáng ban ngày
 
-TrafficState currentState = RED;
+//LED_Blink ledYellow;
+Trafic_Blink traficLight;
+LDR ldrSensor;
 
-/* ====== HÀM KIỂM TRA THỜI GIAN (NON-BLOCKING) ====== */
-bool IsReady(unsigned long &timer, uint32_t interval) {
-  if (millis() - timer < interval) return false;
-  timer = millis();
-  return true;
-}
-
-/* ====== SETUP ====== */
 void setup() {
-  Serial.begin(115200);
-  Serial.println("ESP32 Traffic Light Started");
+  // put your setup code here, to run once:
+  printf("Welcome IoT\n");
 
-  pinMode(PIN_LED_RED, OUTPUT);
-  pinMode(PIN_LED_YELLOW, OUTPUT);
-  pinMode(PIN_LED_GREEN, OUTPUT);
+  ldrSensor.setup(PIN_LDR, false); // VCC = 3.3V
 
-  digitalWrite(PIN_LED_RED, HIGH);
-  digitalWrite(PIN_LED_YELLOW, LOW);
-  digitalWrite(PIN_LED_GREEN, LOW);
+  traficLight.setupPin(PIN_LED_RED, PIN_LED_YELLOW, PIN_LED_GREEN);
+  traficLight.setupWaitTime(5, 3, 7); // seconds
 }
 
-/* ====== LOOP ====== */
 void loop() {
-  switch (currentState) {
+  //ledYellow.blink(500);
+  int analogValue = 0;
+  float lux =ldrSensor.readLux(&analogValue);
+  bool isDark = (analogValue > DAY_ADC_THRESHOLD);
+  traficLight.blink(500, isDark);
 
-    case RED:
-      if (IsReady(timerTraffic, 5000)) {   // Đỏ 5 giây
-        Serial.println("RED -> GREEN");
-        digitalWrite(PIN_LED_RED, LOW);
-        digitalWrite(PIN_LED_GREEN, HIGH);
-        currentState = GREEN;
-      }
-      break;
-
-    case GREEN:
-      if (IsReady(timerTraffic, 4000)) {   // Xanh 4 giây
-        Serial.println("GREEN -> YELLOW");
-        digitalWrite(PIN_LED_GREEN, LOW);
-        digitalWrite(PIN_LED_YELLOW, HIGH);
-        currentState = YELLOW;
-      }
-      break;
-
-    case YELLOW:
-      if (IsReady(timerTraffic, 2000)) {   // Vàng 2 giây
-        Serial.println("YELLOW -> RED");
-        digitalWrite(PIN_LED_YELLOW, LOW);
-        digitalWrite(PIN_LED_RED, HIGH);
-        currentState = RED;
-      }
-      break;
-  }
 }
+
+
+
+#include "main.h"
+
+//Định nghĩa chân cho đèn LED
+#define PIN_LED_RED     18
+#define PIN_LED_YELLOW  5
+#define PIN_LED_GREEN    17
+
+//Định nghĩa cho LDR (Light Dependent Resistor)
+#define PIN_LDR 34 // Analog ADC1 GPIO34 connected to LDR
+
+int DAY_ADC_THRESHOLD = 2000; // Ngưỡng ánh sáng ban ngày
+
+//LED_Blink ledYellow;
+Trafic_Blink traficLight;
+LDR ldrSensor;
+
+void setup() {
+  // put your setup code here, to run once:
+  printf("Welcome IoT\n");
+
+  ldrSensor.setup(PIN_LDR, false); // VCC = 3.3V
+
+  traficLight.setupPin(PIN_LED_RED, PIN_LED_YELLOW, PIN_LED_GREEN);
+  traficLight.setupWaitTime(5, 3, 7); // seconds
+}
+
+void loop() {
+  //ledYellow.blink(500);
+  int analogValue = 0;
+  float lux =ldrSensor.readLux(&analogValue);
+  bool isDark = (analogValue > DAY_ADC_THRESHOLD);
+  traficLight.blink(500, isDark);
+
+}
+
+
+
