@@ -13,7 +13,7 @@
 
 TM1637Display display(CLK, DIO);
 
-// Ngưỡng tối (bạn có thể chỉnh)
+// Ngưỡng tối
 #define DARK_THRESHOLD 2500  
 
 void setup() {
