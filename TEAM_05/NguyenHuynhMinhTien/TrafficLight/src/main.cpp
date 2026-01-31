@@ -1,5 +1,4 @@
-#include <Arduino.h>  // Thư viện chính của Arduino cho ESP32, cung cấp các hàm như pinMode, digitalWrite, millis(), Serial, v.v.
-#include <TM1637Display.h>  // Thư viện để điều khiển màn hình 7 đoạn TM1637, cho phép hiển thị số và ký tự
+#include "main.h"  // Include header file chứa các khai báo và utils
 
 // Định nghĩa các chân GPIO (General Purpose Input/Output) của ESP32 được sử dụng
 #define PIN_LED_RED 25      // Chân kết nối với LED đỏ
@@ -9,10 +8,14 @@
 #define DIO 2               // Chân data cho TM1637 display
 #define PIN_BUTTON_DISPLAY 23  // Chân kết nối với nút nhấn để bật/tắt display
 #define PIN_LED_BLUE 21     // Chân kết nối với LED xanh dương (cho trạng thái display)
+#define PIN_LDR 34          // Chân kết nối với LDR (Light Dependent Resistor)
 
 // Khởi tạo đối tượng display cho TM1637
 TM1637Display display(CLK, DIO);  // Đối tượng để điều khiển màn hình 7 đoạn
 bool displayOn = false;  // Biến boolean để theo dõi trạng thái bật/tắt của display (true = bật, false = tắt)
+
+// Khởi tạo đối tượng LDR
+LDR ldrSensor;  // Đối tượng để đọc cảm biến ánh sáng
 
 // Finite State Machine (FSM) cho đèn giao thông - Máy trạng thái hữu hạn
 enum State { GREEN, YELLOW, RED };  // Định nghĩa các trạng thái: xanh, vàng, đỏ
@@ -20,6 +23,10 @@ State currentState = GREEN;  // Trạng thái hiện tại, bắt đầu với x
 const uint32_t times[] = {7000, 3000, 5000};  // Thời gian cho mỗi trạng thái: xanh 7s, vàng 3s, đỏ 5s (tính bằng ms)
 unsigned long stateStart = 0;  // Thời điểm bắt đầu trạng thái hiện tại (tính bằng millis())
 int remainingSec = 0;  // Số giây còn lại của trạng thái hiện tại
+
+// Biến cho chế độ ban đêm
+bool isNightMode = false;  // Trạng thái chế độ ban đêm
+bool prevNightMode = false;  // Trạng thái trước đó để phát hiện thay đổi
 
 // Hàm kiểm tra thời gian (non-blocking timer) - Kiểm tra xem đã đủ thời gian chưa mà không chặn chương trình
 bool IsReady(unsigned long &timer, uint32_t ms) {
@@ -55,6 +62,9 @@ void setup() {
   pinMode(PIN_BUTTON_DISPLAY, INPUT_PULLUP);  // Cấu hình chân nút là INPUT với PULLUP (điện trở kéo lên)
   pinMode(PIN_LED_BLUE, OUTPUT);  // Chân LED xanh dương là OUTPUT
   
+  // Khởi tạo LDR
+  ldrSensor.setup(PIN_LDR, false);  // VCC = 3.3V
+  
   display.setBrightness(0x0a);  // Đặt độ sáng cho TM1637 display (0x0a = 10/15)
   display.clear();  // Xóa màn hình display
   stateStart = millis();  // Ghi lại thời điểm bắt đầu trạng thái đầu tiên
@@ -63,6 +73,44 @@ void setup() {
 // Hàm loop() - Chạy liên tục sau setup(), chứa logic chính của chương trình
 void loop() {
   static unsigned long timer500 = 0, timer10 = 0;  // Biến static để lưu thời gian cho các timer (không bị reset mỗi loop)
+  
+  // Kiểm tra chế độ ban đêm
+  isNightMode = (ldrSensor.getValue() > ldrSensor.DAY_THRESHOLD);
+  if (isNightMode != prevNightMode) {
+    prevNightMode = isNightMode;
+    if (isNightMode) {
+      Serial.println("IT IS DARK!!!! Switching to night mode.");
+      display.clear();
+      // Tắt tất cả LEDs ngoại trừ yellow sẽ nhấp nháy
+      digitalWrite(PIN_LED_RED, LOW);
+      digitalWrite(PIN_LED_GREEN, LOW);
+    } else {
+      Serial.println("YEAH!!! IT IS DAY!!!! Switching to normal mode.");
+      // Reset trạng thái
+      currentState = GREEN;
+      stateStart = millis();
+    }
+  }
+  
+  if (isNightMode) {
+    // Chế độ ban đêm: nhấp nháy đèn vàng
+    if (IsReady(timer500, 500)) {
+      static bool yellowState = false;
+      yellowState = !yellowState;
+      digitalWrite(PIN_LED_YELLOW, yellowState ? HIGH : LOW);
+    }
+    // Xử lý nút nhấn vẫn hoạt động
+    if (IsReady(timer10, 10)) {
+      bool pressed = !digitalRead(PIN_BUTTON_DISPLAY);
+      if (pressed != displayOn) {
+        displayOn = pressed;
+        digitalWrite(PIN_LED_BLUE, displayOn ? HIGH : LOW);
+        Serial.printf("*** DISPLAY %s ***\n", displayOn ? "ON" : "OFF");
+        if (!displayOn) display.clear();
+      }
+    }
+    return;  // Không thực hiện FSM bình thường
+  }
   
   // Phần FSM (Finite State Machine) cho đèn giao thông - Kiểm tra mỗi 500ms
   if (IsReady(timer500, 500)) {  // Nếu đã đủ 500ms
