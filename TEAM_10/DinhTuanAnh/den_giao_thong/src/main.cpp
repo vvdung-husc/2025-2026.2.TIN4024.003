@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <TM1637Display.h>
 
+// ===== CHÂN KẾT NỐI =====
 #define RED 18
 #define YELLOW 5
 #define GREEN 17
@@ -13,36 +14,21 @@
 
 TM1637Display display(CLK, DIO);
 
-// Ngưỡng tối
 #define DARK_THRESHOLD 2500  
 
-void setup() {
-  pinMode(RED, OUTPUT);
-  pinMode(YELLOW, OUTPUT);
-  pinMode(GREEN, OUTPUT);
-  pinMode(GREEN2, OUTPUT);
-  pinMode(BUTTON, INPUT_PULLUP);
-  pinMode(LDR, INPUT);
-
-  display.setBrightness(7);
-}
-
-void blinkLed(int pin, int times, int delayMs) {
-  for (int i = 0; i < times; i++) {
-    digitalWrite(pin, HIGH);
-    delay(delayMs);
-    digitalWrite(pin, LOW);
-    delay(delayMs);
-  }
-}
-
-void countdown(int seconds) {
+// ===== HÀM NHẤP NHÁY + ĐẾM NGƯỢC =====
+void blinkWithCountdown(int ledPin, int seconds) {
   for (int i = seconds; i > 0; i--) {
     display.showNumberDec(i, true);
-    delay(1000);
+
+    digitalWrite(ledPin, HIGH);
+    delay(300);
+    digitalWrite(ledPin, LOW);
+    delay(700);
   }
 }
 
+// ===== CHẾ ĐỘ CẢNH BÁO =====
 void warningMode() {
   display.clear();
 
@@ -57,6 +43,17 @@ void warningMode() {
   delay(300);
 }
 
+void setup() {
+  pinMode(RED, OUTPUT);
+  pinMode(YELLOW, OUTPUT);
+  pinMode(GREEN, OUTPUT);
+  pinMode(GREEN2, OUTPUT);
+  pinMode(BUTTON, INPUT_PULLUP);
+  pinMode(LDR, INPUT);
+
+  display.setBrightness(7);
+}
+
 void loop() {
   int lightValue = analogRead(LDR);
   bool buttonPressed = digitalRead(BUTTON) == LOW;
@@ -67,25 +64,18 @@ void loop() {
     return;
   }
 
-  // ===== ĐÈN XANH NHẤP NHÁY =====
+  // ===== ĐÈN XANH =====
   digitalWrite(RED, LOW);
   digitalWrite(YELLOW, LOW);
-
-  for (int i = 3; i > 0; i--) {
-    display.showNumberDec(i, true);
-    digitalWrite(GREEN, HIGH);
-    delay(300);
-    digitalWrite(GREEN, LOW);
-    delay(700);
-  }
+  blinkWithCountdown(GREEN, 3);
 
   // ===== ĐÈN VÀNG =====
-  digitalWrite(YELLOW, HIGH);
-  countdown(3);
-  digitalWrite(YELLOW, LOW);
+  digitalWrite(GREEN, LOW);
+  digitalWrite(RED, LOW);
+  blinkWithCountdown(YELLOW, 3);
 
   // ===== ĐÈN ĐỎ =====
-  digitalWrite(RED, HIGH);
-  countdown(3);
-  digitalWrite(RED, LOW);
+  digitalWrite(GREEN, LOW);
+  digitalWrite(YELLOW, LOW);
+  blinkWithCountdown(RED, 3);
 }
