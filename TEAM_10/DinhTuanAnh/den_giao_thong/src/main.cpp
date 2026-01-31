@@ -14,26 +14,36 @@
 
 TM1637Display display(CLK, DIO);
 
-#define DARK_THRESHOLD 2500  
+// Ngưỡng sau khi ĐẢO giá trị
+#define LIGHT_THRESHOLD 2000  
 
 // ===== KIỂM TRA CHUYỂN CHẾ ĐỘ =====
 bool isWarningMode() {
-  int lightValue = analogRead(LDR);
+  int rawValue = analogRead(LDR);
+
+  // 🔥 ĐẢO GIÁ TRỊ
+  int lightValue = 4095 - rawValue;
+
+  Serial.print("Light Value (Adjusted): ");
+  Serial.println(lightValue);
+
   bool buttonPressed = digitalRead(BUTTON) == LOW;
-  return (buttonPressed || lightValue > DARK_THRESHOLD);
+
+  // Cao = tối
+  return (buttonPressed || lightValue >= LIGHT_THRESHOLD);
 }
 
-// ===== DELAY THÔNG MINH (có kiểm tra điều kiện) =====
+// ===== DELAY THÔNG MINH =====
 bool smartDelay(unsigned long ms) {
   unsigned long start = millis();
   while (millis() - start < ms) {
-    if (isWarningMode()) return true; // Thoát ngay
+    if (isWarningMode()) return true;
     delay(10);
   }
   return false;
 }
 
-// ===== NHẤP NHÁY + ĐẾM NGƯỢC (có thể bị ngắt) =====
+// ===== NHẤP NHÁY + ĐẾM NGƯỢC =====
 bool blinkWithCountdown(int ledPin, int seconds) {
   for (int i = seconds; i > 0; i--) {
     display.showNumberDec(i, true);
@@ -50,6 +60,7 @@ bool blinkWithCountdown(int ledPin, int seconds) {
 // ===== CHẾ ĐỘ CẢNH BÁO =====
 void warningMode() {
   display.clear();
+
   digitalWrite(RED, LOW);
   digitalWrite(GREEN, LOW);
 
@@ -69,29 +80,26 @@ void setup() {
   pinMode(BUTTON, INPUT_PULLUP);
   pinMode(LDR, INPUT);
 
+  Serial.begin(115200);
   display.setBrightness(7);
 }
 
 void loop() {
 
-  // Nếu đang ở chế độ cảnh báo → lặp liên tục
+  // 🌙 Nếu tối hoặc bấm nút → cảnh báo ngay
   if (isWarningMode()) {
     warningMode();
     return;
   }
 
-  // ===== XANH =====
+  // ☀️ BAN NGÀY → CHU KỲ ĐÈN
   digitalWrite(RED, LOW);
   digitalWrite(YELLOW, LOW);
   if (blinkWithCountdown(GREEN, 3)) return;
 
-  // ===== VÀNG =====
   digitalWrite(GREEN, LOW);
-  digitalWrite(RED, LOW);
   if (blinkWithCountdown(YELLOW, 3)) return;
 
-  // ===== ĐỎ =====
-  digitalWrite(GREEN, LOW);
   digitalWrite(YELLOW, LOW);
   if (blinkWithCountdown(RED, 3)) return;
 }
