@@ -3,8 +3,8 @@
 const int LED_RED_PIN    = 15;
 const int LED_GREEN_PIN  = 2;   
 const int LED_YELLOW_PIN = 4;
-const int BAO_HIEU_PIN   = 17;
-const int NUT_BAM   = 23;  
+const int BAO_HIEU_PIN   = 5;
+const int NUT_BAM   = 21;  
 
 const int SEG_PINS[7] = {13,12,14,27,26,25,33};
 const int DIG_PINS[2] = {18,19};
@@ -40,28 +40,28 @@ bool isDisplayOn = true;
 
 void ClickButtonDisplay(){
   static unsigned long ulTimer = 0;
-  static int lastButtonState = HIGH; // Lưu trạng thái trước đó của nút bấm
+  // static int lastButtonState = HIGH; // Lưu trạng thái trước đó của nút bấm
   
-  if (!IsReady(ulTimer, 50)) return; // Tăng debounce lên 50ms để chống nhiễu tốt hơn
+  if (!IsReady(ulTimer, 100)) return; // Tăng debounce lên 50ms để chống nhiễu tốt hơn
   
   int currentButtonState = digitalRead(NUT_BAM);
 
   // Kiểm tra sự kiện nhấn nút (Phát hiện cạnh xuống: từ HIGH sang LOW)
-  if (lastButtonState == HIGH && currentButtonState == LOW) {
+  if (valueButtonDisplay == HIGH && currentButtonState == LOW) {
     isDisplayOn = !isDisplayOn; // Đảo trạng thái: nếu đang true thì thành false và ngược lại
 
     if (!isDisplayOn) {
       // KHI TẮT BẢNG TIN
-      digitalWrite(DIG_PINS[0], LOW); // Tắt LED 7 đoạn (Cathode chung dùng LOW)
-      digitalWrite(DIG_PINS[1], LOW);
-      digitalWrite(BAO_HIEU_PIN, HIGH); // Đèn màu xanh dương SÁNG
+      digitalWrite(DIG_PINS[0], HIGH); // Tắt LED 7 đoạn (Cathode chung dùng LOW)
+      digitalWrite(DIG_PINS[1], HIGH);
+      digitalWrite(BAO_HIEU_PIN, HIGH); // Đèn màu xanh dương TẮT
     } else {
       // KHI BẬT BẢNG TIN
-      digitalWrite(BAO_HIEU_PIN, LOW);  // Đèn màu xanh dương TẮT
+      digitalWrite(BAO_HIEU_PIN, LOW);  // Đèn màu xanh dương SÁNG
     }
   }
 
-  lastButtonState = currentButtonState; // Cập nhật trạng thái nút cho lần quét sau
+  valueButtonDisplay = currentButtonState; // Cập nhật trạng thái nút cho lần quét sau
 }
 
 void setup() {
@@ -76,7 +76,7 @@ void setup() {
 
   digitalWrite(DIG_PINS[0], HIGH);
   digitalWrite(DIG_PINS[1], HIGH);
-  digitalWrite(BAO_HIEU_PIN, HIGH);
+  // digitalWrite(BAO_HIEU_PIN, LOW);
 }
 
 void setSegments(int num){
