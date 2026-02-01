@@ -1,34 +1,37 @@
 #include <Arduino.h>
 
-uint8_t LED_RED = 17;
-
-//Non-blocking
-bool IsReady(unsigned long &ulTimer, uint32_t millisecond) {
-  if (millis() - ulTimer < millisecond) return false;
-  ulTimer = millis();
-  return true;
-}
+#define LED_GREEN  16
+#define LED_YELLOW 17
+#define LED_RED    18
 
 void setup() {
-  // put your setup code here, to run once:
-  printf("Welcome IoT\n");
-  pinMode(LED_RED, OUTPUT); // Set GPIO18 as an output pin
+  Serial.begin(115200);
+  printf("Traffic Light System Start\n");
+
+  pinMode(LED_GREEN, OUTPUT);
+  pinMode(LED_YELLOW, OUTPUT);
+  pinMode(LED_RED, OUTPUT);
 }
 
-// unsigned long ulTimer = 0;
-// bool bLEDStatus = false;
-// void loop() {
-//   if (IsReady(ulTimer,1000)){
-//     bLEDStatus = !bLEDStatus;
-//     digitalWrite(LED_RED, bLEDStatus ? HIGH : LOW); 
-//   }
-// }
 void loop() {
-  // put your main code here, to run repeatedly:
-  printf("[LED_RED] => HIGH\n");
-  digitalWrite(LED_RED, HIGH); // Turn LED ON
-  delay(500); // Wait for 500 milliseconds
-  printf("[LED_RED] => LOW\n");
-  digitalWrite(LED_RED, LOW); // Turn LED OFF
-  delay(500); // Wait for 500 milliseconds  
+  // ===== GREEN =====
+  printf("GREEN ON (3.5s)\n");
+  digitalWrite(LED_GREEN, HIGH);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_RED, LOW);
+  delay(3500);
+
+  // ===== YELLOW =====
+  printf("YELLOW ON (1s)\n");
+  digitalWrite(LED_GREEN, LOW);
+  digitalWrite(LED_YELLOW, HIGH);
+  digitalWrite(LED_RED, LOW);
+  delay(1000);
+
+  // ===== RED =====
+  printf("RED ON (3.5s)\n");
+  digitalWrite(LED_GREEN, LOW);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_RED, HIGH);
+  delay(3500);
 }

@@ -1,36 +1,113 @@
 #include <Arduino.h>
 
-uint8_t LED_RED = 17;
+#define LED_RED 17
+#define LED_YELLOW 16
+#define LED_GREEN 18
 
-//Non-blocking
-bool IsReady(unsigned long &ulTimer, uint32_t millisecond) {
-  if (millis() - ulTimer < millisecond) return false;
-  ulTimer = millis();
+unsigned long timer = 0;
+bool ledState = false;
+
+unsigned long blinkTimer = 0;
+bool blinkState = false;
+int blinkCount = 0;
+
+enum TrafficState
+{
+  RED,
+  GREEN,
+  YELLOW
+};
+
+TrafficState state = RED;
+
+// non blocking timer
+bool IsReady(unsigned long &t, uint32_t ms)
+{
+  if (millis() - t < ms)
+    return false;
+  t = millis();
   return true;
 }
 
-void setup() {
-  // put your setup code here, to run once:
-  printf("Welcome IoT\n");
-  pinMode(LED_RED, OUTPUT); // Set GPIO18 as an output pin
+void SetLight(bool r, bool y, bool g)
+{
+  digitalWrite(LED_RED, r);
+  digitalWrite(LED_YELLOW, y);
+  digitalWrite(LED_GREEN, g);
 }
 
-unsigned long ulTimer = 0;
-bool bLEDStatus = false;
-void loop() {
-  if (IsReady(ulTimer,1000)){
-    bLEDStatus = !bLEDStatus;
-    digitalWrite(LED_RED, bLEDStatus ? HIGH : LOW); 
+void setup()
+{
+  Serial.begin(115200);
+
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_YELLOW, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
+
+  SetLight(1, 0, 0); // start RED
+  Serial.println("Traffic light started");
+}
+
+void loop()
+{
+  switch (state)
+  {
+  case RED:
+    if (IsReady(timer, 5000))
+    {
+      SetLight(0, 0, 1);
+      state = GREEN;
+      Serial.println("GREEN");
+    }
+    if (IsReady(blinkTimer, 500))
+    {
+      blinkState = !blinkState;
+      digitalWrite(LED_RED, blinkState ? HIGH : LOW);
+    }
+    break;
+
+  case GREEN:
+    if (IsReady(timer, 5000))
+    {
+      SetLight(0, 1, 0);
+      state = YELLOW;
+
+      blinkCount = 0;
+      blinkState = false;
+      blinkTimer = millis();
+
+      Serial.println("YELLOW");
+    }
+    if (IsReady(blinkTimer, 500))
+    {
+      blinkState = !blinkState;
+      digitalWrite(LED_GREEN, blinkState ? HIGH : LOW);
+    }
+    break;
+
+  case YELLOW:
+
+  if (IsReady(blinkTimer, 500))
+  {
+    blinkState = !blinkState;
+    digitalWrite(LED_YELLOW, blinkState ? HIGH : LOW);
+
+    if (!blinkState) blinkCount++;
+
+    if (blinkCount >= 3)
+    {
+      blinkCount = 0;
+      blinkState = false;
+
+      SetLight(1, 0, 0);
+      timer = millis();
+      state = RED;
+
+      Serial.println("RED");
+    }
+  }
+
+  break;
+
   }
 }
-// void loop() {
-//   // put your main code here, to run repeatedly:
-//   printf("[LED_RED] => HIGH\n");
-//   digitalWrite(LED_RED, HIGH); // Turn LED ON
-//   delay(500); // Wait for 500 milliseconds
-//   printf("[LED_RED] => LOW\n");
-//   digitalWrite(LED_RED, LOW); // Turn LED OFF
-//   delay(500); // Wait for 500 milliseconds  
-// }
-
-
