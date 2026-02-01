@@ -10,7 +10,7 @@
 **Một số yêu cầu**
 - Hiển thị thông tin nhiệt độ và độ ẩm trên bảng OLED
 - Hiển thị 3 đèn LED nhấp nháy theo ngưỡng nhiệt độ
-### 🔥 Ngưỡng nhiệt độ hiển thị trên OLED
+### 🔥 Ngưỡng nhiệt độ hiển thị trên OLED và tín hiệu LED
 | Nhiệt độ (°C) | Hiển thị | Đèn nhấp nháy |
 |--------------|---------------------|-----|
 | **< 13°C**  | TOO COLD | :snowflake: GREEN |
