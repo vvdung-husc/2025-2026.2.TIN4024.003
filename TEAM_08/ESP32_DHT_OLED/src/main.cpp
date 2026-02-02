@@ -1,7 +1,7 @@
 /*
 THÔNG TIN NHÓM 8
 1. Trương Hữu Ngọc
-2. 
+2. Hồ Bảo Toàn
 */
 
 #include <Arduino.h>
