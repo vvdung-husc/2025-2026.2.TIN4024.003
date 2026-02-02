@@ -12,7 +12,7 @@ DHT dht(DHTPIN, DHTTYPE);
 // ===== LED =====
 #define LED_RED 4
 #define LED_YELLOW 2
-#define LED_BLUE 15   // dung nhu GREEN
+#define LED_BLUE 15
 
 // ===== OLED =====
 #define SCREEN_WIDTH 128
@@ -40,7 +40,7 @@ void setup() {
 
   dht.begin();
 
-  Wire.begin(13,12); // theo dung so do cua ban
+  Wire.begin(13,12);
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println("Khong tim thay OLED");
