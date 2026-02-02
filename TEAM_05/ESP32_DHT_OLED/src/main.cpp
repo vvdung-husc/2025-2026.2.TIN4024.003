@@ -86,19 +86,34 @@ void loop()
 
   strTemp = String("Temperature: ");
 
-  if (t < 0.0)
+  if (t < 13.0)
   {
-    strTemp += "Too COOL";
+    strTemp += "TOO COLD";
+    ledNumber = LED_BLUE;
+  }
+  else if (t >= 13.0 && t <= 20.0)
+  {
+    strTemp += "COLD";
+    ledNumber = LED_BLUE;
+  }
+  else if (t > 20.0 && t <= 25.0)
+  {
+    strTemp += "COOL";
     ledNumber = LED_YELLOW;
   }
-  else if (t < 40.0)
+  else if (t > 25.0 && t <= 30.0)
   {
-    strTemp += "Normal";
-    ledNumber = LED_BLUE;
+    strTemp += "WARM";
+    ledNumber = LED_YELLOW;
+  }
+  else if (t > 30.0 && t < 35.0)
+  {
+    strTemp += "HOT";
+    ledNumber = LED_RED;
   }
   else
   {
-    strTemp += "Too HOT";
+    strTemp += "TOO HOT";
     ledNumber = LED_RED;
   }
 
