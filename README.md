@@ -64,6 +64,8 @@
 
 ## [***2. Dự án - TRAFFIC LIGHT***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/Project_Traffic_Light.md)
 
+## [***3. Dự án - DHT_OLED (Theo nhóm, hạn cuối 09/02/2026)***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/Team_DHT_OLED.md)
+
 -------------------------------
 
 ![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/esp32-devkitC-v4-pinout.png)
