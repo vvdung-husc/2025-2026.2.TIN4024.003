@@ -1,9 +1,7 @@
 /*
-Thông tin nhóm 10:
-1. Đinh Tuấn Anh.
-2. Lê Trần Hải Đạt.
-3. Phan Thanh Vũ.
-
+THÔNG TIN NHÓM 8
+1. Trương Hữu Ngọc
+2. 
 */
 #include <Arduino.h>
 
