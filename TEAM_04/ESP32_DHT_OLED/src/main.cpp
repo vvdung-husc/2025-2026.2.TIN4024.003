@@ -1,10 +1,9 @@
 /*
 THÔNG TIN NHÓM 4
-1. Hồ Trọng Nghĩa
-2. Hồ Gia Long
-3. Nguyễn Thắng 
-4. Đoàn Phúc
-5. Hoàn Nhật Duy
+1. Hồ Gia Long
+2. Hồ Trọng Nghĩa
+3. Phạm Văn Quân
+4. Nguyễn Thắng
 */
 
 #include <Arduino.h>
