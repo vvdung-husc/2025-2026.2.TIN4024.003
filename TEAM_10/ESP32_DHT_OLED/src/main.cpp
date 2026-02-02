@@ -1,3 +1,8 @@
+/*
+Thông tin nhóm 10:
+1. Đinh Tuấn Anh.
+2. Lê Trần Hải Đạt.
+*/
 #include <Arduino.h>
 
 // put function declarations here:
