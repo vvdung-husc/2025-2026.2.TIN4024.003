@@ -10,15 +10,16 @@ void showOLED(float temp, float hum) {
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
 
-  display.setCursor(0, 0);
-  display.print("Temp: ");
-  display.print(temp);
-  display.println(" C");
+display.setCursor(0, 0);
+display.print("Temp: ");
+display.print(temp);
+display.print((char)247);
+display.println("C");
 
-  display.setCursor(0, 16);
-  display.print("Humidity: ");
-  display.print(hum);
-  display.println(" %");
+display.setCursor(0, 16);
+display.print("Humidity: ");
+display.print(hum);
+display.println(" %");
 
   display.setCursor(0, 32);
 
