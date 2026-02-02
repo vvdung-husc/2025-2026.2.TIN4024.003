@@ -2,7 +2,7 @@
 THÔNG TIN NHÓM TEAM_09
 1. Trần Văn Mỹ
 2. Đinh Hoàng Nhân
-3.Lê Ngọc Minh Thư
+3. Lê Ngọc Minh Thư
 4.
 5.
 */
@@ -202,6 +202,7 @@ void setup()
   display.print("Reading sensor...");
   display.display();
 }
+
 void loop() {
   uint32_t now = millis();
 
