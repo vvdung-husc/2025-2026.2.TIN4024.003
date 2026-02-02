@@ -7,7 +7,7 @@
 	
 		> Sau thời gian này các commit thay đổi nội dung của dự án sẽ không được tính.
 
-**Một số yêu cầu**
+## Một số yêu cầu 
 - Hiển thị thông tin nhiệt độ và độ ẩm trên bảng OLED
 - Hiển thị 3 đèn LED nhấp nháy theo ngưỡng nhiệt độ
 ### 🔥 Ngưỡng nhiệt độ hiển thị trên OLED và tín hiệu LED
@@ -19,7 +19,21 @@
 | **25 - 30°C** | WARM | :sunny: YELLOW |
 | **30 - 35°C**  | HOT | :sun_with_face: RED |
 | **> 35°C**  | TOO HOT | :fire: RED |
-  
+ 
+ ### Thông tin các thành viên trong mã nguồn ***main.cpp***
+ >Ghi thông tin nhóm vào ngay đầu mã nguồn  
+ ```cpp
+ /*
+THÔNG TIN NHÓM X
+1. Nguyễn Văn Bình
+2. Lê Nguyễn Hương Nguyên
+3. ...
+*/
+
+#include  <Arduino.h>
+ ```
+
+
 ### Nhóm tự thảo luận và tìm hiểu các thiết bị trong dự án 
 ![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/ESP32_DHT_OLED.png)
 
