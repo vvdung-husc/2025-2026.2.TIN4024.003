@@ -3,16 +3,17 @@
 const int LED_RED_PIN    = 15;
 const int LED_GREEN_PIN  = 2;   
 const int LED_YELLOW_PIN = 4;
-const int BAO_HIEU_PIN   = 17;
-const int NUT_BAM   = 23;  
+const int BAO_HIEU_PIN   = 5;  
+const int LDR_PIN        = 35;
+const int NUT_BAM        = 21;  
 
-const int SEG_PINS[7] = {13,12,14,27,26,25,33};
-const int DIG_PINS[2] = {18,19};
+const int SEG_PINS[7] = {13, 12, 14, 27, 26, 25, 33};
+const int DIG_PINS[2] = {18, 19}; // DIG 1, DIG 2
 
 const int TIME_RED    = 11;
 const int TIME_GREEN  = 10;
-const int TIME_YELLOW = 5;
-
+const int TIME_YELLOW = 3; 
+const int LIGHT_THRESHOLD = 2000; 
 
 const byte digitPatterns[10][7] = {
   {1,1,1,1,1,1,0}, {0,1,1,0,0,0,0}, {1,1,0,1,1,0,1},
@@ -21,124 +22,152 @@ const byte digitPatterns[10][7] = {
   {1,1,1,1,0,1,1}
 };
 
-
-bool IsReady(unsigned long &t, uint32_t ms){
-  if(millis() - t < ms) return false;
-  t += ms;
-  return true;
-}
-
-unsigned long tSecond = 0;
-unsigned long tMux = 0;
-
-
-enum {RED, GREEN, YELLOW};
-int trafficState = RED;
+enum TrafficState {STATE_RED, STATE_GREEN, STATE_YELLOW};
+TrafficState trafficState = STATE_RED;
 int remainingTime = TIME_RED;
-int valueButtonDisplay = HIGH;
-bool isDisplayOn = true;
 
-void ClickButtonDisplay(){
-  static unsigned long ulTimer = 0;
-  static int lastButtonState = HIGH; // Lưu trạng thái trước đó của nút bấm
-  
-  if (!IsReady(ulTimer, 50)) return; // Tăng debounce lên 50ms để chống nhiễu tốt hơn
-  
-  int currentButtonState = digitalRead(NUT_BAM);
+unsigned long tTraffic = 0;
+unsigned long tDisplay = 0;
+unsigned long tSensor = 0;
+unsigned long tButton = 0;
+unsigned long tBlink = 0; 
 
-  // Kiểm tra sự kiện nhấn nút (Phát hiện cạnh xuống: từ HIGH sang LOW)
-  if (lastButtonState == HIGH && currentButtonState == LOW) {
-    isDisplayOn = !isDisplayOn; // Đảo trạng thái: nếu đang true thì thành false và ngược lại
-
-    if (!isDisplayOn) {
-      // KHI TẮT BẢNG TIN
-      digitalWrite(DIG_PINS[0], LOW); // Tắt LED 7 đoạn (Cathode chung dùng LOW)
-      digitalWrite(DIG_PINS[1], LOW);
-      digitalWrite(BAO_HIEU_PIN, HIGH); // Đèn màu xanh dương SÁNG
-    } else {
-      // KHI BẬT BẢNG TIN
-      digitalWrite(BAO_HIEU_PIN, LOW);  // Đèn màu xanh dương TẮT
-    }
-  }
-
-  lastButtonState = currentButtonState; // Cập nhật trạng thái nút cho lần quét sau
-}
+bool isNightMode = false;
+bool isDisplayEnabled = true; 
+bool blinkState = false; 
 
 void setup() {
+  Serial.begin(115200);
+  
   pinMode(LED_RED_PIN, OUTPUT);
   pinMode(LED_GREEN_PIN, OUTPUT);
   pinMode(LED_YELLOW_PIN, OUTPUT);
   pinMode(BAO_HIEU_PIN, OUTPUT);
   pinMode(NUT_BAM, INPUT_PULLUP);
+  pinMode(LDR_PIN, INPUT);
 
-  for(int i=0;i<7;i++) pinMode(SEG_PINS[i], OUTPUT);
-  for(int i=0;i<2;i++) pinMode(DIG_PINS[i], OUTPUT);
+  for(int i=0; i<7; i++) pinMode(SEG_PINS[i], OUTPUT);
+  for(int i=0; i<2; i++) pinMode(DIG_PINS[i], OUTPUT);
 
   digitalWrite(DIG_PINS[0], HIGH);
   digitalWrite(DIG_PINS[1], HIGH);
-  digitalWrite(BAO_HIEU_PIN, HIGH);
 }
 
-void setSegments(int num){
-  for(int i=0;i<7;i++)
+// Hàm hiển thị 1 số ra LED 7 đoạn
+void setSegments(int num) {
+  for (int i = 0; i < 7; i++) {
     digitalWrite(SEG_PINS[i], digitPatterns[num][i]);
+  }
 }
 
-void refreshDisplay(){
-  if(!isDisplayOn){
+void taskDisplay() {
+ 
+  if (!isDisplayEnabled || isNightMode) {
+    digitalWrite(DIG_PINS[0], HIGH);
+    digitalWrite(DIG_PINS[1], HIGH);
     return;
   }
-  static uint8_t digit = 0;
 
-  int val = remainingTime;
-  if(val < 0) val = 0;
-  if(val > 99) val = 99;
+  if (millis() - tDisplay >= 5) { 
+    tDisplay = millis();
+    
+    static uint8_t currentDigit = 0;
+    
+    digitalWrite(DIG_PINS[0], HIGH);
+    digitalWrite(DIG_PINS[1], HIGH);
 
-  int chuc = val / 10;
-  int donvi = val % 10;
+    int val = remainingTime;
+    if (val < 0) val = 0;
+    if (val > 99) val = 99;
 
-  digitalWrite(DIG_PINS[0], HIGH);
-  digitalWrite(DIG_PINS[1], HIGH);
-
-  if(digit == 0){
-    setSegments(chuc);
-    digitalWrite(DIG_PINS[0], LOW);
-  } else {
-    setSegments(donvi);
-    digitalWrite(DIG_PINS[1], LOW);
+    if (currentDigit == 0) {
+      setSegments(val / 10); 
+      digitalWrite(DIG_PINS[0], LOW);
+    } else {
+      setSegments(val % 10); 
+      digitalWrite(DIG_PINS[1], LOW);
+    }
+    
+    currentDigit = !currentDigit; 
   }
-
-  digit ^= 1;
 }
 
+void taskTrafficLight() {
 
-void loop() {
+  if (isNightMode) {
+    digitalWrite(LED_RED_PIN, LOW);
+    digitalWrite(LED_GREEN_PIN, LOW);
+    
+    if (millis() - tBlink >= 500) {
+      tBlink = millis();
+      blinkState = !blinkState;
+      digitalWrite(LED_YELLOW_PIN, blinkState ? HIGH : LOW);
+    }
+    return;
+  }
 
-  if(IsReady(tSecond, 1000)){
+  if (millis() - tTraffic >= 1000) {
+    tTraffic = millis();
     remainingTime--;
 
-    if(remainingTime < 0){
-      if(trafficState == RED){
-        trafficState = GREEN;
-        remainingTime = TIME_GREEN;
-      }
-      else if(trafficState == GREEN){
-        trafficState = YELLOW;
-        remainingTime = TIME_YELLOW;
-      }
-      else{
-        trafficState = RED;
-        remainingTime = TIME_RED;
+    if (remainingTime < 0) {
+      switch (trafficState) {
+        case STATE_RED:
+          trafficState = STATE_GREEN;
+          remainingTime = TIME_GREEN;
+          break;
+        case STATE_GREEN:
+          trafficState = STATE_YELLOW;
+          remainingTime = TIME_YELLOW;
+          break;
+        case STATE_YELLOW:
+          trafficState = STATE_RED;
+          remainingTime = TIME_RED;
+          break;
       }
     }
   }
-  
-  digitalWrite(LED_RED_PIN,    trafficState == RED);
-  digitalWrite(LED_GREEN_PIN,  trafficState == GREEN);
-  digitalWrite(LED_YELLOW_PIN, trafficState == YELLOW);
 
-  if(IsReady(tMux, 1)){
-    refreshDisplay();
+  digitalWrite(LED_RED_PIN,    trafficState == STATE_RED);
+  digitalWrite(LED_GREEN_PIN,  trafficState == STATE_GREEN);
+  digitalWrite(LED_YELLOW_PIN, trafficState == STATE_YELLOW);
+}
+
+void taskSensorsAndInput() {
+  if (millis() - tSensor >= 200) {
+    tSensor = millis();
+    int lightLevel = analogRead(LDR_PIN);
+    
+    bool newMode = (lightLevel < LIGHT_THRESHOLD);
+    
+    if (newMode != isNightMode) {
+      isNightMode = newMode;
+      if (isNightMode) {
+         digitalWrite(BAO_HIEU_PIN, LOW); 
+      } else {
+         digitalWrite(BAO_HIEU_PIN, isDisplayEnabled ? LOW : HIGH); 
+      }
+    }
   }
-  ClickButtonDisplay();
+
+  if (millis() - tButton >= 100) {
+    tButton = millis();
+    static int lastButtonState = HIGH;
+    int currentButtonState = digitalRead(NUT_BAM);
+
+    if (lastButtonState == HIGH && currentButtonState == LOW) {
+      isDisplayEnabled = !isDisplayEnabled;
+      
+      if (!isNightMode) {
+        digitalWrite(BAO_HIEU_PIN, isDisplayEnabled ? LOW : HIGH);
+      }
+    }
+    lastButtonState = currentButtonState;
+  }
+}
+
+void loop() {
+  taskDisplay();        
+  taskTrafficLight();  
+  taskSensorsAndInput(); 
 }
