@@ -1,6 +1,7 @@
 /*
 Thông tin nhóm 15:
 1. Lê Tăng Phước
+2. Đặng Hữu Trung
 */
 
 #ifndef UTILS_H
