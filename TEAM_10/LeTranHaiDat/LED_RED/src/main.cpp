@@ -42,28 +42,24 @@ bool isDisplayOn = true;
 
 void ClickButtonDisplay(){
   static unsigned long ulTimer = 0;
-  // static int lastButtonState = HIGH; // Lưu trạng thái trước đó của nút bấm
   
-  if (!IsReady(ulTimer, 100)) return; // Tăng debounce lên 50ms để chống nhiễu tốt hơn
+  if (!IsReady(ulTimer, 100)) return;
   
   int currentButtonState = digitalRead(NUT_BAM);
 
-  // Kiểm tra sự kiện nhấn nút (Phát hiện cạnh xuống: từ HIGH sang LOW)
   if (valueButtonDisplay == HIGH && currentButtonState == LOW) {
-    isDisplayOn = !isDisplayOn; // Đảo trạng thái: nếu đang true thì thành false và ngược lại
+    isDisplayOn = !isDisplayOn;
 
     if (!isDisplayOn) {
-      // KHI TẮT BẢNG TIN
-      digitalWrite(DIG_PINS[0], HIGH); // Tắt LED 7 đoạn (Cathode chung dùng LOW)
+      digitalWrite(DIG_PINS[0], HIGH);
       digitalWrite(DIG_PINS[1], HIGH);
-      digitalWrite(BAO_HIEU_PIN, HIGH); // Đèn màu xanh dương Bat
+      digitalWrite(BAO_HIEU_PIN, HIGH);
     } else {
-      // KHI BẬT BẢNG TIN
-      digitalWrite(BAO_HIEU_PIN, LOW);  // Đèn màu xanh dương Tat
+      digitalWrite(BAO_HIEU_PIN, LOW); 
     }
   }
 
-  valueButtonDisplay = currentButtonState; // Cập nhật trạng thái nút cho lần quét sau
+  valueButtonDisplay = currentButtonState;
 }
 // void checkLightLevel(){
 //   int lightLevel = analogRead(LDR_PIN);
@@ -136,33 +132,34 @@ void loop() {
       digitalWrite(LED_RED_PIN,    LOW);
       digitalWrite(LED_GREEN_PIN,  LOW);
     }
-    return;
-  }
-  if(IsReady(tSecond, 1000)){
-    remainingTime--;
+  }else{
+    
+    if(IsReady(tSecond, 1000)){
+      remainingTime--;
 
-    if(remainingTime < 0){
-      if(trafficState == RED){
-        trafficState = GREEN;
-        remainingTime = TIME_GREEN;
-      }
-      else if(trafficState == GREEN){
-        trafficState = YELLOW;
-        remainingTime = TIME_YELLOW;
-      }
-      else{
-        trafficState = RED;
-        remainingTime = TIME_RED;
+      if(remainingTime < 0){
+        if(trafficState == RED){
+          trafficState = GREEN;
+          remainingTime = TIME_GREEN;
+        }
+        else if(trafficState == GREEN){
+          trafficState = YELLOW;
+          remainingTime = TIME_YELLOW;
+        }
+        else{
+          trafficState = RED;
+          remainingTime = TIME_RED;
+        }
       }
     }
-  }
-  
-  digitalWrite(LED_RED_PIN,    trafficState == RED);
-  digitalWrite(LED_GREEN_PIN,  trafficState == GREEN);
-  digitalWrite(LED_YELLOW_PIN, trafficState == YELLOW);
+    
+    digitalWrite(LED_RED_PIN,    trafficState == RED);
+    digitalWrite(LED_GREEN_PIN,  trafficState == GREEN);
+    digitalWrite(LED_YELLOW_PIN, trafficState == YELLOW);
 
-  if(IsReady(tMux, 1)){
-    refreshDisplay();
+    if(IsReady(tMux, 1)){
+      refreshDisplay();
+    }
+    ClickButtonDisplay();
   }
-  ClickButtonDisplay();
 }
