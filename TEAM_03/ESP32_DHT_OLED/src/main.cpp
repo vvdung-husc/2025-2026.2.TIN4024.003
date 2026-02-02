@@ -1,6 +1,7 @@
 /*
 THÔNG TIN NHÓM TEAM_03
 1. Trương Trường Phúc - 22T1020328
+2. Phan Văn Hữu Thắng - 22T1020427
 */
 #include <Arduino.h>
 #include <Wire.h>
