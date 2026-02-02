@@ -1,4 +1,10 @@
-<<<<<<< HEAD
+/*
+THÔNG TIN NHÓM 5:
+1. Lê Gia Huy
+2. Nguyễn Phú Tuấn
+3. Phan Bá Hóa
+*/
+
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -121,12 +127,3 @@ void loop()
   delay(500);
   digitalWrite(ledNumber, LOW);
 }
-=======
-/*
-THÔNG TIN NHÓM 5:
-1. Lê Gia Huy
-2. Nguyễn Phú Tuấn
-
-*/
-#include <Arduino.h>
->>>>>>> 55365a551b3206ee7ea7f22abef8a70b83a04453
