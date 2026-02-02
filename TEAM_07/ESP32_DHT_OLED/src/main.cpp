@@ -1,7 +1,7 @@
 /*
 THÔNG TIN NHÓM X
-1. Nguyễn Trọng Quý
-2. Trần Quang Tiến
+1. Trần Quang Tiến
+2. Nguyễn Trọng Quý
 3. Trần Hưng Trường Vũ
 */
 
