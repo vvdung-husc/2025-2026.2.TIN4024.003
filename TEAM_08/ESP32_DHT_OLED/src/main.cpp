@@ -69,10 +69,10 @@ void loop() {
   if (now - dhtTimer >= 2000) {
     dhtTimer = now;
 
-    float t = dht.readTemperature();
+    float t = dht.readTemperature(); //Nếu lỗi -> t = NaN (Not a Number)
     float h = dht.readHumidity();
 
-    if (!isnan(t) && !isnan(h)) {
+    if (!isnan(t) && !isnan(h)) { //Kiểm tra dữ liệu có hợp lệ không (không phải NaN)
       temperature = t;
       humidity = h;
     }
