@@ -7,52 +7,62 @@
 
 #define TM_CLK 18
 #define TM_DIO 19
-
 TM1637Display display(TM_CLK, TM_DIO);
 
-#define BTN_PIN 23
+#define LDR_PIN 34
+#define LDR_THRESHOLD 1000
 
-void countdown(int seconds) {
-  for (int i = seconds; i >= 0; i--) {
-    display.showNumberDec(i, true); 
+bool isDark() {
+  int v = analogRead(LDR_PIN);
+  Serial.println(v);
+  return v < LDR_THRESHOLD;
+}
+
+void allOff() {
+  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_GREEN, LOW);
+  display.clear();
+}
+
+void countdown(int s) {
+  for (int i = s; i >= 0; i--) {
+    if (!isDark()) {
+      allOff();
+      return;
+    }
+    display.showNumberDec(i, true);
     delay(1000);
   }
 }
 
 void setup() {
+  Serial.begin(115200);
 
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_YELLOW, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
-
-  pinMode(BTN_PIN, INPUT_PULLUP);
+  pinMode(LDR_PIN, INPUT);
 
   display.setBrightness(7);
-  display.clear();
-
-  digitalWrite(LED_RED, LOW);
-  digitalWrite(LED_YELLOW, LOW);
-  digitalWrite(LED_GREEN, LOW);
 }
 
 void loop() {
-  // ===== ĐÈN ĐỎ =====
+  if (!isDark()) {
+    allOff();
+    delay(300);
+    return;
+  }
+
   digitalWrite(LED_RED, HIGH);
-  digitalWrite(LED_YELLOW, LOW);
-  digitalWrite(LED_GREEN, LOW);
   countdown(5);
-
-  // ===== ĐÈN VÀNG =====
   digitalWrite(LED_RED, LOW);
+
   digitalWrite(LED_YELLOW, HIGH);
-  digitalWrite(LED_GREEN, LOW);
   countdown(3);
-
-  // ===== ĐÈN XANH =====
-  digitalWrite(LED_RED, LOW);
   digitalWrite(LED_YELLOW, LOW);
+
   digitalWrite(LED_GREEN, HIGH);
   countdown(5);
-
   digitalWrite(LED_GREEN, LOW);
 }

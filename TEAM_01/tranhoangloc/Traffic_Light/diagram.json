@@ -86,7 +86,7 @@
     [ "led2:A", "r2:1", "gold", [ "h0" ] ],
     [ "ldr1:GND", "esp:GND.1", "black", [ "h28.8", "v-67.6" ] ],
     [ "ldr1:VCC", "esp:5V", "red", [ "h0" ] ],
-    [ "ldr1:AO", "esp:13", "green", [ "h38.4", "v-77.5" ] ],
+    [ "ldr1:AO", "esp:34", "green", [ "h38.4", "v-77.5" ] ],
     [ "sevseg1:CLK", "esp:18", "green", [ "h38.4", "v192" ] ],
     [ "sevseg1:DIO", "esp:19", "green", [ "h28.8", "v172.8" ] ],
     [ "sevseg1:VCC", "esp:5V", "red", [ "h19.2", "v326.4", "h-336.15" ] ],
