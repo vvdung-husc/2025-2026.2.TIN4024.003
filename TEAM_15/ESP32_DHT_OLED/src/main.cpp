@@ -46,7 +46,7 @@ void loop() {
 
   Serial.print("Temp: ");
   Serial.print(temp);
-  Serial.print(" C | Hum: ");
+  Serial.print(" ^C | Hum: ");
   Serial.print(hum);
   Serial.println(" %");
 
