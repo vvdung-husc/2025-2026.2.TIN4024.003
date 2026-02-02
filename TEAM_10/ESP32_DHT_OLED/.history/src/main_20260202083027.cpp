@@ -1,11 +1,8 @@
 /*
-THÔNG TIN NHÓM 4
-1. Hồ Gia Long
-2. Hồ Trọng Nghĩa
-
-
+Thông tin nhóm 10:
+1. Đinh Tuấn Anh.
+2. Lê Trần Hải Đạt.
 */
-
 #include <Arduino.h>
 
 // put function declarations here:
