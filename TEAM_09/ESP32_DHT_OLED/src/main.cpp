@@ -2,7 +2,7 @@
 THÔNG TIN NHÓM TEAM_09
 1. Trần Văn Mỹ
 2. Đinh Hoàng Nhân
-3.
+3.Lê Ngọc Minh Thư
 4.
 5.
 */
@@ -139,7 +139,7 @@ static void updateOled(float t, float h, TempLevel lv)
     display.print(h, 2);
   display.print(" %");
 
-  // trạng thái góc phải (dòng trên)
+  // trạng thái góc phải
   display.setTextSize(1);
   display.setCursor(78, 0);
   display.print(levelText(lv));
@@ -155,21 +155,18 @@ static void applyBlinkLed(TempLevel lv, bool on)
   if (!on)
     return;
 
-  // <13 và 13-20 => GREEN
   if (lv == LV_TOO_COLD || lv == LV_COLD)
   {
     digitalWrite(LED_GREEN, HIGH);
     return;
   }
 
-  // 20-25 và 25-30 => YELLOW
   if (lv == LV_COOL || lv == LV_WARM)
   {
     digitalWrite(LED_YELLOW, HIGH);
     return;
   }
 
-  // 30-35 và >35 => RED
   digitalWrite(LED_RED, HIGH);
 }
 
@@ -204,4 +201,34 @@ void setup()
   display.setCursor(0, 14);
   display.print("Reading sensor...");
   display.display();
+}
+void loop() {
+  uint32_t now = millis();
+
+  // READ SENSOR
+  if (now - lastSensorMs >= SENSOR_INTERVAL_MS) {
+    lastSensorMs = now;
+
+    float t = dht.readTemperature(); // Celsius
+    float h = dht.readHumidity();
+
+    if (isnan(t) || isnan(h)) {
+      Serial.println("Failed to read from DHT22!");
+    } else {
+      tempC = t;
+      humi  = h;
+      currentLevel = classifyTemp(tempC);
+      Serial.printf("T=%.2fC, H=%.2f%%, Level=%s\n", tempC, humi, levelText(currentLevel));
+    }
+
+    // cập nhật OLED 
+    updateOled(tempC, humi, currentLevel);
+  }
+
+  //  BLINK LED
+  if (now - lastBlinkMs >= BLINK_INTERVAL_MS) {
+    lastBlinkMs = now;
+    blinkState = !blinkState;
+    applyBlinkLed(currentLevel, blinkState);
+  }
 }
