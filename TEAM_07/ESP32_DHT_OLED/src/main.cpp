@@ -1,3 +1,9 @@
+/*
+THÔNG TIN NHÓM X
+1. Nguyễn Trọng Qúy
+2. Trần Quang Tiến
+3. Trần Hưng Trường Vủ
+*/
 #include <Arduino.h>
 
 // put function declarations here:
