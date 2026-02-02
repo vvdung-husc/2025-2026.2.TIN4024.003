@@ -1,44 +1,34 @@
 #include <Arduino.h>
 #include <TM1637Display.h>
 
-// ===== LED =====
+// ===== CẤU HÌNH CHÂN CẮM =====
 #define LED_RED 27
 #define LED_YELLOW 26
 #define LED_GREEN 25
 #define LED_BLUE 21
-
-// ===== BUTTON =====
 #define BUTTON_PIN 23
-
-// ===== TM1637 =====
+#define LDR_PIN 13 
 #define CLK 18
 #define DIO 19
+
+// ===== CẤU HÌNH THÔNG SỐ =====
+#define DARK_THRESHOLD 2000 
 TM1637Display display(CLK, DIO);
 
-// ===== Thời gian hiển thị (giây) =====
-int redSeconds = 5;
-int yellowSeconds = 3;
-int greenSeconds = 7;
-
-// ===== Tốc độ đếm =====
-unsigned long speedFactor = 500;
-
-// ===== Nhấp nháy LED =====
+const int TIMES[] = {5, 3, 7}; // R, Y, G
 unsigned long blinkInterval = 300;
 
-// ===== Trạng thái đèn =====
-enum LightState { RED, YELLOW, GREEN };
+// ===== BIẾN TRẠNG THÁI =====
+enum LightState { RED, YELLOW, GREEN, NIGHT_MODE };
 LightState currentState = RED;
+LightState previousState = RED; 
 
-// ===== Thời gian =====
 unsigned long stateStartTime = 0;
 unsigned long lastBlinkTime = 0;
 unsigned long lastButtonTime = 0;
-
+unsigned long lastTickTime = 0; 
 bool ledStatus = false;
 int remainingSeconds = 0;
-
-// ===== Trạng thái màn hình =====
 bool displayEnabled = true;
 
 void turnOffTrafficLED() {
@@ -47,16 +37,20 @@ void turnOffTrafficLED() {
   digitalWrite(LED_GREEN, LOW);
 }
 
-int getCurrentSeconds() {
-  if (currentState == RED) return redSeconds;
-  if (currentState == YELLOW) return yellowSeconds;
-  return greenSeconds;
-}
-
-int getCurrentLed() {
-  if (currentState == RED) return LED_RED;
-  if (currentState == YELLOW) return LED_YELLOW;
-  return LED_GREEN;
+void updateTerminal(int ldr, bool isDark) {
+  Serial.print("\033[H"); // Đưa con trỏ về đầu dòng
+  Serial.println("======= TRAFFIC CONTROL SYSTEM =======");
+  Serial.print("Anh sang: "); Serial.print(ldr);
+  Serial.print(" | Che do: "); 
+  if (isDark) Serial.println("\033[1;33mBAN DEM (NHAY VANG)\033[0m");
+  else {
+    Serial.print("BAN NGAY | Den: ");
+    if (currentState == RED) Serial.println("\033[1;31m[ DO ]\033[0m");
+    else if (currentState == YELLOW) Serial.println("\033[1;33m[ VANG ]\033[0m");
+    else Serial.println("\033[1;32m[ XANH ]\033[0m");
+  }
+  Serial.print("Dem nguoc: "); Serial.print(remainingSeconds); Serial.println(" s   ");
+  Serial.println("======================================");
 }
 
 void setup() {
@@ -67,66 +61,72 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   Serial.begin(115200);
-  Serial.println("Traffic Light Fixed!");
-
   display.setBrightness(7);
-
-  remainingSeconds = getCurrentSeconds();
-  display.showNumberDec(remainingSeconds);
+  
+  remainingSeconds = TIMES[currentState];
+  stateStartTime = millis();
 }
 
 void loop() {
   unsigned long now = millis();
+  int ldrValue = analogRead(LDR_PIN);
+  bool isDark = (ldrValue > DARK_THRESHOLD);
 
-  // ===== 1. BUTTON (không dùng delay) =====
-  static bool lastButtonState = HIGH;
-  bool buttonState = digitalRead(BUTTON_PIN);
-
-  if (lastButtonState == HIGH && buttonState == LOW && now - lastButtonTime > 200) {
-    displayEnabled = !displayEnabled;
-    lastButtonTime = now;
+  if (isDark) {
+    if (currentState != NIGHT_MODE) {
+      previousState = (currentState == NIGHT_MODE) ? RED : currentState;
+      currentState = NIGHT_MODE;
+      turnOffTrafficLED();
+    }
+    if (now - lastBlinkTime >= 500) {
+      lastBlinkTime = now;
+      ledStatus = !ledStatus;
+      digitalWrite(LED_YELLOW, ledStatus ? HIGH : LOW);
+    }
+    display.clear();
+    digitalWrite(LED_BLUE, LOW);
+    if (now - lastTickTime > 1000) { updateTerminal(ldrValue, true); lastTickTime = now; }
+    return; 
+  } 
+  else if (currentState == NIGHT_MODE) {
+    currentState = previousState;
+    remainingSeconds = TIMES[currentState];
+    stateStartTime = now;
   }
-  lastButtonState = buttonState;
 
-  // ===== 2. LED BLUE =====
-  digitalWrite(LED_BLUE, displayEnabled ? HIGH : LOW);
+  // 2. LOGIC ĐẾM NGƯỢC CHUẨN (Mỗi 1000ms thực tế)
+  if (now - stateStartTime >= 1000) {
+    stateStartTime = now;
+    remainingSeconds--;
+    
+    // Cập nhật Terminal mỗi giây
+    updateTerminal(ldrValue, false);
 
-  int currentSeconds = getCurrentSeconds();
-  int currentLed = getCurrentLed();
+    if (remainingSeconds < 0) {
+      if (currentState == RED) currentState = YELLOW;
+      else if (currentState == YELLOW) currentState = GREEN;
+      else currentState = RED;
+      remainingSeconds = TIMES[currentState];
+    }
+    
+    if (displayEnabled) display.showNumberDec(remainingSeconds);
+  }
 
-  // ===== 3. NHẤP NHÁY LED =====
+  // 3. NHẤP NHÁY LED THEO TRẠNG THÁI
   if (now - lastBlinkTime >= blinkInterval) {
     lastBlinkTime = now;
     ledStatus = !ledStatus;
+    int currentPin = (currentState == RED) ? LED_RED : (currentState == YELLOW ? LED_YELLOW : LED_GREEN);
     turnOffTrafficLED();
-    digitalWrite(currentLed, ledStatus ? HIGH : LOW);
+    digitalWrite(currentPin, ledStatus ? HIGH : LOW);
   }
 
-  // ===== 4. ĐẾM NGƯỢC =====
-  unsigned long elapsed = now - stateStartTime;
-  int secondsLeft = currentSeconds - (elapsed / speedFactor);
-  if (secondsLeft < 0) secondsLeft = 0;
-
-  if (secondsLeft != remainingSeconds) {
-    remainingSeconds = secondsLeft;
-    if (displayEnabled) display.showNumberDec(remainingSeconds);
+  // 4. NÚT BẤM
+  if (digitalRead(BUTTON_PIN) == LOW && now - lastButtonTime > 250) {
+    displayEnabled = !displayEnabled;
+    if (!displayEnabled) display.clear();
+    else display.showNumberDec(remainingSeconds);
+    lastButtonTime = now;
   }
-
-  if (!displayEnabled) {
-    display.clear();
-  }
-
-  // ===== 5. CHUYỂN ĐÈN =====
-  if (elapsed >= (unsigned long)currentSeconds * speedFactor) {
-    stateStartTime = now;
-    ledStatus = false;
-    turnOffTrafficLED();
-
-    if (currentState == RED) currentState = YELLOW;
-    else if (currentState == YELLOW) currentState = GREEN;
-    else currentState = RED;
-
-    remainingSeconds = getCurrentSeconds();
-    if (displayEnabled) display.showNumberDec(remainingSeconds);
-  }
+  digitalWrite(LED_BLUE, displayEnabled ? HIGH : LOW);
 }
