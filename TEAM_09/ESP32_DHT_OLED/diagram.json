@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "author": "TEAM_PROJECT",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": 120,
+      "left": 250,
+      "attrs": {}
+    },
+
+    {
+      "type": "wokwi-dht22",
+      "id": "dht",
+      "top": 20,
+      "left": 520,
+      "attrs": {}
+    },
+
+    {
+      "type": "board-ssd1306",
+      "id": "oled",
+      "top": 20,
+      "left": 20,
+      "attrs": { "i2c-address": "0x3c" }
+    },
+
+    {
+      "type": "wokwi-led",
+      "id": "ledG",
+      "top": 60,
+      "left": 380,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledY",
+      "top": 60,
+      "left": 420,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledR",
+      "top": 60,
+      "left": 460,
+      "attrs": { "color": "red" }
+    },
+
+    {
+      "type": "wokwi-resistor",
+      "id": "rG",
+      "top": 120,
+      "left": 380,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rY",
+      "top": 120,
+      "left": 420,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rR",
+      "top": 120,
+      "left": 460,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    }
+  ],
+
+  "connections": [
+
+    ["oled:GND", "esp:GND.1", "black", []],
+    ["oled:VCC", "esp:3V3", "red", []],
+    ["oled:SCL", "esp:D22", "green", []],
+    ["oled:SDA", "esp:D21", "green", []],
+
+
+    ["dht:VCC", "esp:3V3", "red", []],
+    ["dht:GND", "esp:GND.2", "black", []],
+    ["dht:SDA", "esp:D15", "blue", []],
+
+ 
+    ["esp:D27", "rG:1", "green", []],
+    ["rG:2", "ledG:A", "green", []],
+    ["ledG:C", "esp:GND.1", "black", []],
+
+
+    ["esp:D26", "rY:1", "yellow", []],
+    ["rY:2", "ledY:A", "yellow", []],
+    ["ledY:C", "esp:GND.1", "black", []],
+
+
+    ["esp:D25", "rR:1", "red", []],
+    ["rR:2", "ledR:A", "red", []],
+    ["ledR:C", "esp:GND.1", "black", []]
+  ],
+
+  "dependencies": {}
+}
