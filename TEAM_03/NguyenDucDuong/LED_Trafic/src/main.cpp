@@ -24,7 +24,6 @@ TrafficState currentState = RED_STATE;
 int lastDisplayedSec = -1;
 // button / blue-blink override
 bool blueMode = false;
-int pausedRemaining = 0;
 int lastButtonReading = HIGH;
 unsigned long lastButtonChangeMs = 0;
 const unsigned long debounceMs = 50;
@@ -67,10 +66,15 @@ void nextState() {
 }
 
 void setup() {
+  Serial.begin(115200);
+  delay(50);
+  Serial.println("setup start");
   pinMode(RED_PIN, OUTPUT);
   pinMode(YELLOW_PIN, OUTPUT);
   pinMode(GREEN_PIN, OUTPUT);
   pinMode(BLUE_PIN, OUTPUT);
+  // ensure blue LED starts OFF (wiring: HIGH -> ON, LOW -> OFF)
+  digitalWrite(BLUE_PIN, LOW);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   display.setBrightness(0x0f);
@@ -90,44 +94,20 @@ void loop() {
   }
   if ((now - lastButtonChangeMs) > debounceMs) {
     // stable
-    if (btn == LOW && !blueMode) {
-      // enter blue override (button pressed)
-      blueMode = true;
-      pausedRemaining = remaining > 0 ? remaining : 0;
-      // turn off traffic LEDs
-      digitalWrite(RED_PIN, LOW);
-      digitalWrite(YELLOW_PIN, LOW);
-      digitalWrite(GREEN_PIN, LOW);
-      // init blink (LED wired such that LOW = ON)
-      blinkLastMs = now;
-      blinkOn = false;
-      digitalWrite(BLUE_PIN, HIGH); // ensure off state at start
-      // clear display (optional)
-      display.clear();
-    } else if (btn == HIGH && blueMode) {
-      // button released -> resume traffic timer where it paused
-      blueMode = false;
-      stateStartMs = now;
-      stateDurationSec = pausedRemaining;
-      lastDisplayedSec = -1;
-      digitalWrite(BLUE_PIN, HIGH); // turn off when exiting override
-      // reapply current traffic light outputs without resetting timer
-      switch (currentState) {
-        case RED_STATE:
-          digitalWrite(RED_PIN, HIGH);
-          digitalWrite(YELLOW_PIN, LOW);
-          digitalWrite(GREEN_PIN, LOW);
-          break;
-        case GREEN_STATE:
-          digitalWrite(RED_PIN, LOW);
-          digitalWrite(YELLOW_PIN, LOW);
-          digitalWrite(GREEN_PIN, HIGH);
-          break;
-        case YELLOW_STATE:
-          digitalWrite(RED_PIN, LOW);
-          digitalWrite(YELLOW_PIN, HIGH);
-          digitalWrite(GREEN_PIN, LOW);
-          break;
+    // detect stable falling edge (press)
+    if ((now - lastButtonChangeMs) > debounceMs) {
+      if (btn == LOW && lastButtonReading == HIGH) {
+        // button pressed -> toggle blue blink mode
+        blueMode = !blueMode;
+        if (!blueMode) {
+          // turning mode OFF -> ensure LED is OFF (LOW = OFF)
+          digitalWrite(BLUE_PIN, LOW);
+        } else {
+          // turning mode ON -> start with LED ON immediately (HIGH = ON)
+          blinkLastMs = now;
+          blinkOn = true;
+          digitalWrite(BLUE_PIN, HIGH);
+        }
       }
     }
   }
@@ -138,10 +118,29 @@ void loop() {
     if (now - blinkLastMs >= blinkInterval) {
       blinkLastMs = now;
       blinkOn = !blinkOn;
-      // LED wired reversed in diagram: LOW -> ON, HIGH -> OFF
-      digitalWrite(BLUE_PIN, blinkOn ? LOW : HIGH);
+      // LED active-high: HIGH -> ON, LOW -> OFF
+      digitalWrite(BLUE_PIN, blinkOn ? HIGH : LOW);
+      Serial.print("blink: ");
+      Serial.println(blinkOn ? "ON" : "OFF");
     }
-    return; // skip normal traffic processing while overriding
+    // do NOT return; allow traffic to continue while blue warning blinks
+  }
+
+  // allow serial command 'b' to toggle blueMode for manual test
+  if (Serial.available()) {
+    char c = Serial.read();
+    if (c == 'b' || c == 'B') {
+      blueMode = !blueMode;
+      Serial.print("serial toggle blueMode -> ");
+      Serial.println(blueMode ? "ON" : "OFF");
+      if (blueMode) {
+        blinkLastMs = now;
+        blinkOn = true;
+        digitalWrite(BLUE_PIN, HIGH);
+      } else {
+        digitalWrite(BLUE_PIN, LOW);
+      }
+    }
   }
 
   // Normal traffic flow
