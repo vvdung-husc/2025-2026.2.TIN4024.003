@@ -32,7 +32,13 @@ DHT dht(DHTPIN, DHTTYPE);
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 void turn_led(int led1, int led2, int led3){
-
+  digitalWrite(led1, HIGH);
+  digitalWrite(led2, LOW);
+  digitalWrite(led3, LOW);
+  delay(250);
+  digitalWrite(led1, LOW);
+  digitalWrite(led2, LOW);
+  digitalWrite(led3, LOW);
 }
 
 float getTempC() {
@@ -44,15 +50,54 @@ float gitHumid() {
 }
 
 String gettemp(float C){
-
+  if(C < 13) return "TOO COLD";
+  else if (C < 20) return "COLD";
+  else if (C < 25) return "COOL";
+  else if (C < 30) return "WARM";
+  else if (C < 35) return "HOT";
+  else return "TOO HOT";
 }
 
 void screenWrite(float C, float H){
-
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.println(("Temperature: " + gettemp(C)).c_str());
+  display.print(C,2);
+  display.println("°C");
+  display.println("Humidity: " );
+  display.print(H,2);
+  display.println("%");
+  display.display();
 }
 
 void Check(){
-  
+  float C = getTempC();
+  float H = gitHumid();
+
+  if (C < 13){
+    turn_led(blue_lead, yellow_lead, red_lead);
+    screenWrite(C, H);
+  }
+  else if (C < 20){
+    turn_led(blue_lead, yellow_lead, red_lead);
+    screenWrite(C, H);
+  }
+  else if (C < 25){
+    turn_led(yellow_lead, blue_lead, red_lead);
+    screenWrite(C, H);
+  }
+  else if (C < 30){
+    turn_led(yellow_lead, blue_lead, red_lead);
+    screenWrite(C, H);
+  }
+  else if (C < 35){
+    turn_led(red_lead, yellow_lead, blue_lead);
+    screenWrite(getTempC(), gitHumid());
+  }
+  else{
+    turn_led(red_lead, yellow_lead, blue_lead);
+    screenWrite(C, H);
+  }
 }
 
 void setup() {
