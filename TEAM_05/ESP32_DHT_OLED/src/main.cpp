@@ -4,6 +4,7 @@ THÔNG TIN NHÓM 5:
 2. Nguyễn Phú Tuấn
 3. Phan Bá Hóa
 4.Dương Hữu Tiến
+5. Nguyễn Huỳnh Minh Tiến
 */
 
 #include <Arduino.h>
