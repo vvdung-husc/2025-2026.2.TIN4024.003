@@ -1,5 +1,6 @@
 #include <Arduino.h>
 
+static const int LED_TMP;
 static const int LED_RED    = 25;
 static const int LED_YELLOW = 26;
 static const int LED_GREEN  = 27;

@@ -159,8 +159,21 @@ void loop()
 {
   ProcessButton();
 
+  uint16_t ldrValue = ReadLDR();
+
+  // 🌙 Trời rất tối → NIGHT MODE
+  if (ldrValue > NIGHT_LDR_THRESHOLD)
+  {
+    digitalWrite(PIN_LED_BLUE, HIGH);
+    NightModeBlinkRed();
+    return;
+  }
+
+  // ☀️ Trời sáng → đèn giao thông bình thường
+  digitalWrite(PIN_LED_BLUE, isPause ? HIGH : LOW);
+
   if (!isPause)
   {
-    ProcessLEDTrafficWaitTime();
+    TrafficLightNormal();
   }
 }
