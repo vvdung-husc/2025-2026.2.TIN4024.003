@@ -1,12 +1,3 @@
-/*
-THÔNG TIN NHÓM 4
-1. Hồ Trọng Nghĩa
-2. Hồ Gia Long
-3. Nguyễn Thắng 
-4. Đoàn Phúc
-5. Hoàn Nhật Duy
-*/
-
 #include <Arduino.h>
 
 // put function declarations here:
