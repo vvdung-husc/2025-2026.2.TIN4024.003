@@ -1,3 +1,9 @@
+/*
+THÔNG TIN NHÓM 8
+1. Trương Hữu Ngọc
+2. 
+*/
+
 #include <Arduino.h>
 #include <DHT.h>
 #include <Wire.h>
