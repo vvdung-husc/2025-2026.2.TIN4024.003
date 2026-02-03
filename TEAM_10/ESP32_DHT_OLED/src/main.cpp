@@ -98,6 +98,18 @@ void setup() {
   display.clearDisplay();
   display.setTextColor(WHITE);
   display.display();
+
+    // ===== HIỂN THỊ LỜI CHÀO KHI KHỞI ĐỘNG =====
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setCursor(10, 20);
+  display.print("Xin chao");
+  display.display();
+
+  delay(2000);   // Hiện 2 giây
+
+  display.clearDisplay();  
+  display.display();
 }
 
 void loop() {
