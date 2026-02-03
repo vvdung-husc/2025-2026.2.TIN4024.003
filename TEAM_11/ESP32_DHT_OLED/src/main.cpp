@@ -1,6 +1,7 @@
 /*
 THÔNG TIN NHÓM 11
 1. Trần Quốc Tiến
+2. Trần Đức Quốc Chí
 */
 
 #include <Arduino.h>
@@ -11,7 +12,6 @@ THÔNG TIN NHÓM 11
 #include <string>
 
 using namespace std;
-
 
 int8_t red_lead = 4;
 int8_t yellow_lead = 2;
@@ -54,21 +54,48 @@ String gettemp(float C){
   else if (C < 20) return "COLD";
   else if (C < 25) return "COOL";
   else if (C < 30) return "WARM";
-  else if (C < 35) return "HOT";
+  else if (C <= 35) return "HOT"; // 30 - 35 : HOT  
   else return "TOO HOT";
 }
 
 void screenWrite(float C, float H){
   display.clearDisplay();
-  display.setCursor(0,0);
-  display.println(("Temperature: " + gettemp(C)).c_str());
-  display.print(C,2);
-  display.println("°C");
-  display.println("Humidity: " );
-  display.print(H,2);
-  display.println("%");
+
+  // Dòng 1: "Temperature: HOT"
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.print("Temperature: ");
+  display.println(gettemp(C));
+
+  // Dòng 2: số to + °C
+  display.setTextSize(2);
+  display.setCursor(0, 14);
+  display.print(C, 2);
+
+  int16_t x1, y1;
+  uint16_t w, h;
+  display.getTextBounds(String(C, 2), 0, 14, &x1, &y1, &w, &h);
+  display.setCursor(w + 6, 14);          // 6px là khoảng cách nhỏ
+  display.print((char)247);
+  display.print("C");
+
+  // Dòng 3: "Humidity:"
+  display.setTextSize(1);
+  display.setCursor(0, 38);
+  display.println("Humidity:");
+
+  // Dòng 4: số to + %
+  display.setTextSize(2);
+  display.setCursor(0, 48);
+  display.print(H, 2);
+
+  display.getTextBounds(String(H, 2), 0, 48, &x1, &y1, &w, &h);
+  display.setCursor(w + 6, 48);
+  display.print("%");
+
   display.display();
 }
+
 
 void Check(){
   float C = getTempC();
@@ -90,9 +117,9 @@ void Check(){
     turn_led(yellow_lead, blue_lead, red_lead);
     screenWrite(C, H);
   }
-  else if (C < 35){
+  else if (C <= 35){  // 30 - 35 : HOT  
     turn_led(red_lead, yellow_lead, blue_lead);
-    screenWrite(getTempC(), gitHumid());
+    screenWrite(C, H);
   }
   else{
     turn_led(red_lead, yellow_lead, blue_lead);
