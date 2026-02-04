@@ -3,6 +3,7 @@ THÔNG TIN NHÓM 8
 1. Trương Hữu Ngọc
 2. Hồ Bảo Toàn
 3. Nguyễn Vỹ Nguyên
+4. Nguyễn Văn Nhật Quang
 */
 
 #include <Arduino.h>
