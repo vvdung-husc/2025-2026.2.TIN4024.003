@@ -35,40 +35,47 @@ String strTemp;
 bool ledState = false;
 int8_t ledNumber = LED_BLUE;
 
+/* ================== SETUP ================== */
 void setup()
 {
-  // put your setup code here, to run once:
-  Serial.begin(9600); // 115200
+  // Serial
+  Serial.begin(9600);
+  Serial.println("ESP32 START");
 
+  // LED
   pinMode(LED_BLUE, OUTPUT);
   pinMode(LED_YELLOW, OUTPUT);
   pinMode(LED_RED, OUTPUT);
 
-  digitalWrite(LED_BLUE, LOW);   // OFF
-  digitalWrite(LED_YELLOW, LOW); // OFF
-  digitalWrite(LED_RED, LOW);    // OFF
+  digitalWrite(LED_BLUE, LOW);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_RED, LOW);
 
+  // DHT
   dht.begin();
 
-  TwoWire *_Wire = &Wire;
-  _Wire->setPins(OLED_SDA, OLED_SCL);
-  // initialize OLED display with I2C address 0x3C
+  // OLED I2C (ESP32)
+  Wire.setPins(OLED_SDA, OLED_SCL);
+
+  // Khởi tạo OLED
   if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C))
   {
-    Serial.println(F("failed to start SSD1306 OLED"));
-    while (1)
-      ;
+    Serial.println("FAILED TO START OLED");
+    while (1);
   }
 
-  delay(2000);         // wait two seconds for initializing
-  oled.clearDisplay(); // clear display
+  delay(2000);
+  oled.clearDisplay();
 
-  oled.setTextSize(2);               // set text size
-  oled.setTextColor(WHITE);          // set text color
-  oled.setCursor(0, 2);              // set position to display (x,y)
-  oled.println("   IOT\n Welcome!"); // set text
-  oled.display();                    // display on OLED
+  // Hiển thị chào mừng
+  oled.setTextSize(2);
+  oled.setTextColor(WHITE);
+  oled.setCursor(0, 10);
+  oled.println("  IOT");
+  oled.println(" Welcome!");
+  oled.display();
 }
+
 
 void loop()
 {
