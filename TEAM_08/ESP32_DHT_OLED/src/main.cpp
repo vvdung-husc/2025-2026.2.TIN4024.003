@@ -121,18 +121,13 @@ void loop() {
     display.clearDisplay();
 
     display.setCursor(0, 0);
-    display.print("Temp: ");
-    display.print(temperature);
-    display.println(" C");
-
+    display.print("Temp: " + String(temperature) + " C");
+    
     display.setCursor(0, 15);
-    display.print("Hum: ");
-    display.print(humidity);
-    display.println(" %");
+    display.print("Hum: " + String(humidity) + " %");
 
     display.setCursor(0, 30);
-    display.print("Status: ");
-    display.println(status);
+    display.print("Status: " + status);
 
     display.display();
   }
