@@ -2,6 +2,7 @@
 THÔNG TIN NHÓM 11
 1. Trần Quốc Tiến
 2. Trần Đức Quốc Chí
+3. Lê Tấn Toàn
 */
 
 #include <Arduino.h>
