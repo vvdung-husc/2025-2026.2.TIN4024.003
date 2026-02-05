@@ -18,7 +18,7 @@ void setup() {
   // put your setup code here, to run once:
   printf("Welcome IoT\n");
 
-  ldrSensor.setup(PIN_LDR, false); // VCC = 3.3V
+  ldrSensor.setup(PIN_LDR, false); // VCC = 3.3333v
 
   traficLight.setupPin(PIN_LED_RED, PIN_LED_YELLOW, PIN_LED_GREEN);
   traficLight.setupWaitTime(5, 3, 7); // seconds
