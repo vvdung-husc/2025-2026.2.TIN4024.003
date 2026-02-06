@@ -6,55 +6,63 @@ THÔNG TIN NHÓM 11
 4. Đặng Tấn Phát
 5. Hồ Văn Thạnh
 */
-
 #include <Arduino.h>
 #include <DHT.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-// ===================== PIN MAP (theo diagram) =====================
+// ===================== PIN MAP =====================
 static const int8_t LED_RED    = 4;
 static const int8_t LED_YELLOW = 2;
-static const int8_t LED_GREEN  = 15;   // Wokwi có thể là cyan, coi là GREEN
+static const int8_t LED_CYAN   = 15; 
 
 // ===================== DHT22 =====================
 #define DHTPIN  16
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
-// ===================== OLED SSD1306 =====================
+// ===================== OLED =====================
 #define SCREEN_WIDTH  128
 #define SCREEN_HEIGHT 64
 #define OLED_ADDR     0x3C
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-// ===================== LED BLINK (không dùng delay) =====================
-enum LedColor { GREEN, YELLOW, RED };
-
-static LedColor currentLed = GREEN;
+// ===================== LED STATES =====================
+enum LedColor { CYAN, YELLOW, RED };
+static LedColor currentLed = CYAN;
 static bool ledOn = false;
 static unsigned long lastBlinkMs = 0;
 static const unsigned long BLINK_PERIOD_MS = 250;
 
-// ===================== SENSOR READ PERIOD =====================
+// ===================== TIMER & VARS =====================
 static unsigned long lastReadMs = 0;
-static const unsigned long READ_PERIOD_MS = 1000; // đọc 1s/lần
+static const unsigned long READ_PERIOD_MS = 800;
 
-// ===================== HYSTERESIS (chống nhảy ngưỡng) =====================
-// Ngưỡng đề: <20 GREEN, 20-30 YELLOW, >=30 RED
-// Hysteresis: +/- 0.5C quanh ngưỡng để tránh đổi màu liên tục
+enum Mode {
+  MODE_AUTO_RANDOM, 
+  MODE_REAL_SENSOR, 
+  MODE_MANUAL_FIX   
+};
+
+Mode currentMode = MODE_REAL_SENSOR; 
+
+float currentTemp = 25.0; 
+float currentHum  = 60.0;
+float prevTemp = -999.0; 
+float prevHum  = -999.0;
 static const float HYS = 0.5f;
 
+// ===================== HELPERS =====================
 void allLedOff() {
   digitalWrite(LED_RED, LOW);
   digitalWrite(LED_YELLOW, LOW);
-  digitalWrite(LED_GREEN, LOW);
+  digitalWrite(LED_CYAN, LOW);
 }
 
 const char* ledName(LedColor c) {
   switch (c) {
-    case GREEN:  return "GREEN";
+    case CYAN:   return "CYAN";
     case YELLOW: return "YELLOW";
     case RED:    return "RED";
     default:     return "UNKNOWN";
@@ -64,93 +72,92 @@ const char* ledName(LedColor c) {
 void updateBlinkLed() {
   unsigned long now = millis();
   if (now - lastBlinkMs < BLINK_PERIOD_MS) return;
-
   lastBlinkMs = now;
   ledOn = !ledOn;
-
   allLedOff();
   if (!ledOn) return;
 
   switch (currentLed) {
-    case GREEN:  digitalWrite(LED_GREEN, HIGH); break;
+    case CYAN:   digitalWrite(LED_CYAN, HIGH); break;
     case YELLOW: digitalWrite(LED_YELLOW, HIGH); break;
     case RED:    digitalWrite(LED_RED, HIGH); break;
   }
 }
 
-// ===== phân loại nhiệt độ (6 mức text) =====
+// ===== XỬ LÝ LỆNH TẮT =====
+void checkSerialCommand() {
+  if (Serial.available() > 0) {
+    String input = Serial.readStringUntil('\n'); 
+    input.trim(); 
+    input.toLowerCase(); 
+
+    if (input == "w") {
+      currentMode = MODE_REAL_SENSOR;
+      Serial.println(F(">> [MODE] WOKWI SLIDER"));
+      prevTemp = -999; 
+    }
+    else if (input == "a") {
+      currentMode = MODE_AUTO_RANDOM;
+      Serial.println(F(">> [MODE] AUTO RANDOM"));
+      prevTemp = -999;
+    }
+    else if (input.startsWith("t")) {
+      currentMode = MODE_MANUAL_FIX;
+      currentTemp = input.substring(1).toFloat();
+      prevTemp = -999; 
+    }
+  }
+}
+
 String tempLabel(float C) {
-  if (C < 13) return "TOO COLD";
-  if (C < 20) return "COLD";
-  if (C < 25) return "COOL";
-  if (C < 30) return "WARM";
-  if (C <= 35) return "HOT";
+  if (C < 13.0) return "TOO COLD";
+  if (C < 20.0) return "COLD";
+  if (C < 25.0) return "COOL";
+  if (C < 30.0) return "WARM";
+  if (C <= 35.0) return "HOT";
   return "TOO HOT";
 }
 
-// ===== LED theo đề + hysteresis để ổn định =====
 LedColor ledByTempWithHys(float C, LedColor prev) {
-  // Nếu đang GREEN: chỉ lên YELLOW khi C >= 20 + HYS
-  if (prev == GREEN) {
+  if (prev == CYAN) {
     if (C >= 20.0f + HYS) return YELLOW;
-    return GREEN;
+    return CYAN;
   }
-
-  // Nếu đang YELLOW:
-  // - xuống GREEN khi C < 20 - HYS
-  // - lên RED khi C >= 30 + HYS
   if (prev == YELLOW) {
-    if (C < 20.0f - HYS) return GREEN;
+    if (C < 20.0f - HYS) return CYAN;
     if (C >= 30.0f + HYS) return RED;
     return YELLOW;
   }
-
-  // Nếu đang RED: chỉ xuống YELLOW khi C < 30 - HYS
   if (prev == RED) {
     if (C < 30.0f - HYS) return YELLOW;
     return RED;
   }
-
-  // fallback
-  if (C < 20.0f) return GREEN;
+  if (C < 20.0f) return CYAN;
   if (C < 30.0f) return YELLOW;
   return RED;
-}
-
-void showErrorOnOled(const char* msg) {
-  display.clearDisplay();
-  display.setTextColor(WHITE);
-  display.setTextSize(1);
-  display.setCursor(0, 0);
-  display.println(msg);
-  display.display();
 }
 
 void screenWrite(float C, float H, LedColor ledState) {
   display.clearDisplay();
   display.setTextColor(WHITE);
 
-  // Dòng 1: trạng thái nhiệt độ
   display.setTextSize(1);
   display.setCursor(0, 0);
   display.print("Temp: ");
-  display.println(tempLabel(C));
+  display.print(tempLabel(C));
 
-  // Dòng 2: số nhiệt độ lớn
+  display.setCursor(90, 0);
+  if (currentMode == MODE_AUTO_RANDOM) display.print("AUTO");
+  else if (currentMode == MODE_REAL_SENSOR) display.print("WOKWI");
+  else display.print("FIXED");
+
   display.setTextSize(2);
   display.setCursor(0, 14);
-  display.print(C, 2);
-
-  // ký tự độ
+  display.print(C, 1);
   display.cp437(true);
-  int16_t x1, y1;
-  uint16_t w, h;
-  display.getTextBounds(String(C, 2), 0, 14, &x1, &y1, &w, &h);
-  display.setCursor(w + 6, 14);
   display.write((uint8_t)248);
   display.print("C");
 
-  // Dòng 3: Humidity + LED state (để thầy nhìn là hiểu)
   display.setTextSize(1);
   display.setCursor(0, 38);
   display.print("Hum: ");
@@ -158,10 +165,9 @@ void screenWrite(float C, float H, LedColor ledState) {
   display.print("%  LED:");
   display.println(ledName(ledState));
 
-  // Dòng 4: độ ẩm lớn
   display.setTextSize(2);
   display.setCursor(0, 48);
-  display.print(H, 2);
+  display.print(H, 1);
   display.print("%");
 
   display.display();
@@ -172,55 +178,57 @@ void setup() {
 
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_YELLOW, OUTPUT);
-  pinMode(LED_GREEN, OUTPUT);
+  pinMode(LED_CYAN, OUTPUT);
   allLedOff();
 
-  // OLED I2C theo diagram: SDA=13, SCL=12
   Wire.begin(13, 12);
-
   if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR)) {
-    Serial.println(F("SSD1306 allocation failed"));
     while (true) delay(100);
   }
   display.clearDisplay();
   display.display();
-
   dht.begin();
+
+  Serial.println(F("=== SYSTEM STARTED ==="));
+  Serial.println(F(">> Go 'a' -> Auto "));
+  Serial.println(F(">> Go 'w' -> Wokwi "));
 }
 
 void loop() {
-  // LED nhấp nháy theo trạng thái hiện tại
   updateBlinkLed();
+  checkSerialCommand(); 
 
-  // đọc DHT theo chu kỳ
   unsigned long now = millis();
   if (now - lastReadMs >= READ_PERIOD_MS) {
     lastReadMs = now;
 
-    float C = dht.readTemperature();
-    float H = dht.readHumidity();
-
-    if (isnan(C) || isnan(H)) {
-      Serial.println("DHT22 read failed!");
-      currentLed = YELLOW;
-      showErrorOnOled("DHT22 read failed!");
-      return;
+    if (currentMode == MODE_AUTO_RANDOM) {
+      currentTemp += random(-80, 81) / 10.0; 
+      if (currentTemp < -5) currentTemp = -5;
+      if (currentTemp > 60) currentTemp = 60;
+      currentHum = 60.0; 
+    }
+    else if (currentMode == MODE_REAL_SENSOR) {
+      float t = dht.readTemperature();
+      float h = dht.readHumidity();
+      if (!isnan(t) && !isnan(h)) {
+        currentTemp = t;
+        currentHum = h;
+      }
     }
 
-    // update LED theo đề + hysteresis
-    currentLed = ledByTempWithHys(C, currentLed);
+    if (currentTemp != prevTemp || currentHum != prevHum) {
+      currentLed = ledByTempWithHys(currentTemp, currentLed);
+      screenWrite(currentTemp, currentHum, currentLed);
 
-    // update OLED
-    screenWrite(C, H, currentLed);
+      Serial.print(currentMode == MODE_AUTO_RANDOM ? "[AUTO] " : (currentMode == MODE_REAL_SENSOR ? "[WOKWI] " : "[FIXED] "));
+      Serial.print("Temp="); Serial.print(currentTemp, 1);
+      Serial.print("C | Hum="); Serial.print(currentHum, 1);
+      Serial.print("% | Level="); Serial.print(tempLabel(currentTemp));
+      Serial.print(" | LED="); Serial.println(ledName(currentLed));
 
-    // log serial (dễ chụp nộp)
-    Serial.print("Temp=");
-    Serial.print(C, 2);
-    Serial.print("C | Hum=");
-    Serial.print(H, 2);
-    Serial.print("% | Level=");
-    Serial.print(tempLabel(C));
-    Serial.print(" | LED=");
-    Serial.println(ledName(currentLed));
+      prevTemp = currentTemp;
+      prevHum = currentHum;
+    }
   }
 }
