@@ -4,6 +4,7 @@ THÔNG TIN NHÓM 11
 2. Trần Đức Quốc Chí
 3. Lê Tấn Toàn
 4. Đặng Tấn Phát
+5. Hồ Văn Thạnh
 */
 
 #include <Arduino.h>
