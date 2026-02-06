@@ -2,7 +2,7 @@
 THÔNG TIN NHÓM X
 1. Trần Quang Tiến
 2. Nguyễn Trọng Quý
-3. Trần Hưng Trường Vũ
+3. Trần Hưng Trường Vủ
 */
 
 #include <Wire.h>
@@ -143,17 +143,43 @@ void loop() {
   // ======================
   // OLED DISPLAY (NO STATUS)
   // ======================
+  // ======================
+  // OLED DISPLAY (CẬP NHẬT HIỂN THỊ)
+  // ======================
   display.clearDisplay();
+  display.setTextColor(SSD1306_WHITE);
 
+  // 1. Hiển thị tiêu đề Nhiệt độ & Trạng thái
   display.setTextSize(1);
   display.setCursor(0, 0);
   display.print("Temperature:");
-  display.print(temp, 1);
-  display.print(" C");
+  
+  // Hiển thị Trạng thái (HOT, COLD...) ở phía bên phải
+  int16_t x1, y1;
+  uint16_t w, h;
+  display.getTextBounds(statusText, 0, 0, &x1, &y1, &w, &h);
+  display.setCursor(128 - w, 0); // Đẩy chữ sát lề phải
+  display.print(statusText);
 
-  display.setCursor(0, 16);
-  display.print("Humidity:   ");
-  display.print(humi, 1);
+  // 2. Hiển thị số Nhiệt độ lớn
+  display.setTextSize(2);
+  display.setCursor(0, 12);
+  display.print(temp, 2); // Hiển thị 2 số thập phân
+  display.setTextSize(1);
+  display.print(" ");
+  display.setTextSize(2);
+  display.print((char)247); // Ký hiệu độ (°)
+  display.print("C");
+
+  // 3. Hiển thị tiêu đề Độ ẩm
+  display.setTextSize(1);
+  display.setCursor(0, 35);
+  display.print("Humidity:");
+
+  // 4. Hiển thị số Độ ẩm lớn
+  display.setTextSize(2);
+  display.setCursor(0, 47);
+  display.print(humi, 2);
   display.print(" %");
 
   display.display();
