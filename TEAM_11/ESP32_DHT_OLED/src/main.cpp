@@ -28,16 +28,18 @@ DHT dht(DHTPIN, DHTTYPE);
 #define OLED_ADDR     0x3C
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-// ===================== LED STATES =====================
+// ===================== LED VARS =====================
 enum LedColor { CYAN, YELLOW, RED };
 static LedColor currentLed = CYAN;
 static bool ledOn = false;
 static unsigned long lastBlinkMs = 0;
-static const unsigned long BLINK_PERIOD_MS = 250;
+
+// Mặc định nháy chậm (1000ms)
+unsigned long currentBlinkPeriod = 1000; 
 
 // ===================== TIMER & VARS =====================
 static unsigned long lastReadMs = 0;
-static const unsigned long READ_PERIOD_MS = 800;
+static const unsigned long READ_PERIOD_MS = 800; // Đọc cảm biến 0.8s/lần
 
 enum Mode {
   MODE_AUTO_RANDOM, 
@@ -69,9 +71,20 @@ const char* ledName(LedColor c) {
   }
 }
 
+void calculateBlinkSpeed(float t) {
+
+  if (t < 13.0 || t > 35.0) {
+    currentBlinkPeriod = 200; 
+  } 
+  else {
+    currentBlinkPeriod = 500;
+  }
+}
+
 void updateBlinkLed() {
   unsigned long now = millis();
-  if (now - lastBlinkMs < BLINK_PERIOD_MS) return;
+  if (now - lastBlinkMs < currentBlinkPeriod) return;
+  
   lastBlinkMs = now;
   ledOn = !ledOn;
   allLedOff();
@@ -84,7 +97,6 @@ void updateBlinkLed() {
   }
 }
 
-// ===== XỬ LÝ LỆNH TẮT =====
 void checkSerialCommand() {
   if (Serial.available() > 0) {
     String input = Serial.readStringUntil('\n'); 
@@ -120,6 +132,7 @@ String tempLabel(float C) {
 
 LedColor ledByTempWithHys(float C, LedColor prev) {
   if (prev == CYAN) {
+    if (C >= 30.0f + HYS) return RED;   
     if (C >= 20.0f + HYS) return YELLOW;
     return CYAN;
   }
@@ -129,7 +142,8 @@ LedColor ledByTempWithHys(float C, LedColor prev) {
     return YELLOW;
   }
   if (prev == RED) {
-    if (C < 30.0f - HYS) return YELLOW;
+    if (C < 20.0f - HYS) return CYAN;    
+    if (C < 30.0f - HYS) return YELLOW; 
     return RED;
   }
   if (C < 20.0f) return CYAN;
@@ -157,6 +171,12 @@ void screenWrite(float C, float H, LedColor ledState) {
   display.cp437(true);
   display.write((uint8_t)248);
   display.print("C");
+
+ 
+  display.setTextSize(1);
+  display.setCursor(60, 14);
+  if(currentBlinkPeriod == 200) display.print("FAST");
+  else display.print("SLOW");
 
   display.setTextSize(1);
   display.setCursor(0, 38);
@@ -195,7 +215,7 @@ void setup() {
 }
 
 void loop() {
-  updateBlinkLed();
+  updateBlinkLed(); 
   checkSerialCommand(); 
 
   unsigned long now = millis();
@@ -216,6 +236,7 @@ void loop() {
         currentHum = h;
       }
     }
+    calculateBlinkSpeed(currentTemp);
 
     if (currentTemp != prevTemp || currentHum != prevHum) {
       currentLed = ledByTempWithHys(currentTemp, currentLed);
