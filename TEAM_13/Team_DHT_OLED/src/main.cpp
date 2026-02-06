@@ -1,6 +1,7 @@
 /*
 THÔNG TIN NHÓM X
 1. Nguyễn Tấn Nhân
+2. Thân Hoàng Phước Minh
 */
 
 #include <Arduino.h>
