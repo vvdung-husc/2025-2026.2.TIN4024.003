@@ -2,7 +2,7 @@
 THÔNG TIN NHÓM X
 1. Trần Hoàng Lộc - 22T1020654
 2. Vo Nguyen Huyen Vi - 21T1020828	 
-3. 
+3. Đoàn Đức Kiệt - 21T1020463
 */
 
 #include <Arduino.h>
