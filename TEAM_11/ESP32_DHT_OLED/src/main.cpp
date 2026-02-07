@@ -5,7 +5,31 @@
 4. Đặng Tấn Phát
 5. Hồ Văn Thạnh
 */
+/*
+=== Mapping theo đề bài Team_DHT_OLED ===
+- Cảm biến: DHT22 đọc nhiệt độ (°C) và độ ẩm (%)
+- OLED SSD1306 128x64 I2C (addr 0x3C) hiển thị:
+  + Dòng 1: Temperature: <TOO COLD|COLD|COOL|WARM|HOT|TOO HOT>
+  + Dòng 2: giá trị nhiệt độ (°C)
+  + Dòng 3-4: Humidity và giá trị (%)
 
+=== Ngưỡng nhiệt độ theo đề ===
+< 13        : TOO COLD  -> GREEN
+13 - < 20   : COLD      -> GREEN
+20 - < 25   : COOL      -> YELLOW
+25 - < 30   : WARM      -> YELLOW
+30 - <= 35  : HOT       -> RED
+> 35        : TOO HOT   -> RED
+
+=== Quy ước LED trong mô phỏng ===
+- GREEN (theo đề) được mô phỏng bằng LED "cyan" trên Wokwi.
+- GPIO mapping (theo code hiện tại):
+  RED    -> GPIO4
+  YELLOW -> GPIO2
+  GREEN  -> GPIO15 (LED cyan)
+- SDA = GPIO13
+- SCL = GPIO12
+*/
 #include <Arduino.h>
 #include <DHT.h>
 #include <Wire.h>
