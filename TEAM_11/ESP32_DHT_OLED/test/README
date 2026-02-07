@@ -1,89 +1,11 @@
-# ESP32_DHT_OLED (Nhóm 11)
 
-## 1) Thông tin nhóm
-- Trần Quốc Tiến  
-- Trần Đức Quốc Chí  
-- Lê Tấn Toàn  
-- Đặng Tấn Phát  
-- Hồ Văn Thạnh  
+This directory is intended for PlatformIO Test Runner and project tests.
 
-## 2) Mục tiêu đề bài
-- Đọc **nhiệt độ (°C)** và **độ ẩm (%)** từ cảm biến **DHT22**.
-- Hiển thị thông tin lên **OLED SSD1306 128x64 (I2C, 0x3C)**:
-  - Dòng 1: `Temperature: <TOO COLD|COLD|COOL|WARM|HOT|TOO HOT>`
-  - Dòng 2: giá trị nhiệt độ (°C) dạng số lớn
-  - Dòng 3: `Humidity:`
-  - Dòng 4: giá trị độ ẩm (%) dạng số lớn
-- **LED nhấp nháy** theo mức nhiệt độ: GREEN / YELLOW / RED.
+Unit Testing is a software testing method by which individual units of
+source code, sets of one or more MCU program modules together with associated
+control data, usage procedures, and operating procedures, are tested to
+determine whether they are fit for use. Unit testing finds problems early
+in the development cycle.
 
-> Lưu ý: Trong mô phỏng Wokwi, LED **GREEN** được đại diện bằng LED màu **cyan**.
-
-## 3) Ngưỡng nhiệt độ theo yêu cầu
-| Nhiệt độ (°C) | Trạng thái | LED |
-|---|---|---|
-| T < 13 | TOO COLD | GREEN |
-| 13 ≤ T < 20 | COLD | GREEN |
-| 20 ≤ T < 25 | COOL | YELLOW |
-| 25 ≤ T < 30 | WARM | YELLOW |
-| 30 ≤ T ≤ 35 | HOT | RED |
-| T > 35 | TOO HOT | RED |
-
-## 4) Sơ đồ nối dây (theo code & diagram.json hiện tại)
-
-### DHT22
-- **Signal** → GPIO **16**
-- **VCC** → **3V3**
-- **GND** → **GND**
-
-### OLED SSD1306 (I2C)
-- **SDA** → GPIO **13**
-- **SCL** → GPIO **12**
-- **VCC** → **3V3**
-- **GND** → **GND**
-- **I2C Address**: `0x3C`
-
-### LED
-- **RED** → GPIO **4**
-- **YELLOW** → GPIO **2**
-- **GREEN (cyan)** → GPIO **15**
-
-## 5) Cách hoạt động (tóm tắt)
-- ESP32 đọc nhiệt độ/độ ẩm từ DHT22.
-- Dựa theo ngưỡng nhiệt độ, chương trình:
-  - chọn nhãn trạng thái (TOO COLD ... TOO HOT)
-  - nhấp nháy LED tương ứng (bật 250ms rồi tắt)
-  - hiển thị nhiệt độ và độ ẩm lên OLED.
-- Chu kỳ cập nhật: `Check()` chạy mỗi ~500ms (có delay LED 250ms bên trong).
-
-## 6) Chạy mô phỏng Wokwi
-1. Mở dự án Wokwi với `diagram.json`.
-2. Chạy mô phỏng.
-3. Thay đổi thông số của DHT22 (Temperature/Humidity) để kiểm thử các mức:
-   - 12°C → TOO COLD (GREEN/cyan)
-   - 18°C → COLD (GREEN/cyan)
-   - 22°C → COOL (YELLOW)
-   - 27°C → WARM (YELLOW)
-   - 33°C → HOT (RED)
-   - 36°C → TOO HOT (RED)
-
-## 7) Chạy bằng PlatformIO
-### Cài thư viện (platformio.ini)
-Dự án dùng các thư viện:
-- `adafruit/DHT sensor library`
-- `adafruit/Adafruit Unified Sensor`
-- `adafruit/Adafruit SSD1306`
-- `adafruit/Adafruit GFX Library`
-
-### Build/Upload/Monitor
-- Build: `pio run`
-- Upload: `pio run -t upload`
-- Monitor: `pio device monitor`
-
-> Monitor baud theo cấu hình PlatformIO: `monitor_speed = 115200`  
-> (Trong code `Serial.begin(9600)` chỉ phục vụ debug cơ bản, không ảnh hưởng phần hiển thị/LED.)
-
-## 8) Tệp quan trọng
-- `src/main.cpp` : chương trình chính
-- `diagram.json` : sơ đồ mô phỏng Wokwi
-- `platformio.ini` : cấu hình PlatformIO
-- `wokwi.toml` (nếu có) : cấu hình build output cho Wokwi + PlatformIO
+More information about PlatformIO Unit Testing:
+- https://docs.platformio.org/en/latest/advanced/unit-testing/index.html
