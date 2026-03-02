@@ -42,12 +42,19 @@
       "top": 3.14,
       "left": -220.57,
       "attrs": { "i2cAddress": "0x3c" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": 110.4,
+      "left": 47.45,
+      "rotate": 90,
+      "attrs": { "value": "1000" }
     }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
     [ "esp:RX", "$serialMonitor:TX", "", [] ],
-    [ "led3:A", "esp:15", "cyan", [ "v19.2", "h105.6", "v230.4" ] ],
     [ "led3:C", "esp:GND.2", "black", [ "v38.4", "h96.4" ] ],
     [ "led2:C", "esp:GND.2", "black", [ "v38.4", "h38.8" ] ],
     [ "led1:C", "esp:GND.2", "black", [ "h-18.8", "v105.6" ] ],
@@ -61,7 +68,9 @@
     [ "oled1:GND", "esp:GND.1", "black", [ "v-9.6", "h96", "v249.6" ] ],
     [ "oled1:VCC", "esp:3V3", "red", [ "h96.15", "v115.2" ] ],
     [ "oled1:SCL", "esp:12", "green", [ "h0.3", "v-28.8", "h105.6", "v259.2" ] ],
-    [ "oled1:SDA", "esp:13", "green", [ "h0.07", "v-19.2", "h86.4", "v268.8" ] ]
+    [ "oled1:SDA", "esp:13", "green", [ "h0.07", "v-19.2", "h86.4", "v268.8" ] ],
+    [ "esp:15", "r3:2", "cyan", [ "h28.8", "v-123.6" ] ],
+    [ "r3:1", "led3:A", "cyan", [ "h-96", "v-68.2" ] ]
   ],
   "dependencies": {}
 }
