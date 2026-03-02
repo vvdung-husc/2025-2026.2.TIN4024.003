@@ -1,7 +1,9 @@
 /*
 THÔNG TIN NHÓM 8
 1. Trương Hữu Ngọc
-2. 
+2. Hồ Bảo Toàn
+3. Nguyễn Vỹ Nguyên
+4. Nguyễn Văn Nhật Quang
 */
 
 #include <Arduino.h>
@@ -33,7 +35,8 @@ float temperature = 0;
 float humidity = 0;
 bool ledState = false;
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
 
   pinMode(LED_RED, OUTPUT);
@@ -46,11 +49,13 @@ void setup() {
 
   dht.begin();
 
-  Wire.begin(13,12);
+  Wire.begin(13, 12); // set chân SDA là GPIO 13, chân SCL là GPIO 12
 
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+  {
     Serial.println("Khong tim thay OLED");
-    while (true);
+    while (true)
+      ;
   }
 
   display.clearDisplay();
@@ -59,27 +64,31 @@ void setup() {
   display.setCursor(0, 0);
   display.println("System Ready");
   display.display();
-  delay(3000);
+  delay(3000); // Dung 3s de hien thi thong bao
 }
 
-void loop() {
+void loop()
+{
   unsigned long now = millis();
 
   // ===== Doc DHT moi 2s =====
-  if (now - dhtTimer >= 2000) {
+  if (now - dhtTimer >= 2000)
+  {
     dhtTimer = now;
 
-    float t = dht.readTemperature(); //Nếu lỗi -> t = NaN (Not a Number)
+    float t = dht.readTemperature(); // Nếu lỗi -> t = NaN (Not a Number)
     float h = dht.readHumidity();
 
-    if (!isnan(t) && !isnan(h)) { //Kiểm tra dữ liệu có hợp lệ không (không phải NaN)
+    if (!isnan(t) && !isnan(h))
+    { // Kiểm tra dữ liệu có hợp lệ không (không phải NaN)
       temperature = t;
       humidity = h;
     }
   }
 
   // ===== Blink LED moi 500ms =====
-  if (now - blinkTimer >= 500) {
+  if (now - blinkTimer >= 500)
+  {
     blinkTimer = now;
     ledState = !ledState;
 
@@ -89,28 +98,35 @@ void loop() {
 
     String status = "";
 
-    if (ledState) {
-      if (temperature < 13) {
+    if (ledState)
+    {
+      if (temperature < 13)
+      {
         status = "TOO COLD";
         digitalWrite(LED_BLUE, HIGH);
       }
-      else if (temperature < 20) {
+      else if (temperature < 20)
+      {
         status = "COLD";
         digitalWrite(LED_BLUE, HIGH);
       }
-      else if (temperature < 25) {
+      else if (temperature < 25)
+      {
         status = "COOL";
         digitalWrite(LED_YELLOW, HIGH);
       }
-      else if (temperature < 30) {
+      else if (temperature < 30)
+      {
         status = "WARM";
         digitalWrite(LED_YELLOW, HIGH);
       }
-      else if (temperature <= 35) {
+      else if (temperature <= 35)
+      {
         status = "HOT";
         digitalWrite(LED_RED, HIGH);
       }
-      else {
+      else
+      {
         status = "TOO HOT";
         digitalWrite(LED_RED, HIGH);
       }
@@ -120,18 +136,13 @@ void loop() {
     display.clearDisplay();
 
     display.setCursor(0, 0);
-    display.print("Temp: ");
-    display.print(temperature);
-    display.println(" C");
+    display.print("Temp: " + String(temperature) + " C");
 
     display.setCursor(0, 15);
-    display.print("Hum: ");
-    display.print(humidity);
-    display.println(" %");
+    display.print("Hum: " + String(humidity) + " %");
 
     display.setCursor(0, 30);
-    display.print("Status: ");
-    display.println(status);
+    display.print("Status: " + status);
 
     display.display();
   }
