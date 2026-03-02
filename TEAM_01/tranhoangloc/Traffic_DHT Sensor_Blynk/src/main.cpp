@@ -29,9 +29,6 @@ bool systemOn = true;
 bool modeAuto = true;
 int counter = 10;
 
-// =========================
-// CHUYỂN TRẠNG THÁI ĐÈN
-// =========================
 void changeState() {
   if (currentState == GREEN) {
     currentState = YELLOW;
@@ -47,15 +44,12 @@ void changeState() {
   }
 }
 
-// =========================
-// LOGIC ĐÈN + COUNTDOWN WEB
-// =========================
 void trafficLogic() {
 
   if (!systemOn) {
     digitalWrite(LED_PIN, LOW);
     display.clear();
-    Blynk.virtualWrite(V4, "OFF");   // Hiển thị OFF trên label
+    Blynk.virtualWrite(V4, "OFF");
     return;
   }
 
@@ -66,13 +60,10 @@ void trafficLogic() {
     }
   }
 
-  // Hiển thị lên LED 7 đoạn
   display.showNumberDec(counter);
 
-  // Gửi countdown lên Web (Label)
   Blynk.virtualWrite(V4, String(counter) + " s");
 
-  // Điều khiển LED
   if (currentState == RED) {
     digitalWrite(LED_PIN, LOW);
   } else {
@@ -80,9 +71,6 @@ void trafficLogic() {
   }
 }
 
-// =========================
-// GỬI NHIỆT ĐỘ & ĐỘ ẨM
-// =========================
 void sendSensorData() {
   float temperature = dht.readTemperature();
   float humidity = dht.readHumidity();
@@ -93,9 +81,6 @@ void sendSensorData() {
   }
 }
 
-// =========================
-// NHẬN TỪ BLYNK
-// =========================
 BLYNK_WRITE(V0) {
   systemOn = param.asInt();
 }
@@ -104,9 +89,6 @@ BLYNK_WRITE(V3) {
   modeAuto = param.asInt();
 }
 
-// =========================
-// NÚT NHẤN MANUAL
-// =========================
 void checkButton() {
   static bool lastState = HIGH;
   bool current = digitalRead(BUTTON_PIN);
@@ -121,9 +103,6 @@ void checkButton() {
   lastState = current;
 }
 
-// =========================
-// SETUP
-// =========================
 void setup() {
   Serial.begin(115200);
 
@@ -140,9 +119,6 @@ void setup() {
   timer.setInterval(100L, checkButton);
 }
 
-// =========================
-// LOOP
-// =========================
 void loop() {
   Blynk.run();
   timer.run();
