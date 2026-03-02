@@ -58,6 +58,33 @@
 
   
 + [Cài đặt thư viện cho PlatformIO](https://khuenguyencreator.com/huong-dan-cai-dat-platform-io-lap-trinh-esp32/#Cai_dat_thu_vien_cho_Platformio)
+
+--------------------
+***2026-03-02***
+
+--------------------
+### - [Blynk | Traffic & DHT Sensor](https://wokwi.com/projects/424198235739151361)
++ ***Thư viện sử dụng***
+	> **# DHT sensor library** by Avishay - Arduino library for DHT11, DHT22, etc Temp & Humidity Sensors
+	
+![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/traffic_blynk_1.png)
+
+--------------------
+
+### - [Esp32 | Blynk & Wokwi](https://wokwi.com/projects/423790624312911873) 
+
+#### Tham khảo
+
++ [Sử dụng Blynk IOT với ESP32](https://dienthongminhesmart.com/lap-trinh-esp32/blynk-iot-va-esp32/)
++ ***Thư viện sử dụng***
+	> **TM1637** by Avishay - Arduino library for TM1637
+ 
+	> **Blynk** by Volodymyr Shymanskyy
+
++ [Sử dụng Blynk IOT trên ESP32 (nếu không xem được từ youtube)](https://it.iothings.vn/downloads/mp4/Blynk_IOT_ESP32_WEB.mp4)
+
++ [https://it.iothings.vn/downloads/mp4](https://it.iothings.vn/downloads/mp4/)
+
 -------------------------------
 
 ## [***1. Dự án - LED BLINK***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/Project_LED_Blink.md)
