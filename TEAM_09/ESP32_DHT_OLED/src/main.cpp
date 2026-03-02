@@ -4,7 +4,7 @@ THÔNG TIN NHÓM TEAM_09
 2. Đinh Hoàng Nhân
 3. Lê Ngọc Minh Thư
 4. Lê Văn Minh
-5.
+5. Nguyễn Quang Hùng
 */
 
 #include <Arduino.h>

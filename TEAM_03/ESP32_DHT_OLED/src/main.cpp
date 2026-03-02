@@ -4,6 +4,7 @@ THÔNG TIN NHÓM TEAM_03
 2. Phan Văn Hữu Thắng - 22T1020427
 3. Hoàng Văn Thắng - 22T1020742
 4. Nguyễn Đức Dương - 22T1020087
+5. Lê Thanh Nhật - 22T1020691
 */
 #include <Arduino.h>
 #include <Wire.h>
