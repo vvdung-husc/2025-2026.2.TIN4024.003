@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "author": "ESP32 IoT",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": 34.8,
+      "left": 138.2,
+      "attrs": { "color": "blue", "flip": "1" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": -3.4,
+      "left": 163.2,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-tm1637-7segment",
+      "id": "sevseg1",
+      "top": -120,
+      "left": 60,
+      "attrs": { "color": "red" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "btn1:1.l", "esp:GND.2", "black", [] ],
+    [ "btn1:2.l", "esp:23", "blue", [] ],
+    [ "led1:A", "esp:21", "blue", [] ],
+    [ "led1:C", "esp:GND.3", "black", [ "v9.6", "h-62.44" ] ],
+    [ "sevseg1:VCC", "esp:5V", "red", [ "h33.43", "v292.76", "h-264.19" ] ],
+    [ "sevseg1:DIO", "esp:19", "green", [ "h23.83", "v177.56" ] ],
+    [ "sevseg1:CLK", "esp:18", "green", [ "h14.23", "v196.76" ] ],
+    [ "sevseg1:GND", "esp:GND.3", "black", [ "h4.63", "v148.76" ] ]
+  ],
+  "dependencies": {}
+}
