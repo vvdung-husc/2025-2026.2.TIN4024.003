@@ -2,16 +2,15 @@
 #include <TM1637Display.h>
 
 /* Fill in information from Blynk Device Info here */
-#define BLYNK_TEMPLATE_ID "TMPL6Qu2IH8IF"
-#define BLYNK_TEMPLATE_NAME "ESMART"
-#define BLYNK_AUTH_TOKEN "erv7guvWycx6kCW8jz-VZghIbsQPU5y8"
+#define BLYNK_TEMPLATE_ID "TMPL6pwGzIarE"
+#define BLYNK_TEMPLATE_NAME "Nguyễn Trọng Quý"
+#define BLYNK_AUTH_TOKEN "eafHZN-zNA_tjvAI-TTx1MFIKDFWkSyN"
 // Phải để trước khai báo sử dụng thư viện Blynk
 
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
 
-// Wokwi sử dụng mạng WiFi "Wokwi-GUEST" không cần mật khẩu cho việc chạy mô phỏng
 char ssid[] = "Wokwi-GUEST";  //Tên mạng WiFi
 char pass[] = "";             //Mật khẩu mạng WiFi
 
