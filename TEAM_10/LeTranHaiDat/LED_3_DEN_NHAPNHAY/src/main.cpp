@@ -1,4 +1,12 @@
 #include <Arduino.h>
+#define BLYNK_PRINT Serial
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <BlynkSimpleEsp32.h>
+
+#define BLYNK_TEMPLATE_ID "TMPL6eI0ry5lH"
+#define BLYNK_TEMPLATE_NAME "ESMART"
+#define BLYNK_AUTH_TOKEN "QsL8C37BTJyIBqnA5NROFpYUh1TKdXT7"
 
 uint8_t PIN_RED = 25;
 uint8_t PIN_GREEN = 27;
