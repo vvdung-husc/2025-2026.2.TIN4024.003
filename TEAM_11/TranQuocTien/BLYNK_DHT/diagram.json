@@ -4,6 +4,12 @@
   "editor": "wokwi",
   "parts": [
     {
+      "type": "wokwi-wifi",
+      "id": "wifi",
+      "top": -60,
+      "left": 0
+    },
+    {
       "type": "board-esp32-devkit-c-v4",
       "id": "esp",
       "top": -57.6,
