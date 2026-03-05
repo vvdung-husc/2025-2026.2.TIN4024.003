@@ -2,18 +2,18 @@
 #define BLYNK_TEMPLATE_NAME "Blynk Traffic DHT sensor"
 #define BLYNK_AUTH_TOKEN "EZPKS73v1Rey8uiWh1M34pFWEIMu4Thz"
 
+#include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
 #include <DHT.h>
 #include <TM1637Display.h>
 
-// WiFi Credentials
-char auth[] = BLYNK_AUTH_TOKEN;
+// ===== WIFI =====
 char ssid[] = "Wokwi-GUEST";
 char pass[] = "";
 
-// Cấu hình chân theo diagram.json
+// ===== PIN CONFIG =====
 #define DHTPIN 16
 #define DHTTYPE DHT22
 #define CLK 18
@@ -21,84 +21,156 @@ char pass[] = "";
 #define LED_PIN 21
 #define BTN_PIN 23
 
+// ===== OBJECT =====
 DHT dht(DHTPIN, DHTTYPE);
 TM1637Display display(CLK, DIO);
 BlynkTimer timer;
 
-int uptimeSeconds = 0;
-bool counterActive = true; // Trạng thái đếm (nút nhấn điều khiển)
-bool lastButtonState = HIGH;
+// ===== BIẾN HỆ THỐNG =====
+unsigned long currentMiliseconds = 0;
+unsigned long uptimeSeconds = 0;
 
-// Hàm đọc cảm biến và gửi lên Blynk
-void sendSensorData() {
+bool counterActive = true;   // Trạng thái công tắc
+bool showTemperature = true; // Luân phiên hiển thị
+
+// ===== HÀM CHỐNG DỘI GIỐNG CODE MẪU =====
+bool IsReady(unsigned long &ulTimer, uint32_t milisecond)
+{
+  if (currentMiliseconds - ulTimer < milisecond)
+    return false;
+  ulTimer = currentMiliseconds;
+  return true;
+}
+
+// ===== ĐỒNG BỘ TRẠNG THÁI =====
+void updateSystemState()
+{
+  digitalWrite(LED_PIN, counterActive ? HIGH : LOW);
+  Blynk.virtualWrite(V4, counterActive);
+}
+
+// ===== XỬ LÝ NÚT NHẤN (giống updateBlueButton) =====
+void updateCounterButton()
+{
+  static unsigned long lastTime = 0;
+  static int lastValue = HIGH;
+
+  if (!IsReady(lastTime, 50))
+    return;
+
+  int v = digitalRead(BTN_PIN);
+  if (v == lastValue)
+    return;
+
+  lastValue = v;
+  if (v == LOW)
+    return; // xử lý khi nhả nút
+
+  counterActive = !counterActive;
+
+  if (counterActive)
+  {
+    Serial.println("Counter ON");
+  }
+  else
+  {
+    Serial.println("Counter OFF");
+  }
+
+  updateSystemState();
+}
+
+// ===== ĐỌC CẢM BIẾN =====
+void sendSensorData()
+{
   float h = dht.readHumidity();
   float t = dht.readTemperature();
 
-  if (!isnan(h) && !isnan(t)) {
-    Blynk.virtualWrite(V1, t); // Nhiệt độ
-    Blynk.virtualWrite(V2, h); // Độ ẩm
-    
-    // Hiển thị nhiệt độ lên TM1637
-    display.showNumberDec((int)t, false, 2, 0); 
-    uint8_t deg[] = { 0x39 }; // Ký tự 'C'
-    display.setSegments(deg, 1, 3);
+  if (!isnan(h) && !isnan(t))
+  {
+
+    Blynk.virtualWrite(V1, t);
+    Blynk.virtualWrite(V2, h);
+
+    if (showTemperature && counterActive)
+    {
+      display.showNumberDec((int)t);
+    }
   }
 }
 
-// Hàm đếm thời gian và điều khiển LED
-void countTime() {
-  if (counterActive) {
-    uptimeSeconds++;
-    Blynk.virtualWrite(V0, uptimeSeconds);
-    
-    // Hiệu ứng LED chớp nhẹ khi đang đếm (tùy chọn) hoặc bật sáng
-    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-    Blynk.virtualWrite(V3, digitalRead(LED_PIN) ? 255 : 0);
-  } else {
-    digitalWrite(LED_PIN, LOW);
-    Blynk.virtualWrite(V3, 0);
+// ===== ĐẾM THỜI GIAN =====
+void countTime()
+{
+  if (!counterActive)
+    return;
+
+  uptimeSeconds++;
+  Blynk.virtualWrite(V0, uptimeSeconds);
+
+  if (!showTemperature)
+  {
+    display.showNumberDec(uptimeSeconds);
   }
 }
 
-// Kiểm tra nút nhấn vật lý để bật/tắt đếm
-void checkButton() {
-  bool currentState = digitalRead(BTN_PIN);
-  if (currentState == LOW && lastButtonState == HIGH) { // Nhấn nút (Active Low)
-    counterActive = !counterActive;
-    Serial.println(counterActive ? "Counter: ON" : "Counter: OFF");
-    delay(50); // Debounce nhẹ
-  }
-  lastButtonState = currentState;
+// ===== LUÂN PHIÊN HIỂN THỊ =====
+void toggleDisplay()
+{
+  showTemperature = !showTemperature;
+  display.clear();
 }
 
-void setup() {
+// ===== SETUP =====
+void setup()
+{
   Serial.begin(115200);
-  
+
   pinMode(LED_PIN, OUTPUT);
   pinMode(BTN_PIN, INPUT_PULLUP);
-  
+
   dht.begin();
   display.setBrightness(0x0f);
-  
-  // Kết nối Blynk
-  Blynk.begin(auth, ssid, pass);
-  
-  // Thiết lập DNS để tránh lỗi DNS Failed trên Wokwi
-  //IPAddress dns(8, 8, 8, 8);
-  //WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, dns);
 
-  // Khởi tạo Timer
-  timer.setInterval(2000L, sendSensorData); // Đọc cảm biến mỗi 2 giây
-  timer.setInterval(1000L, countTime);      // Đếm giây mỗi 1 giây
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+
+  Blynk.syncVirtual(V4); // tránh lệch trạng thái khi reconnect
+
+  updateSystemState();
+
+  timer.setInterval(2000L, sendSensorData);
+  timer.setInterval(1000L, countTime);
+  timer.setInterval(5000L, toggleDisplay);
+
+  Serial.println("== SYSTEM READY ==");
 }
 
-void loop() {
+// ===== LOOP =====
+void loop()
+{
   Blynk.run();
   timer.run();
-  checkButton(); // Kiểm tra nút nhấn liên tục
+
+  currentMiliseconds = millis();
+  updateCounterButton();
 }
 
-// Cho phép bật/tắt đếm từ App Blynk qua Switch V4
-BLYNK_WRITE(V4) {
+// ===== NHẬN LỆNH TỪ APP =====
+BLYNK_WRITE(V4)
+{
   counterActive = param.asInt();
+
+  if (counterActive)
+  {
+    Serial.println("Blynk -> Counter ON");
+  }
+  else
+  {
+    Serial.println("Blynk -> Counter OFF");
+  }
+
+  updateSystemState();
 }
