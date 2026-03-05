@@ -84,8 +84,13 @@
 ## => Đăng ký tài khoản https://openweathermap.org/, sử dụng API http://ip4.iothings.vn?geo=1 và API https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API key} để thực hiện trên Blynk như hình sau
 > Xử lý chuỗi và JSON trả về từ API
 
+> Đính kèm ảnh của mobile và web lên github, trong ảnh phải có tên sinh viên thực hiện
+
 ![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/ESP32_API.png)
 
++ [***Đính kèm ảnh của mobile và web lên github***](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/mobile_esp32_dht.png)
+
+	> Ảnh phải có tên của cá nhân trong ứng dụng
 --------------------
 ***2026-03-02***
 
