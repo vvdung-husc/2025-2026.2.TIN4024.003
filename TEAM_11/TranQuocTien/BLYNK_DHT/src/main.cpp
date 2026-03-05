@@ -5,7 +5,6 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
-#include <Arduino.h>
 #include <DHT.h>
 #include <TM1637Display.h>
 
@@ -24,111 +23,57 @@ DHT dht(DHTPIN, DHTTYPE);
 TM1637Display tm_display(CLK, DIO);
 
 bool check = true;
-int i = -1;
+int counterValue = 0;
+int phase = 0; // Biến điều phối pha
+BlynkTimer timer;
 
-void setup_screen() {
-  tm_display.setBrightness(7);
-  tm_display.clear();
+// --- HÀM ĐIỀU PHỐI HỆ THỐNG (MỖI 500MS) ---
+void systemScheduler() {
+  phase++;
+
+  // PHA 1 (Sau mỗi 1000ms): Cập nhật đồng hồ
+  if (phase % 2 == 0) {
+    if (check) {
+      counterValue++;
+      tm_display.showNumberDec(counterValue, false);
+      if (Blynk.connected()) {
+        Blynk.virtualWrite(V3, counterValue);
+      }
+    }
+  }
+
+  // PHA 2 (Lệch 500ms so với Pha 1): Cập nhật Cảm biến
+  // Cứ mỗi 2 giây (4 phase) sẽ đọc cảm biến một lần tại thời điểm "rảnh"
+  if (phase % 4 == 1) { 
+    float t = dht.readTemperature();
+    float h = dht.readHumidity();
+    
+    if (!isnan(t) && !isnan(h) && Blynk.connected()) {
+      Blynk.virtualWrite(V1, t);
+      Blynk.virtualWrite(V0, h);
+    }
+  }
+
+  if (phase >= 4) phase = 0; // Reset vòng lặp pha
 }
 
-void setup_sense() {
-  dht.begin();
-}
-
-float readTem() {
-  return dht.readTemperature();
-}
-
-float readHum() {
-  return dht.readHumidity();
-}
-
-void showScreen(int val) {
-  tm_display.showNumberDec(val, false);
-}
-
-void turn_on_Off(bool turn) {
-  if (turn == true)
-    digitalWrite(blue_led, HIGH);
-  else
-    digitalWrite(blue_led, LOW);
-  tm_display.setBrightness(7, turn);
+BLYNK_CONNECTED() {
+  Blynk.virtualWrite(V2, check);
+  Blynk.virtualWrite(V3, check ? counterValue : 0);
 }
 
 BLYNK_WRITE(V2) {
-  check = param.asInt(); 
-  turn_on_Off(check);
-  if (check) i = -1;
-}
-// --- MODEL SURGERY 1: Ép Web cập nhật theo Mạch ngay khi vừa Online ---
-BLYNK_CONNECTED() {
-  // Gửi trạng thái thực tế của đèn lên Web để khớp Switch
-  Blynk.virtualWrite(V2, check); 
-  
-  // Gửi giá trị thời gian hiện tại lên để xóa bỏ việc đứng yên ở số 0
+  check = param.asInt();
+  digitalWrite(blue_led, check ? HIGH : LOW);
+  tm_display.setBrightness(7, check);
   if (check) {
-    Blynk.virtualWrite(V3, i + 1);
+    counterValue = 0;
+    tm_display.showNumberDec(0);
   } else {
-    Blynk.virtualWrite(V3, 0);
+    tm_display.clear();
+    counterValue = 0;
   }
-  
-  // Cập nhật ngay lập tức cảm biến
-  Blynk.virtualWrite(V1, readTem());
-  Blynk.virtualWrite(V0, readHum());
-}
-
-void run(){
-  // Khởi tạo (Giữ nguyên của bạn)
-  check = true; 
-  i = -1;
-  showScreen(i+1);
-  int lastbutt= 1;
-  unsigned long lastConnectAttempt = 0;
-
-  while (true)
-  {
-    for(int j=0; j< 100; j++){
-      if (WiFi.status() == WL_CONNECTED) {
-        if (!Blynk.connected()) {
-          // --- MODEL SURGERY 2: Thử kết nối sớm hơn ở lần đầu tiên ---
-          // Thay vì đợi 10s, lần đầu sẽ thử ngay sau 1s
-          unsigned long retryInterval = (lastConnectAttempt == 0) ? 1000 : 10000;
-          
-          if (millis() - lastConnectAttempt >= retryInterval) {
-            lastConnectAttempt = millis();
-            Blynk.connect(2000); // Tăng lên 2s để Handshake chắc chắn hơn trên Wokwi
-          }
-        } else {
-          Blynk.run(); 
-        }
-      }
-
-      int currentbutt = digitalRead(button);
-      if(currentbutt == 0 && lastbutt == 1){
-        check = !check;
-        turn_on_Off(check);
-        
-        if (Blynk.connected()) {
-          Blynk.virtualWrite(V2, check); 
-          Blynk.virtualWrite(V3, (check) ? (i + 1) : 0);
-        }
-        i = -1;
-        showScreen(i+1);
-      }
-      lastbutt = currentbutt;
-      delay(10);
-    }
-
-    i++;
-    showScreen(i+1);
-    
-    if (Blynk.connected()) {
-      // Đẩy V3 liên tục để Web nhảy số theo giây
-      Blynk.virtualWrite(V3, (check) ? (i + 1) : 0);
-      Blynk.virtualWrite(V1, readTem());
-      Blynk.virtualWrite(V0, readHum());
-    }
-  }
+  if (Blynk.connected()) Blynk.virtualWrite(V3, 0);
 }
 
 void setup() {
@@ -137,16 +82,40 @@ void setup() {
   pinMode(button, INPUT_PULLUP);
   digitalWrite(blue_led, HIGH);
 
-  setup_screen();
-  setup_sense();
+  tm_display.setBrightness(7);
+  tm_display.clear();
+  dht.begin();
   
   WiFi.begin(ssid, pass);
-  // Ép đích danh server để tăng tốc độ kết nối
   Blynk.config(BLYNK_AUTH_TOKEN, "blynk.cloud", 80);
-  
-  delay(1000);
+
+  // Nhịp tim hệ thống: 500ms
+  timer.setInterval(500L, systemScheduler); 
 }
 
 void loop() {
-  run();
+  if (WiFi.status() == WL_CONNECTED) {
+    Blynk.run();
+  }
+  timer.run();
+
+  // Nút nhấn vật lý
+  static int lastButt = 1;
+  int currentButt = digitalRead(button);
+  if (currentButt == 0 && lastButt == 1) {
+    check = !check;
+    digitalWrite(blue_led, check ? HIGH : LOW);
+    tm_display.setBrightness(7, check);
+    
+    counterValue = 0;
+    if (check) tm_display.showNumberDec(0);
+    else tm_display.clear();
+
+    if (Blynk.connected()) {
+      Blynk.virtualWrite(V2, check);
+      Blynk.virtualWrite(V3, 0);
+    }
+    delay(10); 
+  }
+  lastButt = currentButt;
 }
