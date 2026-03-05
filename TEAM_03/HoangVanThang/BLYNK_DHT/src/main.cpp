@@ -7,42 +7,51 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
+#include <DHT.h>            //Thư viện đọc cảm biến DHT
 
 // Wokwi sử dụng mạng WiFi "Wokwi-GUEST" không cần mật khẩu cho việc chạy mô phỏng
 char ssid[] = "Wokwi-GUEST";  //Tên mạng WiFi
 char pass[] = "";             //Mật khẩu mạng WiFi
 
-#define PIN_LED_RED  23 //Chân kết đèn LED RED
+#define PIN_LED_RED  21 //Chân kết đèn LED BLUE (nối GPIO21 theo diagram)
+#define PIN_DHT      16 //Chân DATA của DHT22 nối vào GPIO16
+#define DHT_TYPE     DHT22
 
-// Non-blocking
-bool IsReady(unsigned long &ulTimer, uint32_t millisecond)
-{
-    if (millis() - ulTimer < millisecond) return false;
-    ulTimer = millis();
-    return true;
+DHT dht(PIN_DHT, DHT_TYPE); //Khởi tạo đối tượng DHT
+BlynkTimer timer;            //Bộ hẹn giờ Blynk
+
+void sendToBlynk() {
+  // Uptime
+  unsigned long uptime = millis() / 1000;
+  Serial.printf("Uptime: %lu seconds\n", uptime);
+  Blynk.virtualWrite(V0, uptime);
+
+  // Nhiệt độ
+  float nhietDo = dht.readTemperature();
+  float doAm    = dht.readHumidity();
+
+  if (isnan(nhietDo) || isnan(doAm)) {
+    Serial.println("Loi doc cam bien DHT22!");
+    return;
+  }
+  Serial.printf("Nhiet do: %.1f C - Do am: %.1f %%\n", nhietDo, doAm);
+  Blynk.virtualWrite(V2, nhietDo); //Gửi nhiệt độ lên V2
+  Blynk.virtualWrite(V3, doAm);    //Gửi độ ẩm lên V3
 }
-void uptimeBlynk();
 
 void setup() {
-  // put your setup code here, to run once:
+  Serial.begin(115200);
   pinMode(PIN_LED_RED, OUTPUT);
-  digitalWrite(PIN_LED_RED, LOW);  //Đảm bảo đèn LED RED tắt khi khởi động
-  Blynk.begin(BLYNK_AUTH_TOKEN,ssid, pass); //Kết nối đến mạng WiFi và Blynk
+  digitalWrite(PIN_LED_RED, LOW);
+  dht.begin();
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+
+  timer.setInterval(5000L, sendToBlynk); //Gửi tất cả lên Blynk mỗi 5 giây
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  Blynk.run();  //Chạy Blynk để cập nhật trạng thái từ Blynk Cloud
-
-  uptimeBlynk(); //Gọi hàm cập nhật thời gian hoạt động lên Blynk
-}
-
-void uptimeBlynk(){
-  static unsigned long lastTime = 0;
-  if (!IsReady(lastTime, 1000)) return; //Kiểm tra và cập nhật lastTime sau mỗi 1 giây
-  unsigned long value = lastTime / 1000;
-  printf("Uptime: %lu seconds\n", value); //In thời gian hoạt động ra Serial Monitor
-  Blynk.virtualWrite(V0, value);  //Gửi giá trị lên chân ảo V0 trên ứng dụng Blynk.
+  Blynk.run();
+  timer.run();
 }
 
 //được gọi mỗi khi có dữ liệu mới được gửi từ ứng dụng Blynk đến thiết bị.
