@@ -82,7 +82,8 @@ void parseGeoInfo(String payload, IP4_Info& ipInfo) {
 }
 
 //Key lấy từ openweathermap.org khi đăng ký tài khoản
-#define OPENWEATHERMAP_KEY "97d811df52e633c8fe035406bad9025c" //Thay KEY của bạn vào đây
+//#define OPENWEATHERMAP_KEY "97d811df52e633c8fe035406bad9025c"
+#define OPENWEATHERMAP_KEY "x" //Thay KEY của bạn vào đây
 String urlWeather;  //Biến lưu url https://openweathermap.org/
 
 //API Get http://ip4.iothings.vn/?geo=1
