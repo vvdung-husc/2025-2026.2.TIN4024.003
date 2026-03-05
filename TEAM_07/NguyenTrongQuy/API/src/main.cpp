@@ -1,9 +1,10 @@
 #include <Arduino.h>
+#include <TM1637Display.h>
 
 /* Blynk */
-#define BLYNK_TEMPLATE_ID "TMPL6q7N9b6-s"
-#define BLYNK_TEMPLATE_NAME "API"
-#define BLYNK_AUTH_TOKEN "YOUR_BLYNK_TOKEN"   // <-- thay khi chạy thật
+#define BLYNK_TEMPLATE_ID "TMPL6pwGzIarE"
+#define BLYNK_TEMPLATE_NAME "Nguyễn Trọng Quý"
+#define BLYNK_AUTH_TOKEN "eafHZN-zNA_tjvAI-TTx1MFIKDFWkSyN"
 
 #include <WiFi.h>
 #include <WiFiClient.h>
@@ -12,234 +13,245 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
-#define WIFI_SSID "Wokwi-GUEST"
-#define WIFI_PASSWORD ""
-#define WIFI_CHANNEL 6
+/* WIFI */
+char ssid[] = "Wokwi-GUEST";
+char pass[] = "";
 
-/* ===================== STRUCT ===================== */
+/* PIN */
+#define btnBLED 23
+#define pinBLED 21
 
-struct IP4_Info {
+#define CLK 18
+#define DIO 19
+
+TM1637Display display(CLK, DIO);
+
+/* TIMER */
+unsigned long currentMiliseconds = 0;
+bool blueButtonON = true;
+
+/* IP + GEO */
+struct IP4_Info{
   String ip4;
   String latitude;
-  String longtitude;
+  String longitude;
 };
 
 IP4_Info ip4Info;
 
-unsigned long currentMiliseconds = 0;
+/* WEATHER API */
+#define OPENWEATHERMAP_KEY "9dc3891bec15c42c054d4cd0e6277621"
 
-/* ===================== TIMER ===================== */
+String urlWeather;
 
-bool IsReady(unsigned long &ulTimer, uint32_t milisecond) {
-  if (currentMiliseconds - ulTimer < milisecond) return false;
-  ulTimer = currentMiliseconds;
+/* TIMER FUNCTION */
+
+bool IsReady(unsigned long &timer, uint32_t ms){
+  if (currentMiliseconds - timer < ms) return false;
+  timer = currentMiliseconds;
   return true;
 }
 
-/* ===================== FORMAT STRING ===================== */
+/* PARSE GEO INFO */
 
-String StringFormat(const char* fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-
-  int len = vsnprintf(NULL, 0, fmt, args);
-  va_end(args);
-
-  char* buffer = (char*)malloc(len + 1);
-
-  va_start(args, fmt);
-  vsnprintf(buffer, len + 1, fmt, args);
-  va_end(args);
-
-  String result = buffer;
-  free(buffer);
-
-  return result;
-}
-
-/* ===================== GEO PARSE ===================== */
-
-void parseGeoInfo(String payload, IP4_Info& ipInfo) {
+void parseGeoInfo(String payload){
 
   String values[7];
   int index = 0;
 
-  while (payload.length() > 0 && index < 7) {
+  while(payload.length() > 0 && index < 7){
 
-    int pos = payload.indexOf('|');
+    int delimiter = payload.indexOf('|');
 
-    if (pos == -1) {
+    if(delimiter == -1){
       values[index++] = payload;
       break;
     }
 
-    values[index++] = payload.substring(0, pos);
-    payload = payload.substring(pos + 1);
+    values[index++] = payload.substring(0,delimiter);
+    payload = payload.substring(delimiter + 1);
   }
 
-  ipInfo.ip4 = values[0];
-  ipInfo.longtitude = values[5];
-  ipInfo.latitude = values[6];
+  ip4Info.ip4 = values[0];
+  ip4Info.longitude = values[5];
+  ip4Info.latitude = values[6];
 
-  Serial.printf("IP: %s\n", values[0].c_str());
-  Serial.printf("City: %s\n", values[4].c_str());
-  Serial.printf("Longitude: %s\n", values[5].c_str());
-  Serial.printf("Latitude: %s\n", values[6].c_str());
+  Serial.print("IP: ");
+  Serial.println(ip4Info.ip4);
 }
 
-/* ===================== WEATHER ===================== */
+/* GET IP + LOCATION */
 
-#define OPENWEATHERMAP_KEY "YOUR_OPENWEATHER_API_KEY"
-
-String urlWeather;
-
-/* ===================== GET GEO ===================== */
-
-void getAPI() {
-
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("WiFi error");
-    return;
-  }
+void getAPI(){
 
   HTTPClient http;
 
   http.begin("http://ip4.iothings.vn/?geo=1");
 
-  int httpCode = http.GET();
+  int code = http.GET();
 
-  if (httpCode > 0) {
+  if(code == 200){
 
     String response = http.getString();
 
-    parseGeoInfo(response, ip4Info);
+    parseGeoInfo(response);
 
-    String googleMaps = StringFormat(
-      "https://www.google.com/maps/place/%s,%s",
-      ip4Info.latitude.c_str(),
-      ip4Info.longtitude.c_str()
-    );
-
-    Serial.println(googleMaps);
-
-    urlWeather = StringFormat(
-      "https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%s&units=metric",
-      ip4Info.latitude.c_str(),
-      ip4Info.longtitude.c_str(),
-      OPENWEATHERMAP_KEY
-    );
+    urlWeather =
+    "http://api.openweathermap.org/data/2.5/weather?lat=" +
+    ip4Info.latitude +
+    "&lon=" +
+    ip4Info.longitude +
+    "&appid=" +
+    OPENWEATHERMAP_KEY +
+    "&units=metric";
 
     Serial.println(urlWeather);
+
+    Blynk.virtualWrite(V1, ip4Info.ip4);
+
+    String link =
+    "https://www.google.com/maps/place/" +
+    ip4Info.latitude + "," +
+    ip4Info.longitude;
+
+    Blynk.virtualWrite(V2, link);
   }
 
   http.end();
 }
 
-/* ===================== GET TEMP ===================== */
+/* UPDATE TEMPERATURE */
 
-void updateTemp() {
+void updateTemp(){
 
   static unsigned long lastTime = 0;
-  static float temp_ = -1000;
 
-  if (!IsReady(lastTime, 10000)) return;  // 10s
+  if(!IsReady(lastTime,10000)) return;
 
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("WiFi error");
-    return;
-  }
+  if(urlWeather == "") return;
+
+  if(WiFi.status() != WL_CONNECTED) return;
 
   HTTPClient http;
 
   http.begin(urlWeather);
 
-  int httpCode = http.GET();
+  int code = http.GET();
 
-  if (httpCode > 0) {
+  if(code == 200){
 
-    String payload = http.getString();
+    String response = http.getString();
 
-    StaticJsonDocument<1024> doc;
+    JsonDocument doc;
 
-    if (deserializeJson(doc, payload) == DeserializationError::Ok) {
+    DeserializationError error = deserializeJson(doc,response);
 
-      float temp = doc["main"]["temp"];
-
-      if (temp != temp_) {
-
-        temp_ = temp;
-
-        Serial.print("Temperature: ");
-        Serial.println(temp_);
-
-        Blynk.virtualWrite(V3, temp_);
-      }
+    if(error){
+      Serial.println("JSON ERROR");
+      http.end();
+      return;
     }
+
+    float temp = doc["main"]["temp"];
+
+    Serial.print("Temperature: ");
+    Serial.println(temp);
+
+    Blynk.virtualWrite(V3,temp);
   }
 
   http.end();
 }
 
-/* ===================== BLYNK ===================== */
+/* UPTIME */
 
-void onceCalled() {
-
-  static bool done = false;
-  if (done) return;
-
-  done = true;
-
-  String link = StringFormat(
-    "https://www.google.com/maps/place/%s,%s",
-    ip4Info.latitude.c_str(),
-    ip4Info.longtitude.c_str()
-  );
-
-  Blynk.virtualWrite(V1, ip4Info.ip4);
-  Blynk.virtualWrite(V2, link);
-}
-
-void uptimeBlynk() {
+void uptimeBlynk(){
 
   static unsigned long lastTime = 0;
 
-  if (!IsReady(lastTime, 1000)) return;
+  if(!IsReady(lastTime,1000)) return;
 
-  Blynk.virtualWrite(V0, lastTime / 1000);
+  unsigned long value = lastTime / 1000;
+
+  Blynk.virtualWrite(V0,value);
+
+  if(blueButtonON){
+    display.showNumberDec(value);
+  }
 }
 
-/* ===================== SETUP ===================== */
+/* BUTTON */
 
-void setup() {
+void updateBlueButton(){
+
+  static unsigned long lastTime = 0;
+  static int lastValue = HIGH;
+
+  if(!IsReady(lastTime,50)) return;
+
+  int v = digitalRead(btnBLED);
+
+  if(v == lastValue) return;
+
+  lastValue = v;
+
+  if(v == LOW) return;
+
+  blueButtonON = !blueButtonON;
+
+  digitalWrite(pinBLED,blueButtonON);
+
+  Blynk.virtualWrite(V4,blueButtonON);
+
+  if(!blueButtonON){
+    display.clear();
+  }
+}
+
+/* BLYNK RECEIVE */
+
+BLYNK_WRITE(V4){
+
+  blueButtonON = param.asInt();
+
+  digitalWrite(pinBLED,blueButtonON);
+
+  if(!blueButtonON){
+    display.clear();
+  }
+}
+
+/* SETUP */
+
+void setup(){
 
   Serial.begin(115200);
 
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD, WIFI_CHANNEL);
+  pinMode(pinBLED,OUTPUT);
+  pinMode(btnBLED,INPUT_PULLUP);
 
-  Serial.print("Connecting WiFi");
+  display.setBrightness(7);
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(200);
-    Serial.print(".");
-  }
+  Serial.println("Connecting Blynk...");
 
-  Serial.println(" Connected!");
+  Blynk.begin(BLYNK_AUTH_TOKEN,ssid,pass);
 
-  Blynk.config(BLYNK_AUTH_TOKEN);
-  Blynk.connect();
+  Serial.println("Connected");
 
   getAPI();
 }
 
-/* ===================== LOOP ===================== */
+/* LOOP */
 
-void loop() {
+void loop(){
 
   Blynk.run();
 
   currentMiliseconds = millis();
 
-  onceCalled();
-  updateTemp();
   uptimeBlynk();
+
+  updateBlueButton();
+
+  updateTemp();
 }
