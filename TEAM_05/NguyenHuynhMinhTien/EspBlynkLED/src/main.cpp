@@ -6,7 +6,6 @@
 #define BLYNK_TEMPLATE_NAME "EspBlynkLED"
 #define BLYNK_AUTH_TOKEN "TCATa8HpdQ7h9-aOwQ_n4kzRfkShskHo"
 // Phải để trước khai báo sử dụng thư viện Blynk
-
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
