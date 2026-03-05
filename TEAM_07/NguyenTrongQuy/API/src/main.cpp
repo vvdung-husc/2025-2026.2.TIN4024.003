@@ -40,7 +40,7 @@ struct IP4_Info{
 IP4_Info ip4Info;
 
 /* WEATHER API */
-#define OPENWEATHERMAP_KEY "9dc3891bec15c42c054d4cd0e6277621"
+#define OPENWEATHERMAP_KEY "YOUR_API_KEY"
 
 String urlWeather;
 
