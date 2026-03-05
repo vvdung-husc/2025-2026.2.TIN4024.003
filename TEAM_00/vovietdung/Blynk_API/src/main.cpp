@@ -1,9 +1,9 @@
 #include <Arduino.h>
 
 //Thay thông số BLYNK của bạn vào đây
-#define BLYNK_TEMPLATE_ID "TMPL6pO8nFxC2"
-#define BLYNK_TEMPLATE_NAME "ESP 32 API"
-#define BLYNK_AUTH_TOKEN "hJYYkZ1ho1XChVKJTlgglVK1tBeI3isB"
+#define BLYNK_TEMPLATE_ID "TMPL6q7N9b6-s"
+#define BLYNK_TEMPLATE_NAME "API"
+#define BLYNK_AUTH_TOKEN "vqYrTn6apzgCAyl4cNZe1PTHfZ7Z3u2M"
 
 
 #include <WiFi.h>
@@ -83,7 +83,7 @@ void parseGeoInfo(String payload, IP4_Info& ipInfo) {
 }
 
 //Key lấy từ openweathermap.org khi đăng ký tài khoản
-#define OPENWEATHERMAP_KEY "xxxxxx"; //Thay KEY của bạn vào đây
+#define OPENWEATHERMAP_KEY "xxxxxx" //Thay KEY của bạn vào đây
 String urlWeather;  //Biến lưu url https://openweathermap.org/
 
 //API Get http://ip4.iothings.vn/?geo=1
@@ -200,7 +200,7 @@ void setup(void) {
 }
 
 void loop(void) {
-  return; //commnet để chạy vòng lặp
+  //return; //commnet để chạy vòng lặp
   
   Blynk.run();  // Chạy vòng lặp Blynk
   
