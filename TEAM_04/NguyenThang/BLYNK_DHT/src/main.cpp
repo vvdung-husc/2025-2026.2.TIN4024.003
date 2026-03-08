@@ -2,7 +2,6 @@
 #define BLYNK_TEMPLATE_NAME "BLYNK DHT"
 #define BLYNK_AUTH_TOKEN "iOYpmxJtc3XgYwRT8taGmm0YC8A-EVcl"
 
-
 #define BLYNK_PRINT Serial
 
 #include <WiFi.h>
@@ -10,11 +9,10 @@
 #include <DHT.h>
 #include <TM1637Display.h>
 
-
 char ssid[] = "Wokwi-GUEST";
 char pass[] = "";
 
-/* GPIO theo diagram.json */
+/* GPIO */
 
 #define DHTPIN 16
 #define DHTTYPE DHT22
@@ -30,7 +28,6 @@ TM1637Display display(CLK, DIO);
 
 BlynkTimer timer;
 
-int uptime = 0;
 bool ledState = false;
 
 /* đọc sensor */
@@ -55,18 +52,25 @@ void sendSensor()
   Blynk.virtualWrite(V1, humidity);
 }
 
-/* cập nhật display */
+/* gửi uptime */
+
+void sendUptime()
+{
+  long uptime = millis() / 1000;
+  Blynk.virtualWrite(V3, uptime);
+}
+
+/* hiển thị lên display */
 
 void updateDisplay()
 {
-  uptime++;
+  long uptime = millis() / 1000;
   display.showNumberDec(uptime);
-  Blynk.virtualWrite(V2, uptime);
 }
 
 /* điều khiển LED từ app */
 
-BLYNK_WRITE(V3)
+BLYNK_WRITE(V2)
 {
   ledState = param.asInt();
   digitalWrite(LED_PIN, ledState);
@@ -80,7 +84,7 @@ void checkButton()
   {
     ledState = !ledState;
     digitalWrite(LED_PIN, ledState);
-    Blynk.virtualWrite(V3, ledState);
+    Blynk.virtualWrite(V2, ledState);
     delay(300);
   }
 }
@@ -98,6 +102,7 @@ void setup()
   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
 
   timer.setInterval(2000L, sendSensor);
+  timer.setInterval(1000L, sendUptime);
   timer.setInterval(1000L, updateDisplay);
   timer.setInterval(200L, checkButton);
 }
