@@ -1,0 +1,10 @@
+[wokwi]
+version = 1
+firmware = '.pio\build\esp32dev\firmware.bin'
+elf = '.pio\build\esp32dev\firmware.elf'
+
+[[net.ipv4.dns]]
+address = "8.8.8.8"
+
+[[net.ipv4.dns]]
+address = "8.8.4.4"
