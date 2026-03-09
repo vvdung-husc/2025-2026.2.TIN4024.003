@@ -83,7 +83,7 @@ void parseGeoInfo(String payload, IP4_Info& ipInfo) {
 
 //Key lấy từ openweathermap.org khi đăng ký tài khoản
 //#define OPENWEATHERMAP_KEY "97d811df52e633c8fe035406bad9025c"
-#define OPENWEATHERMAP_KEY "x" //Thay KEY của bạn vào đây
+#define OPENWEATHERMAP_KEY "97d811df52e633c8fe035406bad9025c" //Thay KEY của bạn vào đây
 String urlWeather;  //Biến lưu url https://openweathermap.org/
 
 //API Get http://ip4.iothings.vn/?geo=1
@@ -107,7 +107,7 @@ void getAPI(){
     Serial.printf("IPv4 => %s \r\n",ip4Info.ip4.c_str());
     Serial.println(urlGooleMaps.c_str());
 
-    urlWeather = StringFormat("https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%ss&units=metric",ip4Info.latitude.c_str(),ip4Info.longtitude.c_str(),OPENWEATHERMAP_KEY);
+    urlWeather = StringFormat("https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%s&units=metric",ip4Info.latitude.c_str(),ip4Info.longtitude.c_str(),OPENWEATHERMAP_KEY);
 
     Serial.printf("URL => %s \r\n",urlWeather.c_str());      
   }else{
