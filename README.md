@@ -152,7 +152,7 @@
 
 ## [***5. Dự án - BLYNK_API***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/README.md#-%C4%91%C4%83ng-k%C3%BD-t%C3%A0i-kho%E1%BA%A3n-httpsopenweathermaporg-s%E1%BB%AD-d%E1%BB%A5ng-api-httpip4iothingsvngeo1-v%C3%A0-api-httpsapiopenweathermaporgdata25weatherlatlatlonlonappidapi-key-%C4%91%E1%BB%83-th%E1%BB%B1c-hi%E1%BB%87n-tr%C3%AAn-blynk-nh%C6%B0-h%C3%ACnh-sau)
 
-## [***6. Dự án - TELEGRAM_LED***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blog/main/README.md#-y%C3%AAu-c%E1%BA%A7u-th%E1%BB%B1c-hi%E1%BB%87n-%C4%91%C6%B0%E1%BB%A3c-%C4%91o%E1%BA%A1n-m%C3%A3-ngu%E1%BB%93n-minh-h%E1%BB%8Da-%C4%91%E1%BB%83-hi%E1%BB%83n-th%E1%BB%8B-trong-%E1%BB%A9ng-d%E1%BB%A5ng-telegram)
+## [***6. Dự án - TELEGRAM_LED***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/README.md#-y%C3%AAu-c%E1%BA%A7u-th%E1%BB%B1c-hi%E1%BB%87n-%C4%91%C6%B0%E1%BB%A3c-%C4%91o%E1%BA%A1n-m%C3%A3-ngu%E1%BB%93n-minh-h%E1%BB%8Da-%C4%91%E1%BB%83-hi%E1%BB%83n-th%E1%BB%8B-trong-%E1%BB%A9ng-d%E1%BB%A5ng-telegram)
 
 -------------------------------
 
