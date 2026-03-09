@@ -60,6 +60,27 @@
 + [Cài đặt thư viện cho PlatformIO](https://khuenguyencreator.com/huong-dan-cai-dat-platform-io-lap-trinh-esp32/#Cai_dat_thu_vien_cho_Platformio)
 
 --------------------
+***2026-03-09***
+
+[Telegram IoT Testing Link](https://t.me/+GzXzLiCzYOxkZTc1)
+
+### - [Esp32 |  TELEGRAM BOT (***mã nguồn minh họa***)](https://wokwi.com/projects/425361659331202049)
+
+#### Tham khảo
+
++ [ESP32 Telegram Bot](https://www.iotzone.vn/esp32/cach-dung-esp32-telegram-dieu-khien-den-led-voi-arduino-ide/)
+
+#### Ứng dụng Telegram
+
+>[Telegram Applications](https://telegram.org/apps)
+
+>[Telegram APIs](https://core.telegram.org/api)
+
+## => Yêu cầu thực hiện được đoạn mã nguồn minh họa để hiển thị trong ứng dụng Telegram
+
+![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/ESP32_Telegram_02.png)
+
+--------------------
 ***2026-03-05***
 
 ### - [Esp32 | API HTTP GET (***mã nguồn minh họa***)](https://wokwi.com/projects/425209099504209921)
