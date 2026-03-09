@@ -139,20 +139,20 @@ void updateTemp(){
     Serial.println(response);
           
     //Xử lý JSON trả về từ APIAPI
-    JsonDocument doc;
+    // ArduinoJson requires a document with an explicit capacity.
+    DynamicJsonDocument doc(1024);
     DeserializationError error = deserializeJson(doc, response);
     if (error) {
       Serial.println("Failed to parse JSON");
     }
     else {
-      float temp = doc["main"]["temp"];//lấy thông tin nhiệt độđộ
+      float temp = doc["main"]["temp"]; //lấy thông tin nhiệt độ
       
-      if (temp_ != temp){// có thay đổi mới cập nhật lên Blynk
+      if (temp_ != temp) { // cập nhật nếu có thay đổi
         temp_ = temp;
-        Serial.print("Nhiet do: "); Serial.println(temp); 
+        Serial.print("Nhiet do: "); Serial.println(temp);
         Blynk.virtualWrite(V3, temp_);
       }
-      
     }
   }else{
     Serial.print("Error on sending POST: ");
