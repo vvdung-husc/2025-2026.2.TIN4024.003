@@ -79,7 +79,6 @@
 ## => Yêu cầu thực hiện được đoạn mã nguồn minh họa để hiển thị trong ứng dụng Telegram
 
 ![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/esp32_telegram_led_control.png)
-
 --------------------
 ***2026-03-05***
 
