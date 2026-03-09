@@ -62,6 +62,8 @@
 --------------------
 ***2026-03-09***
 
+[Telegram IoT Testing Link](https://t.me/+GzXzLiCzYOxkZTc1)
+
 ### - [Esp32 |  TELEGRAM BOT (***mã nguồn minh họa***)](https://wokwi.com/projects/425361659331202049)
 
 #### Tham khảo
