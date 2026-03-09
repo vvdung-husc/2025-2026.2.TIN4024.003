@@ -48,3 +48,7 @@
 .vscode/ipch
 
 .github
+ 
+# Ignore local secret header files
+secrets.h
+**/secrets.h
