@@ -32,7 +32,7 @@ bool motionDetected = false;
 int bot_delay = 1000; // ms between polling
 unsigned long lastTimeBotRan = 0;
 
-const int ledPin = 2; // onboard LED (change if needed)
+const int ledPin = 23; // Wokwi LED connected to GPIO23
 bool ledState = LOW;
 
 //Định dạng chuỗi %s,%d,...
@@ -74,15 +74,23 @@ void handleNewMessages(int numNewMessages){
       ledState = HIGH;
       digitalWrite(ledPin, ledState);
       bot.sendMessage(chat_id, "LED turned ON", "");
+      Serial.println("Action: LED turned ON (from /led_on)");
     }
     else if(user_text == "/led_off"){
       ledState = LOW;
       digitalWrite(ledPin, ledState);
       bot.sendMessage(chat_id, "LED turned OFF", "");
+      Serial.println("Action: LED turned OFF (from /led_off)");
     }
     else if(user_text == "/get_state"){
-      if(digitalRead(ledPin)) bot.sendMessage(chat_id, "LED is ON", "");
-      else bot.sendMessage(chat_id, "LED is OFF", "");
+      if(digitalRead(ledPin)){
+        bot.sendMessage(chat_id, "LED is ON", "");
+        Serial.println("Action: Reported LED is ON (from /get_state)");
+      }
+      else{
+        bot.sendMessage(chat_id, "LED is OFF", "");
+        Serial.println("Action: Reported LED is OFF (from /get_state)");
+      }
     }
   }
 }
