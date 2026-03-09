@@ -1,8 +1,8 @@
 #include <Arduino.h>
 
-#define BLYNK_TEMPLATE_ID "TMPL69SWzrOiG"
-#define BLYNK_TEMPLATE_NAME "LED"
-#define BLYNK_AUTH_TOKEN "JHW_9VvBIJo9tzDs8vqdlDZoZYUFWaSb"
+#define BLYNK_TEMPLATE_ID "TMPL6uWEkyz3X"
+#define BLYNK_TEMPLATE_NAME "ESMART"
+//#define BLYNK_AUTH_TOKEN "JHW_9VvBIJo9tzDs8vqdlDZoZYUFWaSb"
 
 #include <WiFi.h>
 #include <WiFiClient.h>
