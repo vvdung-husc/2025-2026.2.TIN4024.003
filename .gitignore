@@ -47,4 +47,12 @@
 .vscode/launch.json
 .vscode/ipch
 
+<<<<<<< HEAD
 .github
+=======
+.github
+ 
+# Ignore local secret header files
+secrets.h
+**/secrets.h
+>>>>>>> f41be4aa6fe85225993beff762612d64b89070de

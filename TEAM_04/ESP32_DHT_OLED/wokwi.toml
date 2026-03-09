@@ -1,4 +1,13 @@
+<<<<<<< HEAD
 [wokwi]
 version = 1
 firmware = '.pio\build\esp32dev\firmware.bin'
 elf = '.pio\build\esp32dev\firmware.elf'
+=======
+# Wokwi Configuration File
+# Reference: https://docs.wokwi.com/vscode/project-config
+[wokwi]
+version = 1
+firmware = '.pio/build/esp32dev/firmware.bin'
+elf = '.pio/build/esp32dev/firmware.elf'
+>>>>>>> f41be4aa6fe85225993beff762612d64b89070de
