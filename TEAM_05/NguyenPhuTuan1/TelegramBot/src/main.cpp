@@ -6,7 +6,7 @@
   
   Project created using Brian Lough's Universal Telegram Bot Library: https://github.com/witnessmenow/Universal-Arduino-Telegram-Bot
 */
-
+//#include "TelegramCertificate.h"
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>
@@ -121,7 +121,7 @@ void setup() {
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  // client.setCACert(TELEGRAM_CERTIFICATE_ROOT); // Optional - causes compile error
+  client.setCACert(TELEGRAM_CERTIFICATE_ROOT); // Optional - causes compile error
   
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
