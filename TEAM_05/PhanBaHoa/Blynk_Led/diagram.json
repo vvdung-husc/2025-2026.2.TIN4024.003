@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "author": "NguyenHuynhMinhTien",
+    "author": "phan ba hoa",
     "editor": "wokwi",
     "parts": [
         { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -9.6, "left": -225.56, "attrs": {} },
