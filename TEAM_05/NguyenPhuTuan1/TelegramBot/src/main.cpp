@@ -13,8 +13,8 @@
 #include <ArduinoJson.h>
 
 // Replace with your network credentials
-const char* ssid = "VNPT 5G";
-const char* password = "";
+const char* ssid = "Wokwi-GUEST";
+const char* password = "";  // Add your WiFi password
 
 // Initialize Telegram BOT
 #define BOTtoken "8731978709:AAHc807C-Bn6ywAoyjpvq_bz2iHUOz3Mc9s"  // your Bot Token (Get from Botfather)
@@ -59,32 +59,46 @@ void handleNewMessages(int numNewMessages) {
   for (int i = 0; i < numNewMessages; i++) {
     String chat_id = bot.messages[i].chat_id;
     String text = bot.messages[i].text;
-
     String from_name = bot.messages[i].from_name;
 
-    if (text == "/on") {
+    Serial.print("Received from chat_id: ");
+    Serial.println(chat_id);
+    Serial.print("Message: ");
+    Serial.println(text);
+
+    // Accept commands from any chat (not just GROUP_ID)
+    // if(chat_id != String(GROUP_ID)){
+    //   continue;
+    // }
+
+    if (text == "/on" || text == "/led_on") {
       digitalWrite(ledPin, HIGH);
       ledState = true;
       bot.sendMessage(chat_id, "LED bật ✅", "");
       Serial.println("LED ON");
     }
-    else if (text == "/off") {
+    else if (text == "/off" || text == "/led_off") {
       digitalWrite(ledPin, LOW);
       ledState = false;
       bot.sendMessage(chat_id, "LED tắt ❌", "");
       Serial.println("LED OFF");
     }
-    else if (text == "/status") {
+    else if (text == "/status" || text == "/get_state") {
       String status = ledState ? "LED đang BẬT ✅" : "LED đang TẮT ❌";
       bot.sendMessage(chat_id, status, "");
     }
-    else if (text == "/start") {
+    else if (text == "/start" || text == "/help") {
       String welcome = "Chào " + from_name + "!\n";
       welcome += "Sử dụng các lệnh sau:\n";
-      welcome += "/on : Bật đèn\n";
-      welcome += "/off : Tắt đèn\n";
-      welcome += "/status : Kiểm tra trạng thái đèn\n";
+      welcome += "/on hoặc /led_on : Bật đèn\n";
+      welcome += "/off hoặc /led_off : Tắt đèn\n";
+      welcome += "/status hoặc /get_state : Kiểm tra trạng thái đèn\n";
       bot.sendMessage(chat_id, welcome, "");
+    }
+    else {
+      // Echo unknown commands
+      String response = "Không hiểu lệnh: " + text + "\nGửi /help để xem hướng dẫn";
+      bot.sendMessage(chat_id, response, "");
     }
   }
 }
@@ -107,7 +121,7 @@ void setup() {
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  client.setCACert(TELEGRAM_CERTIFICATE_ROOT); // Add root certificate for api.telegram.org
+  // client.setCACert(TELEGRAM_CERTIFICATE_ROOT); // Optional - causes compile error
   
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
@@ -128,20 +142,42 @@ void setup() {
 void loop() {
   static uint count_ = 0;
   static unsigned long lastTime = 0;
+  static int retryCount = 0;
   unsigned long now = millis();
 
   // Only process if WiFi is connected
   if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi disconnected!");
     return;
   }
 
-  // Check for new Telegram messages every 1 second
-  if (now - lastTime > 1000) {
-    int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
-    if (numNewMessages) {
-      Serial.println("Got response");
-      handleNewMessages(numNewMessages);
+  // Check for new Telegram messages every 2 seconds with retry
+  if (now - lastTime > 2000) {
+    retryCount = 0;
+    boolean success = false;
+    
+    while (retryCount < 3 && !success) {
+      try {
+        int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+        if (numNewMessages >= 0) {
+          success = true;
+          if (numNewMessages > 0) {
+            Serial.print("Got ");
+            Serial.print(numNewMessages);
+            Serial.println(" messages");
+            handleNewMessages(numNewMessages);
+          }
+        }
+      } catch (...) {
+        retryCount++;
+        delay(500);
+      }
     }
+    
+    if (!success && retryCount >= 3) {
+      Serial.println("Failed to get updates after 3 retries");
+    }
+    
     lastTime = now;
   }
 
@@ -149,8 +185,11 @@ void loop() {
     ++count_;
     Serial.print(count_);Serial.println(". MOTION DETECTED => Waiting to send to Telegram");    
     String msg = StringFormat("%u => Motion detected!",count_);
-    bot.sendMessage(GROUP_ID, msg.c_str());
-    Serial.print(count_);Serial.println(". Sent successfully to Telegram: Motion Detected");
+    if(bot.sendMessage(GROUP_ID, msg.c_str())) {
+      Serial.print(count_);Serial.println(". Sent successfully to Telegram: Motion Detected");
+    } else {
+      Serial.print(count_);Serial.println(". Failed to send to Telegram");
+    }
     motionDetected = false;
   }
 }
