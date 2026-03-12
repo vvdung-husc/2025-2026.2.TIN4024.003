@@ -5,7 +5,7 @@
 
 // Cấu hình chân kết nối
 #define LED_PIN LED_BUILTIN  // LED built-in trên ESP8266 (GPIO2 = D4)
-#define DHT_PIN D3           // Chân dữ liệu của cảm biến DHT (GPIO0 = D3)
+#define DHT_PIN D3           // Chân DHT trên PCB (GPIO0 = D3, pin 27 theo sơ đồ mạch)
 #define DHT_TYPE DHT22       // Cảm biến trên PCB là DHT22 (AM2302)
 
 // Khởi tạo DHT sensor
@@ -26,7 +26,7 @@ bool ledState = false;
 void setup() {
   // Khởi tạo Serial Monitor
   Serial.begin(115200);
-  Serial.println("\n=== ESP8266 Nguyen Duc Duong ===");
+  Serial.println("\n=== ESP8266 Test Program ===");
   Serial.println("LED + DHT11 + OLED SH1106");
   
   // Khởi tạo LED
@@ -86,8 +86,8 @@ void loop() {
     u8g2.clearBuffer();
     
     // Tiêu đề
-    u8g2.setFont(u8g2_font_ncenB10_tr);
-    u8g2.drawStr(15, 12, "ESP8266 Duong");
+    u8g2.setFont(u8g2_font_ncenB08_tr);
+    u8g2.drawStr(15, 12, "ESP8266 HVThang");
     
     // Vẽ đường kẻ
     u8g2.drawLine(0, 15, 128, 15);
@@ -107,9 +107,9 @@ void loop() {
     strcat(humStr, " %");
     u8g2.drawStr(50, 45, humStr);
     
-    // Hiển thị trạng thái LED
+    // Hiển thị trạng thái LED 
     u8g2.setFont(u8g2_font_6x10_tr);
-    u8g2.drawStr(5, 60, ledState ? "LED: ON" : "LED: OFF");
+    u8g2.drawStr(5, 60, digitalRead(LED_PIN) == LOW ? "LED: ON" : "LED: OFF");
     
     u8g2.sendBuffer();
   }

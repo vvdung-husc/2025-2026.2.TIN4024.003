@@ -20,7 +20,7 @@ U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 unsigned long currentMiliseconds = 0;
 unsigned long uptimeSeconds = 0;
 
-bool counterActive = true;
+// bool counterActive = true;
 
 // ===== HÀM CHỐNG DỘI =====
 bool IsReady(unsigned long &ulTimer, uint32_t milisecond)
@@ -33,31 +33,31 @@ bool IsReady(unsigned long &ulTimer, uint32_t milisecond)
 }
 
 // ===== XỬ LÝ NÚT =====
-void updateButton()
-{
-  static unsigned long lastTime = 0;
-  static int lastValue = HIGH;
+// void updateButton()
+// {
+//   static unsigned long lastTime = 0;
+//   static int lastValue = HIGH;
 
-  if (!IsReady(lastTime, 50))
-    return;
+//   if (!IsReady(lastTime, 50))
+//     return;
 
-  int v = digitalRead(BTN_PIN);
+//   int v = digitalRead(BTN_PIN);
 
-  if (v == lastValue)
-    return;
+//   if (v == lastValue)
+//     return;
 
-  lastValue = v;
+//   lastValue = v;
 
-  if (v == LOW)
-    return;
+//   if (v == LOW)
+//     return;
 
-  counterActive = !counterActive;
+//   counterActive = !counterActive;
 
-  if (counterActive)
-    Serial.println("SYSTEM ON");
-  else
-    Serial.println("SYSTEM OFF");
-}
+//   if (counterActive)
+//     Serial.println("SYSTEM ON");
+//   else
+//     Serial.println("SYSTEM OFF");
+// }
 
 // ===== LED NHẤP NHÁY =====
 void blinkLED()
@@ -65,13 +65,13 @@ void blinkLED()
   static unsigned long lastTime = 0;
   static bool ledState = false;
 
-  if (!counterActive)
-  {
-    digitalWrite(LED_PIN, LOW);
-    return;
-  }
+  // if (!counterActive)
+  // {
+  //   digitalWrite(LED_PIN, LOW);
+  //   return;
+  // }
 
-  if (!IsReady(lastTime, 500))
+  if (!IsReady(lastTime, 1000))
     return;
 
   ledState = !ledState;
@@ -139,7 +139,7 @@ void loop()
 {
   currentMiliseconds = millis();
 
-  updateButton();
+  // updateButton();
   blinkLED();
   readSensor();
 }
