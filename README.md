@@ -70,7 +70,7 @@
 
 ## [**Sơ đồ Board thực hành**](https://github.com/vvdung/storage/blob/main/IOT/CNTT%20Board%20schematic.pdf)
 
-#### [Tải và cài đặt trình điều khiển (CP210x Windows Drivers)](https://www.silabs.com/documents/public/software/CP210x_Windows_Drivers.zip)
+## [Tải và cài đặt trình điều khiển (CH341 Windows Drivers)](https://drive.google.com/file/d/1Qbuh5fdXORbVRjsayQjNQgQ2_EU--v2r/view?usp=sharing)
 
 #### Tạo dự án - ESP32_Project 
 + Board ***NodeMCU 1.0*** trong 
