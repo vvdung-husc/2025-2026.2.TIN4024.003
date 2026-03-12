@@ -51,8 +51,8 @@ void setup() {
   display.setBrightness(0x0f);
   startTime = millis();
 
-  // Blynk Setup
-  Blynk.begin(auth, ssid, pass);
+  // Blynk Setup (specify current server and port)
+  Blynk.begin(auth, ssid, pass, "sgp1.blynk.cloud", 80);
 
   // Setup Timers (To avoid flooding Blynk servers)
   timer.setInterval(2000L, sendSensorData);    // Every 2 seconds
