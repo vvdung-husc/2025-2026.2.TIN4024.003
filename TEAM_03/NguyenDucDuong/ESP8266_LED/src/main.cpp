@@ -26,7 +26,7 @@ bool ledState = false;
 void setup() {
   // Khởi tạo Serial Monitor
   Serial.begin(115200);
-  Serial.println("\n=== ESP8266 Test Program ===");
+  Serial.println("\n=== ESP8266 Nguyen Duc Duong ===");
   Serial.println("LED + DHT11 + OLED SH1106");
   
   // Khởi tạo LED
@@ -87,7 +87,7 @@ void loop() {
     
     // Tiêu đề
     u8g2.setFont(u8g2_font_ncenB10_tr);
-    u8g2.drawStr(15, 12, "ESP8266 DHT11");
+    u8g2.drawStr(15, 12, "ESP8266 Duong");
     
     // Vẽ đường kẻ
     u8g2.drawLine(0, 15, 128, 15);
