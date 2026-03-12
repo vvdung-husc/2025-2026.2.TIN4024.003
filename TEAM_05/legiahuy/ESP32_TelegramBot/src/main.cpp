@@ -17,16 +17,23 @@ const char* ssid = "Wokwi-GUEST";
 const char* password = "";
 
 // Initialize Telegram BOT
-#define BOTtoken "xxxxx"  // your Bot Token (Get from Botfather)
+#define BOTtoken "8646184843:AAFgshMxg7gtZo_FBTMTPWUzDXIvHjzf9vE"  // your Bot Token (Get from Botfather)
 
 // Dùng ChatGPT để nhờ hướng dẫn tìm giá trị GROUP_ID này
-#define GROUP_ID "group_chatid" //thường là một số âm
+#define GROUP_ID "-5014170192" //thường là một số âm
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
 
 const int motionSensor = 27; // PIR Motion Sensor
 bool motionDetected = false;
+
+// Telegram polling and LED control
+int bot_delay = 1000; // ms between polling
+unsigned long lastTimeBotRan = 0;
+
+const int ledPin = 23; // Wokwi LED connected to GPIO23
+bool ledState = LOW;
 
 //Định dạng chuỗi %s,%d,...
 String StringFormat(const char* fmt, ...){
@@ -51,11 +58,51 @@ void IRAM_ATTR detectsMovement() {
   motionDetected = true;
 }
 
+// Handle incoming Telegram messages (commands)
+void handleNewMessages(int numNewMessages){
+  for(int i=0; i<numNewMessages; i++){
+    String chat_id = String(bot.messages[i].chat_id);
+    String user_text = bot.messages[i].text;
+
+    // Only accept commands from the configured GROUP_ID
+    if(chat_id != String(GROUP_ID)){
+      // ignore messages from other chats
+      continue;
+    }
+
+    if(user_text == "/led_on"){
+      ledState = HIGH;
+      digitalWrite(ledPin, ledState);
+      bot.sendMessage(chat_id, "LED turned ON", "");
+      Serial.println("Action: LED turned ON (from /led_on)");
+    }
+    else if(user_text == "/led_off"){
+      ledState = LOW;
+      digitalWrite(ledPin, ledState);
+      bot.sendMessage(chat_id, "LED turned OFF", "");
+      Serial.println("Action: LED turned OFF (from /led_off)");
+    }
+    else if(user_text == "/get_state"){
+      if(digitalRead(ledPin)){
+        bot.sendMessage(chat_id, "LED is ON", "");
+        Serial.println("Action: Reported LED is ON (from /get_state)");
+      }
+      else{
+        bot.sendMessage(chat_id, "LED is OFF", "");
+        Serial.println("Action: Reported LED is OFF (from /get_state)");
+      }
+    }
+  }
+}
+
 void setup() {
   Serial.begin(115200);
 
   // PIR Motion Sensor mode INPUT_PULLUP
   pinMode(motionSensor, INPUT_PULLUP);
+  // LED output init
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, ledState);
   // Set motionSensor pin as interrupt, assign interrupt function and set RISING mode
   attachInterrupt(digitalPinToInterrupt(motionSensor), detectsMovement, RISING);
 
@@ -81,6 +128,16 @@ void setup() {
 
 void loop() {
   static uint count_ = 0;
+
+  // Poll Telegram for commands periodically
+  if (millis() > lastTimeBotRan + bot_delay) {
+    int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+    while (numNewMessages) {
+      handleNewMessages(numNewMessages);
+      numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+    }
+    lastTimeBotRan = millis();
+  }
 
   if(motionDetected){
     ++count_;
