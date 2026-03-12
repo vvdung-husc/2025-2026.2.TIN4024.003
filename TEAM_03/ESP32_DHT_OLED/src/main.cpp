@@ -4,7 +4,10 @@ THÔNG TIN NHÓM TEAM_03
 2. Phan Văn Hữu Thắng - 22T1020427
 3. Hoàng Văn Thắng - 22T1020742
 4. Nguyễn Đức Dương - 22T1020087
+<<<<<<< HEAD
+=======
 5. Lê Thanh Nhật - 22T1020691
+>>>>>>> f41be4aa6fe85225993beff762612d64b89070de
 */
 #include <Arduino.h>
 #include <Wire.h>
@@ -202,4 +205,8 @@ void loop() {
   controlLED(tempStatus.ledPin);
   
   delay(100);
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> f41be4aa6fe85225993beff762612d64b89070de
