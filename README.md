@@ -58,8 +58,27 @@
 
   
 + [Cài đặt thư viện cho PlatformIO](https://khuenguyencreator.com/huong-dan-cai-dat-platform-io-lap-trinh-esp32/#Cai_dat_thu_vien_cho_Platformio)
-<<<<<<< HEAD
-=======
+
+--------------------
+***2026-03-12***
+
+## ESP8266 - NodeMCU v2 và v3
+![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/NodeMCU-V2-vs-V3.jpg)
+
+## ESP8266 Controller
+![](https://github.com/vvdung/storage/blob/main/IOT/esp8266_controller.png)
+
+## [**Sơ đồ Board thực hành**](https://github.com/vvdung/storage/blob/main/IOT/CNTT%20Board%20schematic.pdf)
+
+## [Tải và cài đặt trình điều khiển (CH341 Windows Drivers)](https://drive.google.com/file/d/1Qbuh5fdXORbVRjsayQjNQgQ2_EU--v2r/view?usp=sharing)
+
+#### Tạo dự án - ESP32_Project 
++ Board ***NodeMCU 1.0*** trong 
++ Điều khiển đèn nhấp nháy trên Board ESP8266
++ Đọc thông tin nhiệt độ
++ Hiển thị lên màn hình OLED (SH1106)
+  > Thư viện hổ trợ U8g2 by oliver
+
 
 --------------------
 ***2026-03-09***
