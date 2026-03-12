@@ -68,6 +68,8 @@
 ## ESP8266 Controller
 ![](https://github.com/vvdung/storage/blob/main/IOT/esp8266_controller.png)
 
+## [**Sơ đồ Board thực hành**](https://github.com/vvdung/storage/blob/main/IOT/CNTT%20Board%20schematic.pdf)
+
 #### [Tải và cài đặt trình điều khiển (CP210x Windows Drivers)](https://www.silabs.com/documents/public/software/CP210x_Windows_Drivers.zip)
 
 #### Tạo dự án - ESP32_Project 
