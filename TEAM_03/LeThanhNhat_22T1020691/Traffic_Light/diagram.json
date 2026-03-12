@@ -106,4 +106,8 @@
     [ "ldr1:VCC", "esp:5V", "red", [ "h9.6", "v38.4", "h67.05" ] ]
   ],
   "dependencies": {}
+<<<<<<< HEAD
+}
+=======
 }//// commit
+>>>>>>> f41be4aa6fe85225993beff762612d64b89070de
