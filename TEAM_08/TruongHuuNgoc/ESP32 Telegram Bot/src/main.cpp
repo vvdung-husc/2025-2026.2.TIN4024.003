@@ -1,100 +1,138 @@
-#include <Arduino.h>
-
-/*
-  Rui Santos
-  Complete project details at https://RandomNerdTutorials.com/telegram-esp32-motion-detection-arduino/
-
-  Project created using Brian Lough's Universal Telegram Bot Library: https://github.com/witnessmenow/Universal-Arduino-Telegram-Bot
-*/
-
+#ifdef ESP32
 #include <WiFi.h>
+#else
+#include <ESP8266WiFi.h>
+#endif
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>
 #include <ArduinoJson.h>
 
-// Replace with your network credentials
-const char *ssid = "Wokwi-GUEST";
-const char *password = "";
+// Thay đổi mạng WiFi của bạn
+char ssid[] = "Wokwi-GUEST"; // Tên mạng WiFi
+char password[] = "";        // Mật khẩu mạng WiFi
 
-// Initialize Telegram BOT
-#define BOTtoken "8660322756:AAGt_6gBq-Z_DNYos0sSrKmAMUTitHD_O_I" // your Bot Token (Get from Botfather)
+// Khai báo Bot Telegram
+#define BOTtoken "8660322756:AAEootdYRngv0BH9YgW4vBsfg1Wb0hEBBXU" // Thay thế thành Bot token của bạn
 
-// Dùng ChatGPT để nhờ hướng dẫn tìm giá trị GROUP_ID này
-#define GROUP_ID "-5235573505" // thường là một số âm
+#define CHAT_ID "-1003885166476" // GROUP ID của bạn
+
+// #define CHAT_ID2 "8590767456" // ID người dùng của bạn
+
+#ifdef ESP8266
+X509List cert(TELEGRAM_CERTIFICATE_ROOT);
+#endif
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
 
-const int motionSensor = 27; // PIR Motion Sensor
-bool motionDetected = false;
+// Kiểm tra có tin nhắn mới hay không liên tục sau mỗi 1 giây
+int bot_delay = 1000;
+unsigned long lastTimeBotRan;
 
-// Định dạng chuỗi %s,%d,...
-String StringFormat(const char *fmt, ...)
-{
-  va_list vaArgs;
-  va_start(vaArgs, fmt);
-  va_list vaArgsCopy;
-  va_copy(vaArgsCopy, vaArgs);
-  const int iLen = vsnprintf(NULL, 0, fmt, vaArgsCopy);
-  va_end(vaArgsCopy);
-  int iSize = iLen + 1;
-  char *buff = (char *)malloc(iSize);
-  vsnprintf(buff, iSize, fmt, vaArgs);
-  va_end(vaArgs);
-  String s = buff;
-  free(buff);
-  return String(s);
-}
+const int ledPin = 2;
+bool ledState = LOW;
 
-// Indicates when motion is detected
-void IRAM_ATTR detectsMovement()
+// Thực thi lệnh khi có tin nhắn mới
+void handleNewMessages(int numNewMessages)
 {
-  // Serial.println("MOTION DETECTED!!!");
-  motionDetected = true;
+  Serial.println("Handling New Message");
+  Serial.println(String(numNewMessages));
+
+  for (int i = 0; i < numNewMessages; i++)
+  {
+    // Chat ID của yêu cầu
+    String chat_id = String(bot.messages[i].chat_id);
+    if (chat_id != CHAT_ID)
+    {
+      bot.sendMessage(chat_id, "Unauthorized user", "");
+      continue;
+    }
+
+    // In ra tin nhắn nhận được
+    String user_text = bot.messages[i].text;
+    Serial.println(user_text);
+
+    String your_name = bot.messages[i].from_name;
+
+    if (user_text == "/start")
+    {
+      String welcome = "Welcome, " + your_name + ".\n";
+      welcome += "Use the following commands to control your outputs.\n\n";
+      welcome += "Send /led2_on to turn GPIO2 ON \n";
+      welcome += "Send /led2_off to turn GPIO2 OFF \n";
+      welcome += "Send /get_state to request current GPIO state \n";
+      bot.sendMessage(chat_id, welcome, "");
+    }
+
+    if (user_text == "/led2_on")
+    {
+      bot.sendMessage(chat_id, "LED state set to ON", "");
+      ledState = HIGH;
+      digitalWrite(ledPin, ledState);
+    }
+
+    if (user_text == "/led2_off")
+    {
+      bot.sendMessage(chat_id, "LED state is set to OFF", "");
+      ledState = LOW;
+      digitalWrite(ledPin, ledState);
+    }
+
+    if (user_text == "/get_state")
+    {
+      if (digitalRead(ledPin))
+      {
+        bot.sendMessage(chat_id, "LED is ON", "");
+      }
+      else
+      {
+        bot.sendMessage(chat_id, "LED is OFF", "");
+      }
+    }
+  }
 }
 
 void setup()
 {
   Serial.begin(115200);
 
-  // PIR Motion Sensor mode INPUT_PULLUP
-  pinMode(motionSensor, INPUT_PULLUP);
-  // Set motionSensor pin as interrupt, assign interrupt function and set RISING mode
-  attachInterrupt(digitalPinToInterrupt(motionSensor), detectsMovement, RISING);
+#ifdef ESP8266
+  configTime(0, 0, "pool.ntp.org"); // Nhận thời gian thực UTC qua NTP
+  client.setTrustAnchors(&cert);    // Thêm chứng nhận root cho api.telegram.org
+#endif
 
-  // Attempt to connect to Wifi network:
-  Serial.print("Connecting Wifi: ");
-  Serial.println(ssid);
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, ledState);
 
+  // Kết nối WiFi
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  client.setCACert(TELEGRAM_CERTIFICATE_ROOT); // Add root certificate for api.telegram.org
-
+#ifdef ESP32
+  client.setCACert(TELEGRAM_CERTIFICATE_ROOT); // Thêm chứng nhận root cho api.telegram.org
+#endif
   while (WiFi.status() != WL_CONNECTED)
   {
-    Serial.print(".");
-    delay(100);
+    delay(1000);
+    Serial.println("Connecting to WiFi..");
   }
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-
-  bot.sendMessage(GROUP_ID, "IoT Developer started up");
+  // In địa chỉ IP Local của ESP32
+  Serial.println(WiFi.localIP());
+  bot.sendMessage(CHAT_ID, "IoT Developer started up");
+  // bot.sendMessage(CHAT_ID2, "IoT Developer started up123123");
 }
 
 void loop()
 {
-  static uint count_ = 0;
-
-  if (motionDetected)
+  if (millis() > lastTimeBotRan + bot_delay)
   {
-    ++count_;
-    Serial.print(count_);
-    Serial.println(". MOTION DETECTED => Waiting to send to Telegram");
-    String msg = StringFormat("%u => Motion detected!", count_);
-    bot.sendMessage(GROUP_ID, msg.c_str());
-    Serial.print(count_);
-    Serial.println(". Sent successfully to Telegram: Motion Detected");
-    motionDetected = false;
+    int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+
+    while (numNewMessages)
+    {
+      Serial.println("Got Response!");
+      handleNewMessages(numNewMessages);
+      numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+    }
+    lastTimeBotRan = millis();
   }
 }
