@@ -60,6 +60,27 @@
 + [Cài đặt thư viện cho PlatformIO](https://khuenguyencreator.com/huong-dan-cai-dat-platform-io-lap-trinh-esp32/#Cai_dat_thu_vien_cho_Platformio)
 
 --------------------
+***2026-03-12***
+
+## ESP8266 - NodeMCU v2 và v3
+![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/NodeMCU-V2-vs-V3.jpg)
+
+## ESP8266 Controller
+![](https://github.com/vvdung/storage/blob/main/IOT/esp8266_controller.png)
+
+## [**Sơ đồ Board thực hành**](https://github.com/vvdung/storage/blob/main/IOT/CNTT%20Board%20schematic.pdf)
+
+#### [Tải và cài đặt trình điều khiển (CP210x Windows Drivers)](https://www.silabs.com/documents/public/software/CP210x_Windows_Drivers.zip)
+
+#### Tạo dự án - ESP32_Project 
++ Board ***NodeMCU 1.0*** trong 
++ Điều khiển đèn nhấp nháy trên Board ESP8266
++ Đọc thông tin nhiệt độ
++ Hiển thị lên màn hình OLED (SH1106)
+  > Thư viện hổ trợ U8g2 by oliver
+
+
+--------------------
 ***2026-03-09***
 
 [Telegram IoT Testing Link](https://t.me/+GzXzLiCzYOxkZTc1)
@@ -78,8 +99,7 @@
 
 ## => Yêu cầu thực hiện được đoạn mã nguồn minh họa để hiển thị trong ứng dụng Telegram
 
-![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/ESP32_Telegram_02.png)
-
+![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/esp32_telegram_led_control.png)
 --------------------
 ***2026-03-05***
 
@@ -141,6 +161,7 @@
 
 + [https://it.iothings.vn/downloads/mp4](https://it.iothings.vn/downloads/mp4/)
 
+>>>>>>> f41be4aa6fe85225993beff762612d64b89070de
 -------------------------------
 
 ## [***1. Dự án - LED BLINK***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/Project_LED_Blink.md)
@@ -149,9 +170,15 @@
 
 ## [***3. Dự án - DHT_OLED (Theo nhóm, hạn cuối 09/02/2026)***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/Team_DHT_OLED.md)
 
+<<<<<<< HEAD
+=======
 ## [***4. Dự án - BLYNK_DHT***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/README.md#--blynk--traffic--dht-sensor)
 
 ## [***5. Dự án - BLYNK_API***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/README.md#-%C4%91%C4%83ng-k%C3%BD-t%C3%A0i-kho%E1%BA%A3n-httpsopenweathermaporg-s%E1%BB%AD-d%E1%BB%A5ng-api-httpip4iothingsvngeo1-v%C3%A0-api-httpsapiopenweathermaporgdata25weatherlatlatlonlonappidapi-key-%C4%91%E1%BB%83-th%E1%BB%B1c-hi%E1%BB%87n-tr%C3%AAn-blynk-nh%C6%B0-h%C3%ACnh-sau)
+
+## [***6. Dự án - TELEGRAM_LED***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/README.md#-y%C3%AAu-c%E1%BA%A7u-th%E1%BB%B1c-hi%E1%BB%87n-%C4%91%C6%B0%E1%BB%A3c-%C4%91o%E1%BA%A1n-m%C3%A3-ngu%E1%BB%93n-minh-h%E1%BB%8Da-%C4%91%E1%BB%83-hi%E1%BB%83n-th%E1%BB%8B-trong-%E1%BB%A9ng-d%E1%BB%A5ng-telegram)
+
+>>>>>>> f41be4aa6fe85225993beff762612d64b89070de
 -------------------------------
 
 ![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/esp32-devkitC-v4-pinout.png)

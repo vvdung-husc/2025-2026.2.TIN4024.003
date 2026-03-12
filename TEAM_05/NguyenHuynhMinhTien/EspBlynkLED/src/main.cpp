@@ -4,7 +4,7 @@
 /* Fill in information from Blynk Device Info here */
 #define BLYNK_TEMPLATE_ID "TMPL6P8Zo_qwq"
 #define BLYNK_TEMPLATE_NAME "EspBlynkLED"
-#define BLYNK_AUTH_TOKEN "TCATa8HpdQ7h9-aOwQ_n4kzRfkShskHo"
+#define BLYNK_AUTH_TOKEN "REDACTED_BLYNK_TOKEN"
 // Phải để trước khai báo sử dụng thư viện Blynk
 #include <WiFi.h>
 #include <WiFiClient.h>

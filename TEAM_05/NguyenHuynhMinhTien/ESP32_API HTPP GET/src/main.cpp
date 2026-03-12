@@ -1,9 +1,9 @@
 #include <Arduino.h>
 
 //Thay thông số BLYNK của bạn vào đây
-#define BLYNK_TEMPLATE_ID "TMPL6x-yxVLp7"
-#define BLYNK_TEMPLATE_NAME "API"
-#define BLYNK_AUTH_TOKEN "zW9RdnoNcJ60BQ6ofUgxihmfFNBJhhhU"
+#define BLYNK_TEMPLATE_ID "TMPL6P8Zo_qwq"
+#define BLYNK_TEMPLATE_NAME "EspBlynkLED"
+#define BLYNK_AUTH_TOKEN "REDACTED_BLYNK_TOKEN"
 
 
 #include <WiFi.h>
@@ -83,7 +83,7 @@ void parseGeoInfo(String payload, IP4_Info& ipInfo) {
 }
 
 //Key lấy từ openweathermap.org khi đăng ký tài khoản
-#define OPENWEATHERMAP_KEY "xxxxxx" //Thay KEY của bạn vào đây
+#define OPENWEATHERMAP_KEY "REDACTED_OPENWEATHER_KEY" //Thay KEY của bạn vào đây
 String urlWeather;  //Biến lưu url https://openweathermap.org/
 
 //API Get http://ip4.iothings.vn/?geo=1
@@ -150,7 +150,7 @@ void updateTemp(){
       if (temp_ != temp){// có thay đổi mới cập nhật lên Blynk
         temp_ = temp;
         Serial.print("Nhiet do: "); Serial.println(temp); 
-        Blynk.virtualWrite(V3, temp_);
+        Blynk.virtualWrite(V2, temp_);  //Gửi nhiệt độ lên chân ảo V2
       }
       
     }
@@ -168,17 +168,17 @@ void onceCalled(){
   done_ = true;
   String link = StringFormat("https://www.google.com/maps/place/%s,%s",ip4Info.latitude.c_str(),ip4Info.longtitude.c_str());
 
-  Blynk.virtualWrite(V1, ip4Info.ip4.c_str());  //Gửi giá trị lên chân ảo V1 trên ứng dụng Blynk.
-  Blynk.virtualWrite(V2, link.c_str());  //Gửi giá trị lên chân ảo V2 trên ứng dụng Blynk.
+  Blynk.virtualWrite(V4, ip4Info.ip4.c_str());  //Gửi địa chỉ IPv4 lên chân ảo V4
+  Blynk.virtualWrite(V5, link.c_str());  //Gửi link Google Maps lên chân ảo V5
 }
 
-//Cập nhật uptime lên BlynkBlynk
+//Cập nhật uptime lên Blynk
 void uptimeBlynk(){
   static ulong lastTime = 0;
   
-  if (!IsReady(lastTime, 1000)) return; //Kiểm tra và cập nhật lastTime sau mỗi 1 giây
+  if (!IsReady(lastTime, 1000)) return; // Kiểm tra và cập nhật lastTime sau mỗi 1 giây
   ulong value = lastTime / 1000;
-  Blynk.virtualWrite(V0, value);  //Gửi giá trị lên chân ảo V0 trên ứng dụng Blynk.
+  Blynk.virtualWrite(V3, value);  //Gửi thời gian hoạt động lên chân ảo V3
 }
 
 void setup(void) {
