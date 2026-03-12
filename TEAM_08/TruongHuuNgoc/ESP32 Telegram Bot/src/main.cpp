@@ -14,9 +14,9 @@ char password[] = "";        // Mật khẩu mạng WiFi
 // Khai báo Bot Telegram
 #define BOTtoken "8660322756:AAEootdYRngv0BH9YgW4vBsfg1Wb0hEBBXU" // Thay thế thành Bot token của bạn
 
-#define CHAT_ID "-1003885166476" // Thay thế thành ID người dùng của bạn
+#define CHAT_ID "-1003885166476" // GROUP ID của bạn
 
-#define GROUP_ID "8590767456" // thường là một số âm
+// #define CHAT_ID2 "8590767456" // ID người dùng của bạn
 
 #ifdef ESP8266
 X509List cert(TELEGRAM_CERTIFICATE_ROOT);
@@ -118,7 +118,7 @@ void setup()
   // In địa chỉ IP Local của ESP32
   Serial.println(WiFi.localIP());
   bot.sendMessage(CHAT_ID, "IoT Developer started up");
-  bot.sendMessage(GROUP_ID, "IoT Developer started up123123");
+  // bot.sendMessage(CHAT_ID2, "IoT Developer started up123123");
 }
 
 void loop()
