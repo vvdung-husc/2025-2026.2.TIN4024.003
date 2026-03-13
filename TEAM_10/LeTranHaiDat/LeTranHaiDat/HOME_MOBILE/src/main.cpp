@@ -15,7 +15,6 @@
 char ssid[] = "Wokwi-GUEST";  //Tên mạng WiFi
 char pass[] = "";             //Mật khẩu mạng WiFi
 
-
 #define btnBLED  23 //Chân kết nối nút bấm
 #define pinBLED  21 //Chân kết nối đèn xxanh
 
