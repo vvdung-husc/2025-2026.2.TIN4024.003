@@ -1,27 +1,82 @@
+#include <Arduino.h>
 #include <DHT.h>
 
-#define DHTTYPE DHT11
+#include <Wire.h>
+#include <U8g2lib.h>
 
-// Thử lần lượt các chân từ D1 đến D8
-int pins[] = {5, 4, 0, 2, 14, 12, 13, 15}; // GPIO tương ứng với D1, D2, D3, D4, D5, D6, D7, D8
+#define LED_BUILTIN 2   // GPIO2
 
-void setup() {
-  Serial.begin(115200);
+#define DHTPIN 0
+#define DHTTYPE DHT22
+
+#define OLED_SDA 4  //D2
+#define OLED_SCL 5  //D1
+
+DHT dht(DHTPIN, DHTTYPE);
+
+// Khởi tạo OLED SH1106
+U8G2_SH1106_128X64_NONAME_F_HW_I2C oled(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+
+bool IsReady(unsigned long &ulTimer, uint32_t millisecond) {
+  if (millis() - ulTimer < millisecond) return false;
+  ulTimer = millis();
+  return true;
 }
 
+bool WelcomeDisplayTimeout(uint msSleep = 5000){
+  static ulong lastTimer = 0;
+  static bool bDone = false;
+  if (bDone) return true;
+  if (!IsReady(lastTimer, msSleep)) return false;
+  bDone = true;    
+  return bDone;
+}
+
+void setup() {
+  
+  Serial.begin(115200);
+  dht.begin();
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  Serial.println("ESP8266 start");
+
+Wire.begin(OLED_SDA, OLED_SCL);  // SDA, SCL
+
+  oled.begin();
+  oled.clearBuffer();
+  
+  oled.setFont(u8g2_font_unifont_t_vietnamese1);
+  oled.drawUTF8(0, 14, "Trường ĐHKH");  
+  oled.drawUTF8(0, 28, "Khoa CNTT");
+  oled.drawUTF8(0, 42, "IoT - Nhóm 0");  
+
+  oled.sendBuffer();  
+}
+
+void led_blink() {
+  digitalWrite(LED_BUILTIN, LOW);  // bật LED
+  delay(1000);
+  digitalWrite(LED_BUILTIN, HIGH); // tắt LED
+  delay(1000);
+}
 void loop() {
-  for (int i = 0; i < 8; i++) {
-    DHT dht(pins[i], DHTTYPE);
-    dht.begin();
-    delay(2000); // Đợi cảm biến khởi động
-    float t = dht.readTemperature();
-    
-    if (!isnan(t)) {
-      Serial.print("TIM THAY CHAN DUNG! Chan GPIO: ");
-      Serial.print(pins[i]);
-      Serial.print(" | Nhiet do: ");
-      Serial.println(t);
-      delay(5000);
-    }
+  //return;
+  //led_blink();
+
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
+
+  if (isnan(humidity) || isnan(temperature)) {
+    Serial.println("Doc cam bien that bai!");
+    delay(2000);
+    return;
   }
+
+  Serial.print("Nhiet do: ");
+  Serial.print(temperature);
+  Serial.print(" °C  |  Do am: ");
+  Serial.print(humidity);
+  Serial.println(" %");
+
+  delay(2000); // DHT22 cần >=2s  
 }
