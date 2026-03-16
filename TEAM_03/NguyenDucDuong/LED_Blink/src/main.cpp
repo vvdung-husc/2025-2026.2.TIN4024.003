@@ -1,12 +1,9 @@
 #include <Arduino.h>
 
-<<<<<<< HEAD
-=======
 #define BLYNK_TEMPLATE_ID "TMPL2tOM9NMOX"
 #define BLYNK_TEMPLATE_NAME "LedBlink"
 #define BLYNK_AUTH_TOKEN "qprceM-bmSpK6A30X40OTexb9uSUSChK"
 
->>>>>>> f41be4aa6fe85225993beff762612d64b89070de
 uint8_t LED_RED = 17;
 
 //Non-blocking
