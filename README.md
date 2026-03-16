@@ -208,7 +208,7 @@
   - Hiển thị thông tin khí ga từ cảm biến MQ2 (nếu không có cảm biến thì sinh ngẫu nhiên)
   - Hiển thị thông tin Team X ở cuối
  4. ### ***Telegram***
-  - Tạo tên nhóm **IoT - Team X** và thêm các thành viên vào nhóm
+  - Tạo tên nhóm **IoT - Team X** và thêm các thành viên vào nhóm và tài khoản vvdung_husc (hoặc 0396634274)
   - Hiển thị thông tin nhiệt độ, độ ẩm khi có thay đổi từ thiết bị
   - Điều khiển tắt/mở và nhận trạng thái đèn LED bằng lệnh nhập từ khung chat
  5. ### Gửi đính kèm lên github 2 ảnh của Blynk (***web***) và Telegram (***với đầy đủ tên thành viên***)
