@@ -1,106 +1,96 @@
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
+#include <DHT.h>
 #include <Wire.h>
 #include <U8g2lib.h>
-#include <DHT.h>
 
-// ===== PIN CONFIG =====
+#define LED_BUILTIN 2
+
 #define DHTPIN 0
-#define DHTTYPE DHT11
-#define LED_PIN 2
-#define BTN_PIN 12
+#define DHTTYPE DHT22
+
+#define OLED_SDA 4  // D2
+#define OLED_SCL 5  // D1
 
 DHT dht(DHTPIN, DHTTYPE);
 
 // OLED SH1106
-U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
+U8G2_SH1106_128X64_NONAME_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE);
 
-unsigned long currentMiliseconds = 0;
+// ===== LED BLINK TIMER =====
+unsigned long lastLedTime = 0;
+bool ledState = false;
 
-bool IsReady(unsigned long &ulTimer, uint32_t milisecond)
-{
-  if (currentMiliseconds - ulTimer < milisecond)
-    return false;
-
-  ulTimer = currentMiliseconds;
-  return true;
-}
-
-// ===== LED =====
+// ===== LED BLINK FUNCTION =====
 void blinkLED()
 {
-  static unsigned long lastTime = 0;
-  static bool ledState = false;
+  if (millis() - lastLedTime >= 1000)
+  {
+    lastLedTime = millis();
 
-  if (!IsReady(lastTime, 1000))
-    return;
-
-  ledState = !ledState;
-  digitalWrite(LED_PIN, ledState);
+    ledState = !ledState;
+    digitalWrite(LED_BUILTIN, ledState ? LOW : HIGH);
+  }
 }
 
-// ===== SENSOR =====
-void readSensor()
-{
-  static unsigned long lastTime = 0;
-
-  if (!IsReady(lastTime, 2000))
-    return;
-
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
-
-  u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_ncenB08_tr);
-
-  u8g2.drawStr(0, 15, "ESP8266 SENSOR");
-
-  if (isnan(h) || isnan(t))
-  {
-    Serial.println("DHT ERROR");
-    u8g2.drawStr(0, 40, "Sensor Error");
-  }
-  else
-  {
-    Serial.print("Temp: ");
-    Serial.println(t);
-
-    Serial.print("Hum: ");
-    Serial.println(h);
-
-    char tempStr[20];
-    sprintf(tempStr, "Temp: %.1f C", t);
-    u8g2.drawStr(0, 35, tempStr);
-
-    char humStr[20];
-    sprintf(humStr, "Hum : %.1f %%", h);
-    u8g2.drawStr(0, 55, humStr);
-  }
-
-  u8g2.sendBuffer();
-}
-
-// ===== SETUP =====
 void setup()
 {
   Serial.begin(115200);
 
-  pinMode(LED_PIN, OUTPUT);
-  pinMode(BTN_PIN, INPUT_PULLUP);
-
   dht.begin();
-  delay(2000);
+  pinMode(LED_BUILTIN, OUTPUT);
 
-  u8g2.begin();
+  Serial.println("ESP8266 start");
 
-  Serial.println("SYSTEM READY");
+  Wire.begin(OLED_SDA, OLED_SCL);
+
+  oled.begin();
+  oled.clearBuffer();
+
+  oled.setFont(u8g2_font_unifont_t_vietnamese1);
+  oled.drawUTF8(0, 14, "Truong DHKH");
+  oled.drawUTF8(0, 28, "Khoa CNTT");
+  oled.drawUTF8(0, 42, "IoT - Nhom 0");
+
+  oled.sendBuffer();
+
+  delay(3000);
 }
 
-// ===== LOOP =====
 void loop()
 {
-  currentMiliseconds = millis();
+  blinkLED();   // LED nhấp nháy
 
-  blinkLED();
-  readSensor();
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
+
+  oled.clearBuffer();
+  oled.setFont(u8g2_font_ncenB08_tr);
+
+  oled.drawStr(0, 12, "ESP8266 SENSOR");
+
+  if (isnan(humidity) || isnan(temperature))
+  {
+    Serial.println("Doc cam bien that bai!");
+    oled.drawStr(0, 40, "Sensor Error");
+  }
+  else
+  {
+    Serial.print("Nhiet do: ");
+    Serial.print(temperature);
+    Serial.print(" C | Do am: ");
+    Serial.print(humidity);
+    Serial.println(" %");
+
+    char tempStr[20];
+    sprintf(tempStr, "Temp: %.1f C", temperature);
+    oled.drawStr(0, 35, tempStr);
+
+    char humStr[20];
+    sprintf(humStr, "Hum : %.1f %%", humidity);
+    oled.drawStr(0, 55, humStr);
+  }
+
+  oled.sendBuffer();
+
+  delay(2000);  // DHT22 cần >=2s
 }
