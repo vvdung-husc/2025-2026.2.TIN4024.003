@@ -10,6 +10,9 @@
 #include <TM1637Display.h>
 #include <UniversalTelegramBot.h>
 #include <ArduinoJson.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 // ===== THÔNG TIN TELEGRAM =====
 #define BOTtoken "8621124778:AAGkuf8ptUKbxWczkcp4zHpeqPIbhkmGijg"
@@ -28,12 +31,17 @@ char pass[] = "";
 #define BTN_PIN 23
 #define GAS_PIN 34
 
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+
 // ===== KHỞI TẠO ĐỐI TƯỢNG =====
 DHT dht(DHTPIN, DHTTYPE);
 TM1637Display display(CLK, DIO);
 BlynkTimer timer;
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
+// Khởi tạo OLED với địa chỉ 0x3C (thường dùng trên Wokwi)
+Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 // ===== BIẾN HỆ THỐNG =====
 unsigned long uptimeSeconds = 0;
@@ -140,17 +148,58 @@ void sendSensorData()
 
 void updateDisplay()
 {
-  if (!counterActive)
+  // 1. Hiển thị lên TM1637 (Uptime)
+  if (counterActive)
+  {
+    display.showNumberDec(uptimeSeconds % 10000);
+  }
+  else
   {
     display.clear();
+  }
+
+  // 2. Hiển thị lên OLED SSD1306 (Thông số cảm biến)
+  oled.clearDisplay();
+
+  if (!counterActive)
+  {
+    oled.setTextSize(1);
+    oled.setTextColor(SSD1306_WHITE);
+    oled.setCursor(20, 25);
+    oled.println("SYSTEM PAUSED");
+    oled.display();
     return;
   }
-  if (displayMode == 0)
-    display.showNumberDec((int)temp);
-  else if (displayMode == 1)
-    display.showNumberDec(uptimeSeconds % 10000);
-  else
-    display.showNumberDec(gasValue);
+
+  oled.setTextSize(1);
+  oled.setTextColor(SSD1306_WHITE);
+
+  // Tiêu đề
+  oled.setCursor(0, 0);
+  oled.println("--- MONITORING ---");
+
+  // Hiển thị Nhiệt độ & Độ ẩm
+  oled.setCursor(0, 20);
+  oled.print("Temp:  ");
+  oled.print(temp, 1);
+  oled.println(" C");
+
+  oled.setCursor(0, 35);
+  oled.print("Humid: ");
+  oled.print(humid, 1);
+  oled.println(" %");
+
+  // Hiển thị Gas
+  oled.setCursor(0, 50);
+  oled.print("Gas:   ");
+  oled.print(gasValue);
+
+  // Vẽ một thanh bar nhỏ cho Gas để trông "hiện đại" hơn
+  int barWidth = map(gasValue, 0, 4095, 0, 50);
+  oled.drawRect(70, 50, 52, 10, SSD1306_WHITE);
+  oled.fillRect(71, 51, barWidth, 8, SSD1306_WHITE);
+
+  oled.display();
 }
 
 void setup()
@@ -167,12 +216,21 @@ void setup()
   Blynk.syncVirtual(V4);
   updateSystemState();
 
+  // Khởi tạo OLED
+  if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+  {
+    Serial.println(F("SSD1306 allocation failed"));
+  }
+  oled.clearDisplay();
+  oled.display();
+
+  // Giữ nguyên các timer cũ
   timer.setInterval(2000L, sendSensorData);
   timer.setInterval(1000L, []()
-                    { if(counterActive) uptimeSeconds++; Blynk.virtualWrite(V0, uptimeSeconds); });
-  timer.setInterval(3000L, []()
-                    { displayMode = (displayMode + 1) % 3; });
-  timer.setInterval(500L, updateDisplay);
+                    { 
+    if(counterActive) uptimeSeconds++; 
+    Blynk.virtualWrite(V0, uptimeSeconds); });
+  timer.setInterval(500L, updateDisplay); // Cập nhật cả 2 màn hình mỗi 0.5s
 
   bot.sendMessage(CHAT_ID, "🤖 Hệ thống đã khởi động và sẵn sàng nhận lệnh = /start!", "");
 }
@@ -185,19 +243,19 @@ void loop()
   // Kiểm tra nút nhấn vật lý
   static unsigned long lastBtnTime = 0;
   static int lastBtnValue = HIGH;
-  if (millis() - lastBtnTime > 50)
+  if (millis() - lastBtnTime > 500)
   {
     int v = digitalRead(BTN_PIN);
     if (v != lastBtnValue)
     {
       lastBtnTime = millis();
-      lastBtnValue = v;
-      if (v == LOW)
-      {
-        counterActive = !counterActive;
-        updateSystemState();
-        bot.sendMessage(CHAT_ID, "Nút nhấn vật lý đã thay đổi trạng thái: " + String(counterActive ? "BẬT" : "TẮT"), "");
-      }
+      // lastBtnValue = v;
+      // if (v == LOW)
+      // {
+      counterActive = !counterActive;
+      updateSystemState();
+      bot.sendMessage(CHAT_ID, "Nút nhấn vật lý đã thay đổi trạng thái: " + String(counterActive ? "BẬT" : "TẮT"), "");
+      // }
     }
   }
 
