@@ -122,3 +122,149 @@ void loop()
   Blynk.run();
   timer.run();
 }
+
+/*
+#define BLYNK_TEMPLATE_ID "TMPL6mcSAdOVC"
+#define BLYNK_TEMPLATE_NAME "ESP8266 BLYNK TELEGRAM"
+#define BLYNK_AUTH_TOKEN "Za4JrX_t85HA-Iu7JmyC-fMas7kf5_3_"
+
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+#include <DHT.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+// ===== WIFI =====
+char ssid[] = "Wokwi-GUEST";
+char pass[] = "";
+
+// ===== PIN CONFIG =====
+#define DHTPIN 0          // D3 (GPIO0)
+#define DHTTYPE DHT22
+#define OLED_SDA 4        // D2 (GPIO4)
+#define OLED_SCL 5        // D1 (GPIO5)
+#define LED_PIN 2         // D4 (GPIO2 - LED BUILTIN)
+#define BTN_PIN 14        // D5 (GPIO14) - Chân an toàn cho nút nhấn
+
+// ===== OBJECTS =====
+DHT dht(DHTPIN, DHTTYPE);
+Adafruit_SSD1306 display(128, 64, &Wire, -1);
+BlynkTimer timer;
+
+// ===== BIẾN HỆ THỐNG =====
+unsigned long currentMiliseconds = 0;
+unsigned long uptimeSeconds = 0;
+bool counterActive = true;
+bool showTemperature = true;
+
+// Cấu trúc hàm kiểm tra thời gian
+bool IsReady(unsigned long &ulTimer, uint32_t milisecond) {
+  if (currentMiliseconds - ulTimer < milisecond) return false;
+  ulTimer = currentMiliseconds;
+  return true;
+}
+
+void updateSystemState() {
+  // LED BUILTIN của ESP8266 thường là Active LOW (Nối cực dương, 0V mới sáng)
+  // Tuy nhiên để khớp logic cũ của bạn, tôi giữ counterActive ? HIGH : LOW
+  digitalWrite(LED_PIN, counterActive ? LOW : HIGH); // LOW là Sáng trên ESP8266
+  Blynk.virtualWrite(V4, counterActive);
+}
+
+void updateCounterButton() {
+  static unsigned long lastTime = 0;
+  static int lastValue = HIGH;
+  if (!IsReady(lastTime, 50)) return;
+
+  int v = digitalRead(BTN_PIN);
+  if (v == lastValue) return;
+  lastValue = v;
+
+  if (v == LOW) { // Nhấn nút (vì dùng INPUT_PULLUP)
+    counterActive = !counterActive;
+    Serial.println(counterActive ? "Counter ON" : "Counter OFF");
+    updateSystemState();
+  }
+}
+
+void refreshOLED(float t, float h) {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println("Hệ Thống: " + String(counterActive ? "ON" : "OFF"));
+
+  display.setCursor(0, 20);
+  if (showTemperature) {
+    display.setTextSize(2);
+    display.print("Temp: ");
+    display.print(t, 1);
+    display.print(" C");
+  } else {
+    display.setTextSize(2);
+    display.print("Time: ");
+    display.print(uptimeSeconds);
+    display.print(" s");
+  }
+  display.display();
+}
+
+void sendSensorData() {
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+
+  if (!isnan(h) && !isnan(t)) {
+    Blynk.virtualWrite(V1, t);
+    Blynk.virtualWrite(V2, h);
+    if (counterActive) refreshOLED(t, h);
+  }
+}
+
+void countTime() {
+  if (!counterActive) return;
+  uptimeSeconds++;
+  Blynk.virtualWrite(V0, uptimeSeconds);
+}
+
+void toggleDisplay() {
+  showTemperature = !showTemperature;
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(BTN_PIN, INPUT_PULLUP);
+
+  // Khởi tạo I2C cho OLED
+  Wire.begin(OLED_SDA, OLED_SCL);
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("SSD1306 allocation failed"));
+  }
+
+  dht.begin();
+  display.clearDisplay();
+  display.display();
+
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+  Blynk.syncVirtual(V4);
+  updateSystemState();
+
+  timer.setInterval(2000L, sendSensorData);
+  timer.setInterval(1000L, countTime);
+  timer.setInterval(5000L, toggleDisplay);
+}
+
+void loop() {
+  Blynk.run();
+  timer.run();
+  currentMiliseconds = millis();
+  updateCounterButton();
+}
+
+BLYNK_WRITE(V4) {
+  counterActive = param.asInt();
+  updateSystemState();
+}
+*/
