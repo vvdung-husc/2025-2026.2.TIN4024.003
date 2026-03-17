@@ -249,13 +249,13 @@ void loop()
     if (v != lastBtnValue)
     {
       lastBtnTime = millis();
-      // lastBtnValue = v;
-      // if (v == LOW)
-      // {
-      counterActive = !counterActive;
-      updateSystemState();
-      bot.sendMessage(CHAT_ID, "Nút nhấn vật lý đã thay đổi trạng thái: " + String(counterActive ? "BẬT" : "TẮT"), "");
-      // }
+      lastBtnValue = v;
+      if (v == LOW)
+      {
+        counterActive = !counterActive;
+        updateSystemState();
+        bot.sendMessage(CHAT_ID, "Nút nhấn vật lý đã thay đổi trạng thái: " + String(counterActive ? "BẬT" : "TẮT"), "");
+      }
     }
   }
 
