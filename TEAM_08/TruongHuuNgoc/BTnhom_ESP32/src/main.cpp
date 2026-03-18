@@ -239,24 +239,32 @@ void loop()
   Blynk.run();
   timer.run();
 
-  // Kiểm tra nút nhấn vật lý
-  static unsigned long lastBtnTime = 0;
-  static int lastBtnValue = HIGH;
-  if (millis() - lastBtnTime > 50)
+  // -------- BUTTON toggle system --------
+  static bool lastBtn = HIGH;
+  bool btn = digitalRead(BTN_PIN);
+
+  // LED phản ánh trạng thái (giống LED_BLUE trong ví dụ)
+  digitalWrite(LED_PIN, counterActive ? HIGH : LOW);
+
+  if (lastBtn == HIGH && btn == LOW)
   {
-    int v = digitalRead(BTN_PIN);
-    if (v != lastBtnValue)
-    {
-      lastBtnTime = millis();
-      lastBtnValue = v;
-      if (v == LOW)
-      {
-        counterActive = !counterActive;
-        updateSystemState();
-        bot.sendMessage(CHAT_ID, "Nút nhấn vật lý đã thay đổi trạng thái: " + String(counterActive ? "BẬT" : "TẮT"), "");
-      }
-    }
+    counterActive = !counterActive; // toggle trạng thái hệ thống
+    updateSystemState();
+
+    // Gửi Telegram
+    bot.sendMessage(CHAT_ID,
+                    "Nút nhấn vật lý: " + String(counterActive ? "BẬT" : "TẮT"), "");
+
+    // Điều khiển TM1637 giống logic mẫu
+    if (!counterActive)
+      display.clear();
+    else
+      display.showNumberDec(uptimeSeconds % 10000, true);
+
+    delay(200); // chống rung đơn giản
   }
+
+  lastBtn = btn;
 
   // Kiểm tra tin nhắn Telegram
   if (millis() > lastTimeBotRan + botRequestDelay)
