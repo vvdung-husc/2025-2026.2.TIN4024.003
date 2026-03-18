@@ -1,0 +1,5 @@
+#ifndef SECRETS_H
+#define SECRETS_H
+#define BOT_TOKEN "8078131256:AAG6mkGP7UjQPe-WNQ6okiWbbKIhoXuOLn0"
+#define CHAT_ID "7633653308"
+#endif
