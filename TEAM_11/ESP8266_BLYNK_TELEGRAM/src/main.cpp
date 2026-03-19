@@ -203,5 +203,5 @@ void loop() {
   Blynk.run();
   timer.run();
   checkButton();
-  // handleTelegram(); 
+  // handleTelegram(); hàm này đã được gọi trong Timer nên không cần gọi ở đây nữa
 }
