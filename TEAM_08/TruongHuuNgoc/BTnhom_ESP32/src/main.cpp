@@ -27,7 +27,7 @@ char pass[] = "";
 #define DHTTYPE DHT22
 #define CLK 18
 #define DIO 19
-#define LED_PIN 21
+#define LED_PIN 4
 #define BTN_PIN 23
 #define GAS_PIN 34
 
@@ -148,7 +148,7 @@ void sendSensorData()
 
 void updateDisplay()
 {
-  // 1. Hiển thị lên TM1637 (Uptime)
+  // 1. TM1637 (Uptime)
   if (counterActive)
   {
     display.showNumberDec(uptimeSeconds % 10000);
@@ -158,32 +158,30 @@ void updateDisplay()
     display.clear();
   }
 
-  // 2. Hiển thị lên OLED SSD1306 (Thông số cảm biến)
+  // 2. OLED
   oled.clearDisplay();
-
-  if (!counterActive)
-  {
-    oled.setTextSize(1);
-    oled.setTextColor(SSD1306_WHITE);
-    oled.setCursor(20, 25);
-    oled.println("SYSTEM PAUSED");
-    oled.display();
-    return;
-  }
-
   oled.setTextSize(1);
   oled.setTextColor(SSD1306_WHITE);
 
-  // Tiêu đề
-  oled.setCursor(0, 0);
-  oled.println("--- MONITORING ---");
+  // Nếu pause thì hiển thị trạng thái
+  if (!counterActive)
+  {
+    oled.setCursor(0, 0);
+    oled.println("--- PAUSED ---");
+  }
+  else
+  {
+    oled.setCursor(0, 0);
+    oled.println("--- MONITORING ---");
+  }
 
-  // Hiển thị Nhiệt độ & Độ ẩm
+  // Hiển thị Nhiệt độ
   oled.setCursor(0, 20);
   oled.print("Temp:  ");
   oled.print(temp, 1);
   oled.println(" C");
 
+  // Hiển thị Độ ẩm
   oled.setCursor(0, 35);
   oled.print("Humid: ");
   oled.print(humid, 1);
@@ -194,7 +192,7 @@ void updateDisplay()
   oled.print("Gas:   ");
   oled.print(gasValue);
 
-  // Vẽ một thanh bar nhỏ cho Gas để trông "hiện đại" hơn
+  // Thanh bar Gas
   int barWidth = map(gasValue, 0, 4095, 0, 50);
   oled.drawRect(70, 50, 52, 10, SSD1306_WHITE);
   oled.fillRect(71, 51, barWidth, 8, SSD1306_WHITE);
@@ -208,6 +206,7 @@ void setup()
   pinMode(LED_PIN, OUTPUT);
   pinMode(BTN_PIN, INPUT_PULLUP);
 
+  Wire.begin(21, 22);
   dht.begin();
   display.setBrightness(0x0f);
   client.setCACert(TELEGRAM_CERTIFICATE_ROOT);
@@ -240,24 +239,32 @@ void loop()
   Blynk.run();
   timer.run();
 
-  // Kiểm tra nút nhấn vật lý
-  static unsigned long lastBtnTime = 0;
-  static int lastBtnValue = HIGH;
-  if (millis() - lastBtnTime > 500)
+  // -------- BUTTON toggle system --------
+  static bool lastBtn = HIGH;
+  bool btn = digitalRead(BTN_PIN);
+
+  // LED phản ánh trạng thái (giống LED_BLUE trong ví dụ)
+  digitalWrite(LED_PIN, counterActive ? HIGH : LOW);
+
+  if (lastBtn == HIGH && btn == LOW)
   {
-    int v = digitalRead(BTN_PIN);
-    if (v != lastBtnValue)
-    {
-      lastBtnTime = millis();
-      lastBtnValue = v;
-      if (v == LOW)
-      {
-        counterActive = !counterActive;
-        updateSystemState();
-        bot.sendMessage(CHAT_ID, "Nút nhấn vật lý đã thay đổi trạng thái: " + String(counterActive ? "BẬT" : "TẮT"), "");
-      }
-    }
+    counterActive = !counterActive; // toggle trạng thái hệ thống
+    updateSystemState();
+
+    // Gửi Telegram
+    bot.sendMessage(CHAT_ID,
+                    "Nút nhấn vật lý: " + String(counterActive ? "BẬT" : "TẮT"), "");
+
+    // Điều khiển TM1637 giống logic mẫu
+    if (!counterActive)
+      display.clear();
+    else
+      display.showNumberDec(uptimeSeconds % 10000, true);
+
+    delay(200); // chống rung đơn giản
   }
+
+  lastBtn = btn;
 
   // Kiểm tra tin nhắn Telegram
   if (millis() > lastTimeBotRan + botRequestDelay)
