@@ -3,6 +3,7 @@ THÔNG TIN NHÓM 11
 1. Trần Quốc Tiến
 2. Trần Đức Quốc Chí
 */
+<<<<<<< HEAD
 
 #define BLYNK_TEMPLATE_ID "TMPL6c0cqfIJ6"
 #define BLYNK_TEMPLATE_NAME "ESP8266 BLYNK TELEGRAM"
@@ -10,6 +11,9 @@ THÔNG TIN NHÓM 11
 
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>
+=======
+#include "secrets.h" 
+>>>>>>> a914f7b4bf8ef19d8435ad58e0aab96a049f3665
 #include <WiFi.h>
 #include <BlynkSimpleEsp32.h>
 #include <DHT.h>
@@ -77,6 +81,13 @@ void updateSensors() {
     lastTemp = t;
     lastHum = h;
   }
+<<<<<<< HEAD
+=======
+  Blynk.virtualWrite(V3, gas); 
+
+  Serial.printf("T: %.1fC | H: %.1f%% | Gas: %d\n", t, h, gas);
+  Serial.println("--- Information provided by Team 11 ---");
+>>>>>>> a914f7b4bf8ef19d8435ad58e0aab96a049f3665
 }
 // 3. Xử lý nút bấm vật lý (GPIO 22) đồng bộ với Switch trên Web (V0)
 void checkButton() {
