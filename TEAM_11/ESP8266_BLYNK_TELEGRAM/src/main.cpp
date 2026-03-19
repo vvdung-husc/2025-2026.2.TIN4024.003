@@ -2,14 +2,10 @@
 THÔNG TIN NHÓM 11
 1. Trần Quốc Tiến
 */
-
-#define BLYNK_TEMPLATE_ID "TMPL6c0cqfIJ6"
-#define BLYNK_TEMPLATE_NAME "ESP8266 BLYNK TELEGRAM"
-#define BLYNK_AUTH_TOKEN "9gbOkBxTHIn7Iu-tFhjPAKEZDYZjzquO"
-
 #include <WiFi.h>
 #include <BlynkSimpleEsp32.h>
 #include <DHT.h>
+#include "secrets.h" 
 
 // --- Cấu hình chân phần cứng ---
 #define DHTPIN 4
