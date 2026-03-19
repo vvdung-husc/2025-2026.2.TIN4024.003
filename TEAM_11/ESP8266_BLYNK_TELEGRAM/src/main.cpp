@@ -1,120 +1,104 @@
 /*
-THÔNG TIN NHÓM 11
-1. Trần Quốc Tiến
-2. Trần Đức Quốc Chí
-*/
+ * PROJECT: ESP32 BLYNK SMART HOME
+ * NHÓM 11: Trần Quốc Tiến
+ * BOARD: ESP32
+ * CONNECTIVITY: WiFi (Blynk IoT Cloud)
+ */
 
-#define BLYNK_TEMPLATE_ID "TMPL6c0cqfIJ6"
+#define BLYNK_TEMPLATE_ID   "TMPL6c0cqfIJ6"
 #define BLYNK_TEMPLATE_NAME "ESP8266 BLYNK TELEGRAM"
-#define BLYNK_AUTH_TOKEN "9gbOkBxTHIn7Iu-tFhjPAKEZDYZjzquO"
+#define BLYNK_AUTH_TOKEN    "9gbOkBxTHIn7Iu-tFhjPAKEZDYZjzquO"
 
-#include <WiFiClientSecure.h>
-#include <UniversalTelegramBot.h>
+// --- 1. THƯ VIỆN ---
 #include <WiFi.h>
+#include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
 #include <DHT.h>
+#include <WiFiClientSecure.h>
+#include <UniversalTelegramBot.h>
 
-// telegram
-#define BOT_TOKEN "8618113869:AAGGvhkMe7qviT1j3v6K_wjMMBPALFQKN9c"
-#define CHAT_ID "7633653308"
-// #define CHAT_ID "5401844529"
+#define BOT_TOKEN "8643001862:AAEVaMnyx0cHiHrkf3RcYKS6jNeKwnBr-zw"
+#define CHAT_ID "-5170429956"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOT_TOKEN, client);
 String chat_id = CHAT_ID;
+// --- 2. CẤU HÌNH CHÂN (HARDWARE PINS) ---
+#define DHTPIN      4
+#define DHTTYPE     DHT22
+#define LED_PIN     23
+#define GAS_PIN     34
+#define BTN_PIN     22 
 
-// --- Cấu hình chân phần cứng ---
-#define DHTPIN 4
-#define DHTTYPE DHT22
-#define LED_PIN 23
-#define GAS_PIN 34
-#define BTN_PIN 22 
-
-// --- KHAI BÁO NGUYÊN MẪU HÀM (Prototypes) ---
-// Bước này giúp compiler biết sự tồn tại của hàm trước khi chúng được gọi
-void updateUptime();
-void updateSensors();
+void updateUptime(); 
+void updateSensors(); 
 void checkButton();
 
-// --- Khởi tạo đối tượng ---
+// --- 3. KHỞI TẠO ĐỐI TƯỢNG & BIẾN TOÀN CỤC ---
 DHT dht(DHTPIN, DHTTYPE);
 BlynkTimer timer;
 
 bool ledStatus = LOW;
 bool lastBtnState = HIGH;
+char auth[] = BLYNK_AUTH_TOKEN;
+char ssid[] = "Wokwi-GUEST"; // Tên WiFi
+char pass[] = "";            // Mật khẩu WiFi
 
-// --- ĐỒNG BỘ KHI VỪA KẾT NỐI ---
-BLYNK_CONNECTED() {
-  // Đồng bộ trạng thái nút nhấn V0 từ Web xuống ESP32 ngay lập tức
-  Blynk.syncVirtual(V0); 
-  
-  // Ép hệ thống gửi dữ liệu ngay lần đầu để Web không bị "đơ"
-  updateUptime();
-  updateSensors();
-  
-  Serial.println(">>> System Synchronized with Blynk Cloud <<<");
+// --- ĐỒNG BỘ KHI VỪA KẾT NỐI --- 
+BLYNK_CONNECTED() { // Đồng bộ trạng thái nút nhấn V0 từ Web xuống ESP32 ngay lập tức 
+  Blynk.syncVirtual(V0);
+// Gửi thời gian hoạt động (V4)
+
+
+// Ép hệ thống gửi dữ liệu ngay lần đầu để Web không bị "đơ" 
+  updateUptime(); 
+  updateSensors(); 
+  Serial.println(">>> System Synchronized with Blynk Cloud <<<"); 
+// --- 4. CÁC HÀM HỖ TRỢ (WORKER FUNCTIONS) ---
 }
-
-// 1. Cập nhật Uptime (V4) mỗi 1 giây
 void updateUptime() {
   Blynk.virtualWrite(V4, millis() / 1000);
 }
-
-// 2. Cập nhật cảm biến (V1, V2, V3) mỗi 2 giây
+// Gửi dữ liệu cảm biến lên Blynk (V1, V2, V3)
 float lastTemp = 0;
 float lastHum = 0;
 
 void updateSensors() {
-  // 1. Đọc dữ liệu từ cảm biến
   float h = dht.readHumidity();
   float t = dht.readTemperature();
-  int gas = analogRead(GAS_PIN); // Đọc giá trị analog từ cảm biến Gas
+  int gas = analogRead(GAS_PIN);
+  bool gasAlertSent = false;
+  if (gas > 2000 && !gasAlertSent) {
+  bot.sendMessage(CHAT_ID, "⚠️ CẢNH BÁO KHÍ GAS CAO!", "");
+  gasAlertSent = true;
+}
 
-  // Kiểm tra nếu cảm biến DHT bị lỗi (tránh gửi dữ liệu rác lên Blynk)
-  if (isnan(h) || isnan(t)) {
-    Serial.println("Failed to read from DHT sensor!");
-    return;
-  }
+if (gas < 1500) { 
+  gasAlertSent = false; // reset khi an toàn lại
+}
 
-  // 2. Gửi dữ liệu lên Blynk App
-  Blynk.virtualWrite(V1, t);   // Nhiệt độ
-  Blynk.virtualWrite(V2, h);   // Độ ẩm
-  Blynk.virtualWrite(V3, gas); // Nồng độ Gas
-
-  // 3. Tự động cảnh báo qua Telegram nếu Gas vượt ngưỡng nguy hiểm (Ví dụ > 2000)
-  if (gas > 2000) {
-    String alertMsg = "🚨 NGUY HIỂM: Phát hiện rò rỉ GAS!\n";
-    alertMsg += "Nồng độ: " + String(gas);
-    bot.sendMessage(chat_id, alertMsg, "");
-  }
-
-  // 4. Gửi cập nhật Nhiệt độ/Độ ẩm định kỳ nếu có thay đổi đáng kể
   if (abs(t - lastTemp) > 0.5 || abs(h - lastHum) > 1) {
-    String msg = "📊 Cập nhật môi trường:\n";
-    msg += "Nhiệt độ: " + String(t) + "°C\n";
-    msg += "Độ ẩm: " + String(h) + "%";
-    
-    bot.sendMessage(chat_id, msg, "");
-    
-    // Lưu lại giá trị cũ để so sánh cho lần sau
+    String msg = "📢 Sensor Update\n";
+    msg += "Temp: " + String(t) + "C\n";
+    msg += "Humidity: " + String(h) + "%";
+
+    bot.sendMessage(CHAT_ID, msg, "");
     lastTemp = t;
     lastHum = h;
   }
-
-  // 5. In ra Serial Monitor để theo dõi (Debug)
-  Serial.printf("T: %.1fC | H: %.1f%% | Gas: %d\n", t, h, gas);
-  Serial.println("--- Information provided by Team 11 ---");
 }
-// 3. Xử lý nút bấm vật lý (GPIO 22) đồng bộ với Switch trên Web (V0)
+
+
+// Kiểm tra nút nhấn vật lý
 void checkButton() {
   bool currentBtnState = digitalRead(BTN_PIN);
   if (currentBtnState == LOW && lastBtnState == HIGH) {
-    delay(50); // Chống nhiễu
+    delay(50); // Chống nhiễu (Debounce)
     if (digitalRead(BTN_PIN) == LOW) {
       ledStatus = !ledStatus;
       digitalWrite(LED_PIN, ledStatus);
       
-      // Đồng bộ ngược lại Web: Đổi trạng thái Switch V0
+      // Đồng bộ trạng thái ngược lên nút nhấn ảo trên App/Web
       Blynk.virtualWrite(V0, ledStatus);
       
       Serial.print("Physical Button -> LED: ");
@@ -123,85 +107,92 @@ void checkButton() {
   }
   lastBtnState = currentBtnState;
 }
-void handleTelegram() {
-  // 1. Chỉ lấy tin nhắn mới 1 lần duy nhất mỗi khi Timer gọi hàm này
-  int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
 
-  // 2. Nếu có tin nhắn mới thì xử lý
-  if (numNewMessages > 0) {
-    Serial.printf("Có %d tin nhắn mới!\n", numNewMessages);
-    
-    for (int i = 0; i < numNewMessages; i++) {
-      String current_sender_id = String(bot.messages[i].chat_id); 
-      String text = bot.messages[i].text;
+// --- 5. BLYNK CALLBACKS ---
 
-      if (text == "/start") {
-        String welcome = "Xin chào, thông tin nhóm 11:\n";
-        welcome += "1. Trần Quốc Tiến\n2. Trần Đức Quốc Chí\n3. Lê Tấn Toàn\n4. Đặng Tấn Phát\n5. Hồ Văn Thạnh\n\n";
-        welcome += "Sử dụng lệnh:\n/led_on : Bật đèn\n/led_off : Tắt đèn\n/get_state : Trạng thái\n/get_weather : Nhiệt độ\n/get_gas : Khí Gas";
-        bot.sendMessage(current_sender_id, welcome, "");
-      }   
 
-      else if (text == "/led_on") {
-        ledStatus = HIGH;
-        digitalWrite(LED_PIN, HIGH);
-        Blynk.virtualWrite(V0, HIGH);
-        bot.sendMessage(current_sender_id, "✅ Đèn đã BẬT", "");
-      }
 
-      else if (text == "/led_off") {
-        ledStatus = LOW;
-        digitalWrite(LED_PIN, LOW);
-        Blynk.virtualWrite(V0, LOW);
-        bot.sendMessage(current_sender_id, "❌ Đèn đã TẮT", "");
-      }
-
-      else if (text == "/get_state") { 
-        String statusMsg = (ledStatus == HIGH) ? "Đèn đang BẬT 💡" : "Đèn đang TẮT 🌑";
-        bot.sendMessage(current_sender_id, statusMsg, "");
-      }
-
-      else if (text == "/get_weather") {
-        float h = dht.readHumidity();
-        float t = dht.readTemperature();
-        String msg = "🌡 " + String(t) + "°C | 💧 " + String(h) + "%";
-        bot.sendMessage(current_sender_id, msg, "");
-      }
-
-      else if (text == "/get_gas") {
-        int gasValue = analogRead(GAS_PIN); 
-        bot.sendMessage(current_sender_id, "☁️ Gas: " + String(gasValue), "");
-      }
-    }
-  }
-}
-// 4. Nhận lệnh điều khiển từ Web (V0)
+// Nhận lệnh từ nút nhấn trên App/Web (V0)
 BLYNK_WRITE(V0) {
   ledStatus = param.asInt();
   digitalWrite(LED_PIN, ledStatus);
   Serial.print("Web/App Command -> LED: ");
   Serial.println(ledStatus ? "ON" : "OFF");
 }
+void handleTelegram() {
+  int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+
+  while (numNewMessages) {
+    for (int i = 0; i < numNewMessages; i++) {
+      String text = bot.messages[i].text;
+      String chat_id = bot.messages[i].chat_id;
+      if (text == "/start") {
+        String welcome = "Xin chào, thông tin nhóm:\n";
+        welcome += "1. Trần Quốc Tiến\n";
+        welcome += "2. Trần Đức Quốc Chí\n";
+        welcome += "3. Lê Tấn Toàn\n";
+        welcome += "4. Đặng Tấn Phát\n";
+        welcome += "5. Hồ Văn Thạnh \n\n";
+        welcome += "Sử dụng các lệnh sau để điều khiển đèn LED:\n\n";
+        welcome += "/led_on : Bật đèn\n";
+        welcome += "/led_off : Tắt đèn\n";
+        welcome += "/led_status : Kiểm tra trạng thái\n";
+        welcome += "/get_weather : Xem nhiệt độ, độ ẩm";
+        
+        bot.sendMessage(chat_id, welcome, "");
+      }
+      if (text == "/led_on") {
+        digitalWrite(LED_PIN, HIGH);
+        ledStatus = HIGH;
+        bot.sendMessage(chat_id, "LED is ON", "");
+      }
+
+      if (text == "/led_off") {
+        digitalWrite(LED_PIN, LOW);
+        ledStatus = LOW;
+        bot.sendMessage(chat_id, "LED is OFF", "");
+      }
+
+      if (text == "/led_status") {
+        bot.sendMessage(chat_id, ledStatus ? "STATUS: LED ON" : "STATUS: LED OFF", "");
+      }
+
+      if (text == "/get_weather") {
+        float h = dht.readHumidity();
+        float t = dht.readTemperature();
+
+        String msg = "🌡 Temp: " + String(t) + " C\n";
+        msg += "💧 Humidity: " + String(h) + " %";
+
+        bot.sendMessage(chat_id, msg, "");
+      }
+    }
+    numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+  }
+}
+// --- 6. SETUP & LOOP ---
 
 void setup() {
   Serial.begin(115200);
+
+  // Cấu hình chân IO
   pinMode(LED_PIN, OUTPUT);
   pinMode(BTN_PIN, INPUT_PULLUP); 
   pinMode(GAS_PIN, INPUT);
 
+  // Khởi động cảm biến & Blynk
   dht.begin();
-  Blynk.begin(BLYNK_AUTH_TOKEN, "Wokwi-GUEST", "");
+  Blynk.begin(auth, ssid, pass);
 
-  // Thiết lập Timer
-  timer.setInterval(1000L, updateUptime);  // V4 nhảy mỗi 1s
-  timer.setInterval(2000L, updateSensors); // V1, V2, V3 nhảy mỗi 2s
+  // Thiết lập các khoảng thời gian gửi dữ liệu
+  timer.setInterval(1000L, updateUptime);  // Mỗi 1 giây cập nhật Uptime
+  timer.setInterval(2000L, updateSensors); // Mỗi 2 giây cập nhật Cảm biến
   client.setInsecure();
-  timer.setInterval(3000L, handleTelegram);
 }
 
 void loop() {
   Blynk.run();
   timer.run();
-  checkButton();
-  // handleTelegram(); hàm này đã được gọi trong Timer nên không cần gọi ở đây nữa
+  checkButton(); // Kiểm tra nút nhấn liên tục trong loop
+  handleTelegram();
 }
