@@ -2,10 +2,10 @@
 THÔNG TIN NHÓM 11
 1. Trần Quốc Tiến
 */
+#include "secrets.h" 
 #include <WiFi.h>
 #include <BlynkSimpleEsp32.h>
 #include <DHT.h>
-#include "secrets.h" 
 
 // --- Cấu hình chân phần cứng ---
 #define DHTPIN 4
@@ -57,7 +57,7 @@ void updateSensors() {
   Blynk.virtualWrite(V3, gas); 
 
   Serial.printf("T: %.1fC | H: %.1f%% | Gas: %d\n", t, h, gas);
-  Serial.println("--- Information provided by Team X ---");
+  Serial.println("--- Information provided by Team 11 ---");
 }
 
 // 3. Xử lý nút bấm vật lý (GPIO 22) đồng bộ với Switch trên Web (V0)
