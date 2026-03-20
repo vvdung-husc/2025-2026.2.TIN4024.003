@@ -1,6 +1,7 @@
 	/*
 	THÔNG TIN NHÓM 13
 	1. Thân Hoàng Phước Minh
+  2. Nguyễn Tấn Nhân
 	*/
 #define BLYNK_TEMPLATE_ID "TMPL6iGHfH-M1"
 #define BLYNK_TEMPLATE_NAME "IoT Team 13"
