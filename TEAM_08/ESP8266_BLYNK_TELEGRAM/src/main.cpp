@@ -2,7 +2,7 @@
 THÔNG TIN NHÓM 08
 1. Trương Hữu Ngọc
 2. Hồ Bảo Toàn
-3. Nguyễn Văn Nhật Quang
+
 */
 #define BLYNK_TEMPLATE_ID "TMPL6mcSAdOVC"
 #define BLYNK_TEMPLATE_NAME "ESP8266 BLYNK TELEGRAM"
