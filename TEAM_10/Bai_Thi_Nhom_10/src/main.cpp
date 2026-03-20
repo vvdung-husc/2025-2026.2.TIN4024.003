@@ -1,3 +1,10 @@
+/*
+	THÔNG TIN NHÓM 10
+	1. ĐINH TUẤN ANH
+	*/
+
+
+
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>
