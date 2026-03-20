@@ -1,7 +1,6 @@
 /*
   THÔNG TIN NHÓM 10
   1. Đinh Tuấn Anh
-  2. Phan Thanh Vũ
 */
 
 #include <WiFi.h>

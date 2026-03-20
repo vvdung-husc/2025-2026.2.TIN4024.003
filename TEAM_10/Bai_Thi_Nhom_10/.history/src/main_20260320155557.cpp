@@ -1,8 +1,7 @@
 /*
-  THÔNG TIN NHÓM 10
-  1. Đinh Tuấn Anh
-  2. Phan Thanh Vũ
-*/
+	THÔNG TIN NHÓM 10
+	1. Đinh Tuấn Anh
+	*/
 
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
@@ -52,10 +51,6 @@ const long blinkInterval = 200;
 unsigned long lastTimeBotRan;
 const int botRequestDelay = 1000;
 
-// ===== THEO DÕI THAY ĐỔI =====
-float lastTemp = -100;
-float lastHum  = -100;
-
 // ===== INTERRUPT =====
 void IRAM_ATTR gasDetectedISR() {
   gasDetected = true;
@@ -73,8 +68,7 @@ void handleNewMessages(int numNewMessages) {
         "TEAM 10 SYSTEM\n"
         "/led_on\n"
         "/led_off\n"
-        "/gas\n"
-        "/get_weather",
+        "/gas",
         "");
     }
 
@@ -93,16 +87,6 @@ void handleNewMessages(int numNewMessages) {
       int gasValue = analogRead(gasAnalog);
       bot.sendMessage(chat_id, "Gas: " + String(gasValue), "");
     }
-
-    if (text == "/get_weather") {
-      float temp = dht.readTemperature();
-      float hum  = dht.readHumidity();
-
-      String msg = "🌡 Temperature: " + String(temp) + " C\n";
-      msg += "💧 Humidity: " + String(hum) + " %";
-
-      bot.sendMessage(chat_id, msg, "");
-    }
   }
 }
 
@@ -115,7 +99,7 @@ void setup() {
 
   attachInterrupt(digitalPinToInterrupt(gasDigital), gasDetectedISR, RISING);
 
-  // OLED dùng chân 13,12
+  // OLED dùng chân  (13,12)
   Wire.begin(13, 12);
 
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
@@ -124,6 +108,7 @@ void setup() {
   }
 
   display.clearDisplay();
+
   dht.begin();
 
   WiFi.begin(ssid, password);
@@ -146,47 +131,39 @@ void loop() {
   float hum  = dht.readHumidity();
   int gasValue = analogRead(gasAnalog);
 
-  // ===== GỬI KHI THAY ĐỔI =====
-  if (!isnan(temp) && !isnan(hum)) {
-    if (abs(temp - lastTemp) >= 0.5 || abs(hum - lastHum) >= 1) {
-
-      String msg = "📢 WEATHER UPDATE\n";
-      msg += "🌡 Temp: " + String(temp) + " C\n";
-      msg += "💧 Humi: " + String(hum) + " %";
-
-      bot.sendMessage(GROUP_ID, msg);
-
-      lastTemp = temp;
-      lastHum = hum;
-    }
-  }
-
-  // ===== THỜI GIAN =====
+  // ===== THỜI GIAN HOẠT ĐỘNG =====
   unsigned long seconds = millis() / 1000;
   int hours = seconds / 3600;
   int minutes = (seconds % 3600) / 60;
   int secs = seconds % 60;
 
-  // ===== OLED =====
+  // ===== HIỂN THỊ OLED =====
   display.clearDisplay();
+
   display.setTextSize(1);
   display.setTextColor(WHITE);
 
+  // Dòng 1: Team
   display.setCursor(0, 0);
   display.println("TEAM 10");
 
+  // Dòng 2: Time
   display.setCursor(0, 10);
   display.printf("Time: %02d:%02d:%02d", hours, minutes, secs);
 
+  // Dòng 3: Temp
   display.setCursor(0, 20);
   display.printf("Temp: %.1f C", temp);
 
+  // Dòng 4: Humidity
   display.setCursor(0, 30);
   display.printf("Humi: %.1f %%", hum);
 
+  // Dòng 5: Gas
   display.setCursor(0, 40);
   display.printf("Gas: %d", gasValue);
 
+  // Dòng 6: Status
   display.setCursor(0, 50);
   if (gasValue > 2000) {
     display.println("WARNING GAS!");
@@ -196,7 +173,7 @@ void loop() {
 
   display.display();
 
-  // ===== GAS ALERT =====
+  // ===== PHÁT HIỆN GAS =====
   if (gasDetected) {
 
     String msg = "⚠️ GAS DETECTED!\nValue: " + String(gasValue);
