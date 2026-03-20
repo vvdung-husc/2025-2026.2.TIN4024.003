@@ -1,46 +1,47 @@
 /*
 	THÔNG TIN NHÓM 10
-	1. ĐINH TUẤN ANH
+	1. Đinh Tuấn Anh
 	*/
-
-
 
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>
 #include <ArduinoJson.h>
 #include <Arduino.h>
-#include <TM1637Display.h>
 
-#include <WiFiClient.h>
-#include <BlynkSimpleEsp32.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <DHT.h>
 
-#define BLYNK_TEMPLATE_ID "TMPL6uZReKclM"
-#define BLYNK_TEMPLATE_NAME "Nhom10iot"
-#define BLYNK_AUTH_TOKEN "b0SAhSpKUXQk1oh2w5TvDhiZOvhH1IYf"
-
-// Replace with your network credentials
+// ===== WIFI =====
 const char* ssid = "Wokwi-GUEST";
-
 const char* password = "";
 
-// Initialize Telegram BOT
-#define BOTtoken "8333356314:AAHgJ3eQvr2rghJ-i9YwQWU0YcJiqhMnbxw"  // your Bot Token (Get from Botfather)
-
-// Dùng ChatGPT để nhờ hướng dẫn tìm giá trị GROUP_ID này
-#define GROUP_ID "-5116051271" //thường là một số âm
+// ===== TELEGRAM =====
+#define BOTtoken "8333356314:AAHgJ3eQvr2rghJ-i9YwQWU0YcJiqhMnbxw"
+#define GROUP_ID "-5116051271"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
 
-// PIR sensor
-const int motionSensor = 27;
+// ===== OLED =====
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-// LED
-const int ledPin = 5;
+// ===== DHT =====
+#define DHTPIN 16
+#define DHTTYPE DHT22
+DHT dht(DHTPIN, DHTTYPE);
 
-bool motionDetected = false;
+// ===== CHÂN =====
+const int gasDigital = 25;
+const int gasAnalog  = 34;
+const int ledPin     = 5;
 
+// ===== BIẾN =====
+bool gasDetected = false;
 bool blinkMode = false;
 bool ledState = false;
 
@@ -50,162 +51,154 @@ const long blinkInterval = 200;
 unsigned long lastTimeBotRan;
 const int botRequestDelay = 1000;
 
-
-// Format string
-String StringFormat(const char* fmt, ...){
-  va_list vaArgs;
-  va_start(vaArgs, fmt);
-
-  va_list vaArgsCopy;
-  va_copy(vaArgsCopy, vaArgs);
-
-  const int iLen = vsnprintf(NULL, 0, fmt, vaArgsCopy);
-
-  va_end(vaArgsCopy);
-
-  int iSize = iLen + 1;
-  char* buff = (char*)malloc(iSize);
-
-  vsnprintf(buff, iSize, fmt, vaArgs);
-  va_end(vaArgs);
-
-  String s = buff;
-
-  free(buff);
-
-  return String(s);
+// ===== INTERRUPT =====
+void IRAM_ATTR gasDetectedISR() {
+  gasDetected = true;
 }
 
-
-// PIR interrupt
-void IRAM_ATTR detectsMovement() {
-  motionDetected = true;
-}
-
-
-// Telegram command handler
+// ===== TELEGRAM =====
 void handleNewMessages(int numNewMessages) {
-
   for (int i = 0; i < numNewMessages; i++) {
 
     String chat_id = bot.messages[i].chat_id;
     String text = bot.messages[i].text;
 
-    Serial.println(text);
-
     if (text == "/start") {
-
-      String welcome = "Xin chào.\n";
-      welcome += "Sử dụng các lệnh sau để điều khiển LED.\n\n";
-      welcome += "/led_on : bật đèn nhấp nháy\n";
-      welcome += "/led_off : tắt đèn\n";
-      welcome += "/get_state : trạng thái đèn\n";
-
-      bot.sendMessage(chat_id, welcome, "");
+      bot.sendMessage(chat_id,
+        "TEAM 10 SYSTEM\n"
+        "/led_on\n"
+        "/led_off\n"
+        "/gas",
+        "");
     }
 
     if (text == "/led_on") {
-
       blinkMode = true;
-      ledState = true;
-
-      bot.sendMessage(chat_id, "LED bắt đầu nhấp nháy", "");
+      bot.sendMessage(chat_id, "LED ON", "");
     }
 
     if (text == "/led_off") {
-
       blinkMode = false;
-      ledState = false;
-
       digitalWrite(ledPin, LOW);
-
-      bot.sendMessage(chat_id, "LED đã tắt", "");
+      bot.sendMessage(chat_id, "LED OFF", "");
     }
 
-    if (text == "/get_state") {
-
-      if (blinkMode) {
-        bot.sendMessage(chat_id, "LED đang nhấp nháy", "");
-      } 
-      else {
-        bot.sendMessage(chat_id, "LED đang tắt", "");
-      }
+    if (text == "/gas") {
+      int gasValue = analogRead(gasAnalog);
+      bot.sendMessage(chat_id, "Gas: " + String(gasValue), "");
     }
   }
 }
 
-
+// ===== SETUP =====
 void setup() {
-
   Serial.begin(115200);
 
-  pinMode(motionSensor, INPUT_PULLUP);
+  pinMode(gasDigital, INPUT);
   pinMode(ledPin, OUTPUT);
 
-  attachInterrupt(digitalPinToInterrupt(motionSensor), detectsMovement, RISING);
+  attachInterrupt(digitalPinToInterrupt(gasDigital), gasDetectedISR, RISING);
 
-  Serial.print("Connecting Wifi: ");
+  // OLED dùng chân  (13,12)
+  Wire.begin(13, 12);
+
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println("OLED lỗi!");
+    while(true);
+  }
+
+  display.clearDisplay();
+
+  dht.begin();
 
   WiFi.begin(ssid, password);
-
   client.setInsecure();
 
   while (WiFi.status() != WL_CONNECTED) {
-
-    Serial.print(".");
     delay(500);
+    Serial.print(".");
   }
 
   Serial.println("\nWiFi connected");
-
-  bot.sendMessage(GROUP_ID, "Bot đã trực tuyến!", "");
+  bot.sendMessage(GROUP_ID, "Bot đã online!", "");
 }
 
-
+// ===== LOOP =====
 void loop() {
 
-  static uint count_ = 0;
+  // ===== ĐỌC DỮ LIỆU =====
+  float temp = dht.readTemperature();
+  float hum  = dht.readHumidity();
+  int gasValue = analogRead(gasAnalog);
 
-  // PIR phát hiện chuyển động
-  if(motionDetected){
+  // ===== THỜI GIAN HOẠT ĐỘNG =====
+  unsigned long seconds = millis() / 1000;
+  int hours = seconds / 3600;
+  int minutes = (seconds % 3600) / 60;
+  int secs = seconds % 60;
 
-    count_++;
+  // ===== HIỂN THỊ OLED =====
+  display.clearDisplay();
 
-    String msg = StringFormat("%u => Motion detected!", count_);
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
 
-    bot.sendMessage(GROUP_ID, msg.c_str());
+  // Dòng 1: Team
+  display.setCursor(0, 0);
+  display.println("TEAM 10");
 
-    Serial.println("Motion detected gửi Telegram");
+  // Dòng 2: Time
+  display.setCursor(0, 10);
+  display.printf("Time: %02d:%02d:%02d", hours, minutes, secs);
 
-    motionDetected = false;
+  // Dòng 3: Temp
+  display.setCursor(0, 20);
+  display.printf("Temp: %.1f C", temp);
+
+  // Dòng 4: Humidity
+  display.setCursor(0, 30);
+  display.printf("Humi: %.1f %%", hum);
+
+  // Dòng 5: Gas
+  display.setCursor(0, 40);
+  display.printf("Gas: %d", gasValue);
+
+  // Dòng 6: Status
+  display.setCursor(0, 50);
+  if (gasValue > 2000) {
+    display.println("WARNING GAS!");
+  } else {
+    display.println("Normal");
   }
 
+  display.display();
 
-  // LED nhấp nháy
+  // ===== PHÁT HIỆN GAS =====
+  if (gasDetected) {
+
+    String msg = "⚠️ GAS DETECTED!\nValue: " + String(gasValue);
+    bot.sendMessage(GROUP_ID, msg);
+
+    gasDetected = false;
+    blinkMode = true;
+  }
+
+  // ===== LED =====
   if (blinkMode) {
-
     unsigned long currentMillis = millis();
-
     if (currentMillis - previousMillis >= blinkInterval) {
-
       previousMillis = currentMillis;
-
       ledState = !ledState;
-
       digitalWrite(ledPin, ledState);
     }
   }
 
-
-  // đọc tin nhắn Telegram
+  // ===== TELEGRAM =====
   if (millis() - lastTimeBotRan > botRequestDelay) {
-
     int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
 
-    while(numNewMessages) {
-
+    while (numNewMessages) {
       handleNewMessages(numNewMessages);
-
       numNewMessages = bot.getUpdates(bot.last_message_received + 1);
     }
 
