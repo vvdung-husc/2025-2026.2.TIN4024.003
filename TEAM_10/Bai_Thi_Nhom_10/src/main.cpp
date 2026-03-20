@@ -14,6 +14,7 @@
 
 // Replace with your network credentials
 const char* ssid = "Wokwi-GUEST";
+
 const char* password = "";
 
 // Initialize Telegram BOT
