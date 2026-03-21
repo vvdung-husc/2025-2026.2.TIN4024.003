@@ -2,6 +2,7 @@
 THÔNG TIN NHÓM 08
 1. Trương Hữu Ngọc
 2. Hồ Bảo Toàn
+3. Nguyễn Vỹ Nguyên
 
 */
 #define BLYNK_TEMPLATE_ID "TMPL6mcSAdOVC"
