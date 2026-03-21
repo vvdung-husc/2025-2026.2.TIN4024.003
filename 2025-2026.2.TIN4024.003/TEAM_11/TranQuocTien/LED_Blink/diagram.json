@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 38.4,
+      "left": -4.76,
+      "attrs": { "builder": "esp-idf" }
+    },
+    { "type": "wokwi-led", "id": "led1", "top": -186, "left": 186.2, "attrs": { "color": "red" } },
+    {
+      "type": "wokwi-led",
+      "id": "led2",
+      "top": -186,
+      "left": 147.8,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led3",
+      "top": -186,
+      "left": 109.4,
+      "attrs": { "color": "green", "flip": "" }
+    },
+    {
+      "type": "board-ssd1306",
+      "id": "oled2",
+      "top": -112.06,
+      "left": 115.43,
+      "attrs": { "i2cAddress": "0x3c" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": -110.4,
+      "left": 316.25,
+      "rotate": 90,
+      "attrs": { "value": "4700" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": -110.4,
+      "left": 277.85,
+      "rotate": 90,
+      "attrs": { "value": "1000" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": -110.4,
+      "left": 297.05,
+      "rotate": 90,
+      "attrs": { "value": "1000" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "esp:GND.2", "oled2:GND", "black", [ "h201.6", "v-172.8" ] ],
+    [ "oled2:VCC", "esp:3V3", "red", [ "v-9.6", "h-143.85", "v172.8" ] ],
+    [ "led1:C", "esp:GND.2", "black", [ "h-182", "v201.6" ] ],
+    [ "led2:C", "esp:GND.2", "black", [ "h-143.6", "v201.6" ] ],
+    [ "led3:C", "esp:GND.2", "black", [ "h-105.2", "v172.8" ] ],
+    [ "oled2:SCL", "esp:22", "blue", [ "h125.1", "v172.8", "h-201.6" ] ],
+    [ "oled2:SDA", "esp:21", "blue", [ "h115.27", "v172.8", "h-201.6" ] ],
+    [ "led1:A", "r1:1", "red", [ "h134.4", "v19.2" ] ],
+    [ "led2:A", "r2:1", "gold", [ "h67.2", "v9.6" ] ],
+    [ "led3:A", "r3:1", "green", [ "h192", "v9.6" ] ],
+    [ "r3:2", "esp:23", "green", [ "v210", "h-230.4" ] ],
+    [ "r1:2", "esp:18", "red", [ "v229.2", "h-249.6" ] ],
+    [ "r2:2", "esp:19", "gold", [ "v181.2", "h-211.2" ] ]
+  ],
+  "dependencies": {}
+}
