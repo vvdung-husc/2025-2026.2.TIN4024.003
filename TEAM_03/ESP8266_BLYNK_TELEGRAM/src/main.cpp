@@ -2,6 +2,7 @@
 	THÔNG TIN NHÓM X
 	1. Trương Trường Phúc
 	2. Lê Thanh Nhật
+  3. Hoàng Văn Thắng
 	*/
 
 #define BLYNK_TEMPLATE_ID "TMPL6NkrRnQam"
