@@ -1,6 +1,7 @@
 /*
 	THÔNG TIN NHÓM X
 	1. Trương Trường Phúc
+	2. Lê Thanh Nhật
 	*/
 
 #define BLYNK_TEMPLATE_ID "TMPL6NkrRnQam"
