@@ -2,13 +2,18 @@
   THÔNG TIN NHÓM 10
   1. Đinh Tuấn Anh
   2. Phan Thanh Vũ
+  3. Lê Trần Hải Đạt
 */
+#define BLYNK_TEMPLATE_ID "TMPL6uZReKclM"
+#define BLYNK_TEMPLATE_NAME "Nhom10iot"
+#define BLYNK_AUTH_TOKEN "b0SAhSpKUXQk1oh2w5TvDhiZOvhH1IYf"
 
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>
 #include <ArduinoJson.h>
 #include <Arduino.h>
+#include <BlynkSimpleEsp32.h>
 
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -18,8 +23,6 @@
 // ===== WIFI =====
 const char* ssid = "Wokwi-GUEST";
 const char* password = "";
-
-// ===== TELEGRAM =====
 #define BOTtoken "8333356314:AAHgJ3eQvr2rghJ-i9YwQWU0YcJiqhMnbxw"
 #define GROUP_ID "-5116051271"
 
@@ -45,6 +48,8 @@ const int ledPin     = 5;
 bool gasDetected = false;
 bool blinkMode = false;
 bool ledState = false;
+bool blueButtonON = false;
+bool onled = true;
 
 unsigned long previousMillis = 0;
 const long blinkInterval = 200;
@@ -106,7 +111,6 @@ void handleNewMessages(int numNewMessages) {
   }
 }
 
-// ===== SETUP =====
 void setup() {
   Serial.begin(115200);
 
@@ -136,6 +140,9 @@ void setup() {
 
   Serial.println("\nWiFi connected");
   bot.sendMessage(GROUP_ID, "Bot đã online!", "");
+
+  bot.sendMessage(GROUP_ID, "Bot đã trực tuyến!", "");
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, password);
 }
 
 // ===== LOOP =====
@@ -226,5 +233,26 @@ void loop() {
     }
 
     lastTimeBotRan = millis();
+  }
+}
+
+BLYNK_WRITE(V1){ 
+  onled = param.asInt();
+  if (onled)
+  {
+      unsigned long currentMillis = millis();
+
+      if (currentMillis - previousMillis >= blinkInterval) {
+
+        previousMillis = currentMillis;
+
+        ledState = !ledState;
+
+        digitalWrite(ledPin, ledState);
+      }
+    }
+    else {
+    // display.clearDisplay();
+    // display.display();
   }
 }
