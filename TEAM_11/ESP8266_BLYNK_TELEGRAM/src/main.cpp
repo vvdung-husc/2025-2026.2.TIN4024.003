@@ -1,5 +1,4 @@
 /*
-<<<<<<< HEAD
  * PROJECT: ESP32 BLYNK SMART HOME
  * NHÓM 11: Trần Quốc Tiến
  * BOARD: ESP32
@@ -11,12 +10,8 @@
 #define BLYNK_AUTH_TOKEN    "9gbOkBxTHIn7Iu-tFhjPAKEZDYZjzquO"
 
 // --- 1. THƯ VIỆN ---
-=======
 THÔNG TIN NHÓM 11
-1. Trần Quốc Tiến
-*/
-#include "secrets.h" 
->>>>>>> f18995c99aec78487b1e4df3a6594b23b66db75a
+#include "secrets.h"
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
