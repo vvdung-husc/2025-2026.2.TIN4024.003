@@ -10,7 +10,7 @@
 #define BLYNK_AUTH_TOKEN    "9gbOkBxTHIn7Iu-tFhjPAKEZDYZjzquO"
 
 // --- 1. THƯ VIỆN ---
-THÔNG TIN NHÓM 11
+
 #include "secrets.h"
 #include <WiFi.h>
 #include <WiFiClient.h>
@@ -18,8 +18,6 @@ THÔNG TIN NHÓM 11
 #include <DHT.h>
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>
-
-<<<<<<< HEAD
 #define BOT_TOKEN "8643001862:AAEVaMnyx0cHiHrkf3RcYKS6jNeKwnBr-zw"
 #define CHAT_ID "-5170429956"
 
@@ -35,7 +33,6 @@ String chat_id = CHAT_ID;
 
 void updateUptime(); 
 void updateSensors(); 
-=======
 // --- Cấu hình chân phần cứng ---
 #define DHTPIN 4
 #define DHTTYPE DHT22
@@ -47,24 +44,19 @@ void updateSensors();
 // Bước này giúp compiler biết sự tồn tại của hàm trước khi chúng được gọi
 void updateUptime();
 void updateSensors();
->>>>>>> f18995c99aec78487b1e4df3a6594b23b66db75a
 void checkButton();
-
 // --- 3. KHỞI TẠO ĐỐI TƯỢNG & BIẾN TOÀN CỤC ---
 DHT dht(DHTPIN, DHTTYPE);
 BlynkTimer timer;
-
 bool ledStatus = LOW;
 bool lastBtnState = HIGH;
 char auth[] = BLYNK_AUTH_TOKEN;
 char ssid[] = "Wokwi-GUEST"; // Tên WiFi
 char pass[] = "";            // Mật khẩu WiFi
-
 // --- ĐỒNG BỘ KHI VỪA KẾT NỐI --- 
 BLYNK_CONNECTED() { // Đồng bộ trạng thái nút nhấn V0 từ Web xuống ESP32 ngay lập tức 
   Blynk.syncVirtual(V0);
 // Gửi thời gian hoạt động (V4)
-
 
 // Ép hệ thống gửi dữ liệu ngay lần đầu để Web không bị "đơ" 
   updateUptime(); 
@@ -75,20 +67,15 @@ BLYNK_CONNECTED() { // Đồng bộ trạng thái nút nhấn V0 từ Web xuốn
 void updateUptime() {
   Blynk.virtualWrite(V4, millis() / 1000);
 }
-<<<<<<< HEAD
 // Gửi dữ liệu cảm biến lên Blynk (V1, V2, V3)
 float lastTemp = 0;
 float lastHum = 0;
 
-=======
-
 // 2. Cập nhật cảm biến (V1, V2, V3) mỗi 2 giây
->>>>>>> f18995c99aec78487b1e4df3a6594b23b66db75a
 void updateSensors() {
   float h = dht.readHumidity();
   float t = dht.readTemperature();
   int gas = analogRead(GAS_PIN);
-<<<<<<< HEAD
   bool gasAlertSent = false;
   if (gas > 2000 && !gasAlertSent) {
   bot.sendMessage(CHAT_ID, "⚠️ CẢNH BÁO KHÍ GAS CAO!", "");
@@ -108,11 +95,10 @@ if (gas < 1500) {
     lastTemp = t;
     lastHum = h;
   }
-}
+
 
 
 // Kiểm tra nút nhấn vật lý
-=======
 
   if (!isnan(h) && !isnan(t)) {
     Blynk.virtualWrite(V1, t); 
@@ -125,7 +111,6 @@ if (gas < 1500) {
 }
 
 // 3. Xử lý nút bấm vật lý (GPIO 22) đồng bộ với Switch trên Web (V0)
->>>>>>> f18995c99aec78487b1e4df3a6594b23b66db75a
 void checkButton() {
   bool currentBtnState = digitalRead(BTN_PIN);
   if (currentBtnState == LOW && lastBtnState == HIGH) {
@@ -144,15 +129,9 @@ void checkButton() {
   lastBtnState = currentBtnState;
 }
 
-<<<<<<< HEAD
 // --- 5. BLYNK CALLBACKS ---
-
-
-
 // Nhận lệnh từ nút nhấn trên App/Web (V0)
-=======
 // 4. Nhận lệnh điều khiển từ Web (V0)
->>>>>>> f18995c99aec78487b1e4df3a6594b23b66db75a
 BLYNK_WRITE(V0) {
   ledStatus = param.asInt();
   digitalWrite(LED_PIN, ledStatus);
@@ -161,7 +140,6 @@ BLYNK_WRITE(V0) {
 }
 void handleTelegram() {
   int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
-
   while (numNewMessages) {
     for (int i = 0; i < numNewMessages; i++) {
       String text = bot.messages[i].text;
@@ -223,31 +201,21 @@ void setup() {
   // Khởi động cảm biến & Blynk
   dht.begin();
   Blynk.begin(auth, ssid, pass);
-
-<<<<<<< HEAD
   // Thiết lập các khoảng thời gian gửi dữ liệu
   timer.setInterval(1000L, updateUptime);  // Mỗi 1 giây cập nhật Uptime
   timer.setInterval(2000L, updateSensors); // Mỗi 2 giây cập nhật Cảm biến
   client.setInsecure();
-=======
   // Thiết lập Timer
   timer.setInterval(1000L, updateUptime);  // V4 nhảy mỗi 1s
   timer.setInterval(2000L, updateSensors); // V1, V2, V3 nhảy mỗi 2s
->>>>>>> f18995c99aec78487b1e4df3a6594b23b66db75a
 }
-
 void loop() {
   Blynk.run();
   timer.run();
-<<<<<<< HEAD
   checkButton(); // Kiểm tra nút nhấn liên tục trong loop
   handleTelegram();
-=======
-<<<<<<< HEAD
   checkButton(); 
-=======
   checkButton();
   // handleTelegram(); hàm này đã được gọi trong Timer nên không cần gọi ở đây nữa
->>>>>>> a424a26c76777621f9e9e9550106e0cdf7f6f2ea
->>>>>>> f18995c99aec78487b1e4df3a6594b23b66db75a
+
 }
