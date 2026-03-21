@@ -1,0 +1,8 @@
+# DHT sensor library
+DHT sensor library
+
+# Adafruit SSD1306
+Adafruit SSD1306
+
+# Adafruit GFX Library
+Adafruit GFX Library
