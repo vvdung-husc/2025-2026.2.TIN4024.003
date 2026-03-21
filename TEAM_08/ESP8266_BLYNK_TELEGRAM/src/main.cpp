@@ -8,17 +8,27 @@ THÔNG TIN NHÓM 08
 #define BLYNK_TEMPLATE_NAME "ESP8266 BLYNK TELEGRAM"
 #define BLYNK_AUTH_TOKEN "Za4JrX_t85HA-Iu7JmyC-fMas7kf5_3_"
 
+// #include <Arduino.h>
+// #include <WiFi.h>
+// #include <WiFiClientSecure.h>
+// #include <BlynkSimpleEsp32.h>
+// #include <DHT.h>
+// #include <TM1637Display.h>
+// #include <UniversalTelegramBot.h>
+// #include <ArduinoJson.h>
+// #include <Wire.h>
+// #include <Adafruit_GFX.h>
+// #include <Adafruit_SSD1306.h>
+
 #include <Arduino.h>
-#include <WiFi.h>
-#include <WiFiClientSecure.h>
-#include <BlynkSimpleEsp32.h>
-#include <DHT.h>
-#include <TM1637Display.h>
-#include <UniversalTelegramBot.h>
-#include <ArduinoJson.h>
 #include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include <DHT.h>
+#include <U8g2lib.h>
+#include <TM1637Display.h>
+#include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
+#include <BlynkSimpleEsp8266.h>
+#include <UniversalTelegramBot.h>
 
 // ===== THÔNG TIN TELEGRAM =====
 #define BOTtoken "8660322756:AAEootdYRngv0BH9YgW4vBsfg1Wb0hEBBXU"
@@ -29,16 +39,30 @@ char ssid[] = "Wokwi-GUEST";
 char pass[] = "";
 
 // ===== PIN CONFIG =====
-#define DHTPIN 16
-#define DHTTYPE DHT22
-#define CLK 18
-#define DIO 19
-#define LED_PIN 4
-#define BTN_PIN 23
-#define GAS_PIN 34
+// #define DHTPIN 16
+// #define DHTTYPE DHT22
+// #define CLK 18
+// #define DIO 19
+// #define LED_PIN 4
+// #define BTN_PIN 23
+// #define GAS_PIN 34
 
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
+// #define SCREEN_WIDTH 128
+// #define SCREEN_HEIGHT 64
+#define DHTPIN 14 // D5
+#define DHTTYPE DHT22
+
+#define LED_PIN 2 // D4
+
+#define OLED_SDA 4 // D2
+#define OLED_SCL 5 // D1
+
+#define BTN_PIN 0 // D3
+
+#define GAS_PIN A0 // Analog
+
+#define CLK 12 // D6
+#define DIO 13 // D7
 
 // ===== KHỞI TẠO ĐỐI TƯỢNG =====
 DHT dht(DHTPIN, DHTTYPE);
@@ -47,7 +71,8 @@ BlynkTimer timer;
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
 // Khởi tạo OLED với địa chỉ 0x3C (thường dùng trên Wokwi)
-Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+// Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+U8G2_SH1106_128X64_NONAME_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE);
 
 // ===== BIẾN HỆ THỐNG =====
 unsigned long uptimeSeconds = 0;
@@ -152,92 +177,159 @@ void sendSensorData()
   }
 }
 
+// void updateDisplay()
+// {
+//   // 1. TM1637 (Uptime)
+//   if (counterActive)
+//   {
+//     display.showNumberDec(uptimeSeconds % 10000);
+//   }
+//   else
+//   {
+//     display.clear();
+//   }
+
+//   // 2. OLED
+//   oled.clearDisplay();
+//   oled.setTextSize(1);
+//   oled.setTextColor(SSD1306_WHITE);
+
+//   // Nếu pause thì hiển thị trạng thái
+//   if (!counterActive)
+//   {
+//     oled.setCursor(0, 0);
+//     oled.println("--- PAUSED ---");
+//   }
+//   else
+//   {
+//     oled.setCursor(0, 0);
+//     oled.println("--- MONITORING ---");
+//   }
+
+//   // Hiển thị Nhiệt độ
+//   oled.setCursor(0, 20);
+//   oled.print("Temp:  ");
+//   oled.print(temp, 1);
+//   oled.println(" C");
+
+//   // Hiển thị Độ ẩm
+//   oled.setCursor(0, 35);
+//   oled.print("Humid: ");
+//   oled.print(humid, 1);
+//   oled.println(" %");
+
+//   // Hiển thị Gas
+//   oled.setCursor(0, 50);
+//   oled.print("Gas:   ");
+//   oled.print(gasValue);
+
+//   // Thanh bar Gas
+//   int barWidth = map(gasValue, 0, 4095, 0, 50);
+//   oled.drawRect(70, 50, 52, 10, SSD1306_WHITE);
+//   oled.fillRect(71, 51, barWidth, 8, SSD1306_WHITE);
+
+//   oled.display();
+// }
 void updateDisplay()
 {
-  // 1. TM1637 (Uptime)
+  // ===== TM1637 =====
   if (counterActive)
-  {
     display.showNumberDec(uptimeSeconds % 10000);
-  }
   else
-  {
     display.clear();
-  }
 
-  // 2. OLED
-  oled.clearDisplay();
-  oled.setTextSize(1);
-  oled.setTextColor(SSD1306_WHITE);
+  // ===== OLED (U8g2) =====
+  oled.clearBuffer();
 
-  // Nếu pause thì hiển thị trạng thái
   if (!counterActive)
-  {
-    oled.setCursor(0, 0);
-    oled.println("--- PAUSED ---");
-  }
+    oled.drawStr(0, 10, "--- PAUSED ---");
   else
-  {
-    oled.setCursor(0, 0);
-    oled.println("--- MONITORING ---");
-  }
+    oled.drawStr(0, 10, "--- MONITOR ---");
 
-  // Hiển thị Nhiệt độ
-  oled.setCursor(0, 20);
-  oled.print("Temp:  ");
-  oled.print(temp, 1);
-  oled.println(" C");
+  char buf[30];
 
-  // Hiển thị Độ ẩm
-  oled.setCursor(0, 35);
-  oled.print("Humid: ");
-  oled.print(humid, 1);
-  oled.println(" %");
+  sprintf(buf, "Temp: %.1f C", temp);
+  oled.drawStr(0, 25, buf);
 
-  // Hiển thị Gas
-  oled.setCursor(0, 50);
-  oled.print("Gas:   ");
-  oled.print(gasValue);
+  sprintf(buf, "Hum : %.1f %%", humid);
+  oled.drawStr(0, 40, buf);
 
-  // Thanh bar Gas
-  int barWidth = map(gasValue, 0, 4095, 0, 50);
-  oled.drawRect(70, 50, 52, 10, SSD1306_WHITE);
-  oled.fillRect(71, 51, barWidth, 8, SSD1306_WHITE);
+  sprintf(buf, "Gas : %d", gasValue);
+  oled.drawStr(0, 55, buf);
 
-  oled.display();
+  // Thanh bar gas (ESP8266 max 1023)
+  int barWidth = map(gasValue, 0, 1023, 0, 50);
+  oled.drawFrame(70, 45, 52, 10);
+  oled.drawBox(71, 46, barWidth, 8);
+
+  oled.sendBuffer();
 }
 
+// void setup()
+// {
+//   Serial.begin(115200);
+//   pinMode(LED_PIN, OUTPUT);
+//   pinMode(BTN_PIN, INPUT_PULLUP);
+
+//   Wire.begin(21, 22);
+//   dht.begin();
+//   display.setBrightness(0x0f);
+//   client.setCACert(TELEGRAM_CERTIFICATE_ROOT);
+
+//   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+//   Blynk.syncVirtual(V4);
+//   updateSystemState();
+
+//   // Khởi tạo OLED
+//   if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+//   {
+//     Serial.println(F("SSD1306 allocation failed"));
+//   }
+//   oled.clearDisplay();
+//   oled.display();
+
+//   // Giữ nguyên các timer cũ
+//   timer.setInterval(2000L, sendSensorData);
+//   timer.setInterval(1000L, []()
+//                     {
+//     if(counterActive) uptimeSeconds++;
+//     Blynk.virtualWrite(V0, uptimeSeconds); });
+//   timer.setInterval(500L, updateDisplay); // Cập nhật cả 2 màn hình mỗi 0.5s
+
+//   bot.sendMessage(CHAT_ID, "🤖 Hệ thống đã khởi động và sẵn sàng nhận lệnh = /start!", "");
+// }
 void setup()
 {
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
   pinMode(BTN_PIN, INPUT_PULLUP);
 
-  Wire.begin(21, 22);
+  Wire.begin(OLED_SDA, OLED_SCL); // ✅ sửa lại
   dht.begin();
   display.setBrightness(0x0f);
-  client.setCACert(TELEGRAM_CERTIFICATE_ROOT);
+
+  client.setInsecure(); // ✅ sửa cho ESP8266
 
   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
   Blynk.syncVirtual(V4);
   updateSystemState();
 
-  // Khởi tạo OLED
-  if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C))
-  {
-    Serial.println(F("SSD1306 allocation failed"));
-  }
-  oled.clearDisplay();
-  oled.display();
+  // OLED
+  oled.begin();
+  oled.clearBuffer();
+  oled.setFont(u8g2_font_ncenB08_tr);
+  oled.drawStr(0, 20, "System Starting...");
+  oled.sendBuffer();
 
-  // Giữ nguyên các timer cũ
   timer.setInterval(2000L, sendSensorData);
   timer.setInterval(1000L, []()
-                    { 
+                    {
     if(counterActive) uptimeSeconds++; 
     Blynk.virtualWrite(V0, uptimeSeconds); });
-  timer.setInterval(500L, updateDisplay); // Cập nhật cả 2 màn hình mỗi 0.5s
 
-  bot.sendMessage(CHAT_ID, "🤖 Hệ thống đã khởi động và sẵn sàng nhận lệnh = /start!", "");
+  timer.setInterval(500L, updateDisplay);
+
+  bot.sendMessage(CHAT_ID, "🤖 He thong da khoi dong!", "");
 }
 
 void loop()
