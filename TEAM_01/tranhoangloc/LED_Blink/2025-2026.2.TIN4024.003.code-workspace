@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"name": "API_HTTP_GET",
+			"path": "../../VoNguyenHuyenVi/API_HTTP_GET"
+		}
+	],
+	"settings": {}
+}
