@@ -10,8 +10,6 @@
 #define BLYNK_AUTH_TOKEN    "9gbOkBxTHIn7Iu-tFhjPAKEZDYZjzquO"
 
 // --- 1. THƯ VIỆN ---
-
-#include "secrets.h"
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
