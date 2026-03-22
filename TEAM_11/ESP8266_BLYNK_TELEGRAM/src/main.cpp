@@ -53,6 +53,8 @@ bool gasAlertSent = false;
 float lastTemp = NAN;
 float lastHum  = NAN;
 
+String activeChatId = CHAT_ID;
+
 char auth[] = BLYNK_AUTH_TOKEN;
 char ssid[] = "Wokwi-GUEST";
 char pass[] = "";
@@ -76,32 +78,40 @@ void updateSensors() {
   float t = dht.readTemperature();
   int gas = analogRead(GAS_PIN);
 
-  // Gửi dữ liệu lên Blynk
   if (!isnan(h) && !isnan(t)) {
     Blynk.virtualWrite(V1, t);
     Blynk.virtualWrite(V2, h);
   }
   Blynk.virtualWrite(V3, gas);
 
-  // Cảnh báo gas: chỉ gửi 1 lần khi vượt ngưỡng
+  // Cảnh báo gas
   if (gas > 2000 && !gasAlertSent) {
-    bot.sendMessage(CHAT_ID, "⚠️ CẢNH BÁO KHÍ GAS CAO!", "");
+    String alertMsg = "⚠️ CẢNH BÁO KHÍ GAS CAO!\n";
+    alertMsg += "Gas value: " + String(gas);
+
+    Serial.print("Sending gas alert to: ");
+    Serial.println(activeChatId);
+
+    bot.sendMessage(activeChatId, alertMsg, "");
     gasAlertSent = true;
   }
 
-  // Reset trạng thái cảnh báo khi gas về mức an toàn
+  // Reset khi an toàn trở lại
   if (gas < 1500) {
     gasAlertSent = false;
   }
 
-  // Gửi nhiệt độ/độ ẩm khi có thay đổi đáng kể
+  // Gửi nhiệt độ/độ ẩm khi thay đổi
   if (!isnan(h) && !isnan(t)) {
     if (isnan(lastTemp) || isnan(lastHum) || abs(t - lastTemp) > 0.5 || abs(h - lastHum) > 1) {
       String msg = "📢 Sensor Update\n";
       msg += "🌡 Temp: " + String(t) + " C\n";
       msg += "💧 Humidity: " + String(h) + " %";
 
-      bot.sendMessage(CHAT_ID, msg, "");
+      Serial.print("Sending sensor update to: ");
+      Serial.println(activeChatId);
+
+      bot.sendMessage(activeChatId, msg, "");
 
       lastTemp = t;
       lastHum = h;
@@ -117,12 +127,10 @@ void checkButton() {
   bool currentBtnState = digitalRead(BTN_PIN);
 
   if (currentBtnState == LOW && lastBtnState == HIGH) {
-    delay(50); // debounce
+    delay(50);
     if (digitalRead(BTN_PIN) == LOW) {
       ledStatus = !ledStatus;
       digitalWrite(LED_PIN, ledStatus);
-
-      // Đồng bộ trạng thái lên Blynk
       Blynk.virtualWrite(V0, ledStatus);
 
       Serial.print("Physical Button -> LED: ");
@@ -150,6 +158,11 @@ void handleTelegram() {
     for (int i = 0; i < numNewMessages; i++) {
       String text = bot.messages[i].text;
       String fromChatId = bot.messages[i].chat_id;
+
+      activeChatId = fromChatId;
+
+      Serial.print("fromChatId = ");
+      Serial.println(fromChatId);
 
       if (text == "/start") {
         String welcome = "Xin chào, thông tin nhóm:\n";
@@ -208,7 +221,6 @@ void setup() {
   pinMode(GAS_PIN, INPUT);
 
   dht.begin();
-
   client.setInsecure();
 
   Blynk.begin(auth, ssid, pass);
