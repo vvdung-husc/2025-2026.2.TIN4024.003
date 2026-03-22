@@ -1,6 +1,8 @@
 /*
   THÔNG TIN NHÓM 7
   1. Trần Hưng Trường Vủ
+  2. Nguyễn Trọng Quý
+  3. Trần Quang Tiến
 */
 
 #include <ESP8266WiFi.h>
