@@ -60,10 +60,10 @@ void sendSensorData() {
   int g = analogRead(gasAnalog);
 
   if (!isnan(t) && !isnan(h)) {
-    Blynk.virtualWrite(V11, t); // Nhiệt độ
-    Blynk.virtualWrite(V10, h); // Độ ẩm
+    Blynk.virtualWrite(V11, t);
+    Blynk.virtualWrite(V10, h);
   }
-  Blynk.virtualWrite(V12, g);   // Khí Gas
+  Blynk.virtualWrite(V12, g);
   Blynk.virtualWrite(V6, "Nhom 10 - Bai Thi IoT");
   Blynk.virtualWrite(V7, millis() / 1000);
 }
@@ -74,7 +74,7 @@ void handleNewMessages(int numNewMessages) {
     String text = bot.messages[i].text;
 
     if (text == "/start") {
-      bot.sendMessage(chat_id, "TEAM 10 SYSTEM\n/led_on\n/led_off\n/gas\n/get_weather", "");
+      bot.sendMessage(chat_id, "TEAM 10 SYSTEM\n/led_on\n/led_off\n/gas\n/get_weather\n/get_status", "");
     }
     else if (text == "/led_on") {
       blinkMode = true;
@@ -92,6 +92,17 @@ void handleNewMessages(int numNewMessages) {
     }
     else if (text == "/get_weather") {
       bot.sendMessage(chat_id, "Nhiệt độ: " + String(dht.readTemperature()) + "°C\nĐộ ẩm: " + String(dht.readHumidity()) + "%", "");
+    }
+    else if (text == "/led_status") {
+      String statusMsg = "Trạng thái LED: ";
+      
+      if (blinkMode) {
+        statusMsg += "ĐANG BẬT (BLINK)";
+      } else {
+        statusMsg += "ĐANG TẮT";
+      }
+
+      bot.sendMessage(chat_id, statusMsg, "");
     }
   }
 }
