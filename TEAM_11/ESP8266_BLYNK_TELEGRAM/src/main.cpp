@@ -6,8 +6,6 @@
  * Trần Đức Quốc Chí
  * Hồ Văn Thạnh
  * Lê Tấn Toàn
- * BOARD: ESP32
- * CONNECTIVITY: WiFi (Blynk IoT Cloud)
  */
 
 #define BLYNK_TEMPLATE_ID   "TMPL6c0cqfIJ6"
