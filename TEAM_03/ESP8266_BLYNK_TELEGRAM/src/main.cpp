@@ -4,7 +4,7 @@
 	2. Lê Thanh Nhật
   	3. Hoàng Văn Thắng - Telegram : caubemenhac
   	4. Nguyễn Đức Dương - Telegram : NDuong10
-	5. Phan Văn Hữu Thắng
+	5. Phan Văn Hữu Thắng - Telegram : @huuthang1208
 	*/
 
 #define BLYNK_TEMPLATE_ID "TMPL6NkrRnQam"
