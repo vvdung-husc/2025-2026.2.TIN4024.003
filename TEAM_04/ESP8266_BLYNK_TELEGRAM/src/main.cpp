@@ -1,3 +1,12 @@
+/*
+THÔNG TIN NHÓM 4
+1.Hồ Trọng Nghĩa - Telegram: Hồ Trọng Nghĩa
+2.Nguyễn Thắng - Telegram: Tngnguy251
+3.Hồ Gia Long - Telegram: Hồ Gia Long
+4.Hoàng Nhật Duy - Telegram: nhật Duy
+5.Phạm Văn Quân - Telegram: quannn56
+*/
+
 #include <Arduino.h>
 
 #define BLYNK_TEMPLATE_ID "TMPL6IfflSWyk"
