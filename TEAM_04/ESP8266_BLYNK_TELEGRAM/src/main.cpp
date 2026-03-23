@@ -4,7 +4,7 @@ THÔNG TIN NHÓM 4
 2.Nguyễn Thắng - Telegram: Tngnguy251
 3.Hồ Gia Long - Telegram: Hồ Gia Long
 4.Hoàng Nhật Duy - Telegram: nhật Duy
-5.Phạm Văn Quân- Telegram: quannn56        .)
+5.Phạm Văn Quân- Telegram: quannn56        
 */
 
 #include <Arduino.h>
