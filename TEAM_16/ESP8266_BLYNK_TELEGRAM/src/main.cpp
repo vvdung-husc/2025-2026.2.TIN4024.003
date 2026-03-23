@@ -3,144 +3,183 @@ THÔNG TIN NHÓM 16
 1. Lê Anh Quân - Telegram: @tomle2111
 2. Phạm Ngọc Khanh - Telegram: @thang3008
 */
-#define BLYNK_TEMPLATE_ID "TMPL6KMb2ddys"
-#define BLYNK_TEMPLATE_NAME "ESP8266 BLYNK TELEGRAM"
-#define BLYNK_AUTH_TOKEN "9AsokM_2bp8KauSGqA2zB8imt8ccbo6A"
+#define BLYNK_TEMPLATE_ID "TMPL6gHIEGzSP"
+#define BLYNK_TEMPLATE_NAME "IoTTeam 16"
+#define BLYNK_AUTH_TOKEN "DAVxm9fyomHF5qPgmpNMGI3lJ4EtO3Uk"
+
+// Thông tin Telegram Bot
+#define BOT_TOKEN "8669492985:AAHfi8RuyyBm74ZJHsJTIOTngFCH1Ovwezw"
+#define CHAT_ID "-5263469312"
+
+#define BLYNK_PRINT Serial
 
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <BlynkSimpleEsp32.h>
+#include <UniversalTelegramBot.h>
+#include <ArduinoJson.h>
 #include <DHT.h>
 #include <Wire.h>
+#include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <UniversalTelegramBot.h>
 
-// ==== WIFI ====
-char ssid[] = "Wokwi-GUEST";
-char pass[] = "";
-// ==== TELEGRAM ====
-#define BOT_TOKEN "8631035811:AAGdad4I1gMrUliK4C6dbGYEBz4qIZPgtRs"
-WiFiClient client;
-UniversalTelegramBot bot(BOT_TOKEN, client);
-
-// ==== DHT ====
-#define DHTPIN 4
-#define DHTTYPE DHT22
-DHT dht(DHTPIN, DHTTYPE);
-
-// ==== OLED ====
-Adafruit_SSD1306 display(128, 64, &Wire, -1);
-
-// ==== LED ====
+// --- Cấu hình chân (Đã sửa khớp với mạch Wokwi bạn đang nối) ---
+#define DHT_PIN 15
 #define LED_PIN 2
-bool ledState = false;
+#define DHT_TYPE DHT22
 
-// ==== TIMER ====
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET -1
+
+// --- Khởi tạo đối tượng ---
+DHT dht(DHT_PIN, DHT_TYPE);
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 BlynkTimer timer;
 
-// ==== DATA ====
-float temp, hum;
-int gasValue;
+WiFiClientSecure client;
+UniversalTelegramBot bot(BOT_TOKEN, client);
 
-// =====================================
-// OLED
-// =====================================
-void updateOLED() {
-  display.clearDisplay();
-  display.setCursor(0,0);
-  display.setTextSize(1);
+char auth[] = BLYNK_AUTH_TOKEN;
+char ssid[] = "Wokwi-GUEST";
+char pass[] = "";
 
-  display.print("Temp: ");
-  display.println(temp);
+// Biến toàn cục
+bool ledState = false;
+float lastTemp = -999.0;
+float lastHum = -999.0;
+int gasValue = 0;
 
-  display.print("Humi: ");
-  display.println(hum);
-
-  display.print("Gas: ");
-  display.println(gasValue);
-
-  display.display();
+// ==========================================
+// 1. XỬ LÝ LỆNH TỪ BLYNK (APP/WEB)
+// ==========================================
+BLYNK_WRITE(V4) {
+  int value = param.asInt();
+  ledState = (value == 1);
+  digitalWrite(LED_PIN, ledState ? HIGH : LOW);
+  bot.sendMessage(CHAT_ID, ledState ? "Đèn LED vừa được BẬT từ Blynk!" : "Đèn LED vừa được TẮT từ Blynk!", "");
 }
 
-// =====================================
-// BLYNK LED CONTROL
-// =====================================
-BLYNK_WRITE(V1) {
-  ledState = param.asInt();
-  digitalWrite(LED_PIN, ledState);
-}
+// ==========================================
+// 2. XỬ LÝ TIN NHẮN TỪ TELEGRAM
+// ==========================================
+void handleNewMessages(int numNewMessages) {
+  for (int i = 0; i < numNewMessages; i++) {
+    String chat_id = String(bot.messages[i].chat_id);
+    String text = bot.messages[i].text;
 
-// =====================================
-// Gửi dữ liệu lên Blynk
-// =====================================
-void sendData() {
-  temp = dht.readTemperature();
-  hum  = dht.readHumidity();
-
-  gasValue = random(200, 800); // fake MQ2
-
-  Blynk.virtualWrite(V0, millis()/1000); // uptime
-  Blynk.virtualWrite(V2, temp);
-  Blynk.virtualWrite(V3, hum);
-  Blynk.virtualWrite(V4, gasValue);
-  Blynk.virtualWrite(V5, "TEAM 16");
-
-  updateOLED();
-}
-
-// =====================================
-// TELEGRAM COMMAND
-// =====================================
-void handleTelegram() {
-  int n = bot.getUpdates(bot.last_message_received + 1);
-
-  while (n) {
-    for (int i = 0; i < n; i++) {
-      String text = bot.messages[i].text;
-      String chat_id = bot.messages[i].chat_id;
-
-      if (text == "/led_on") {
-        digitalWrite(LED_PIN, HIGH);
-        bot.sendMessage(chat_id, "LED ON", "");
-      }
-      else if (text == "/led_off") {
-        digitalWrite(LED_PIN, LOW);
-        bot.sendMessage(chat_id, "LED OFF", "");
-      }
-      else if (text == "/led_status") {
-        bot.sendMessage(chat_id, ledState ? "ON" : "OFF", "");
-      }
-      else if (text == "/get_weather") {
-        String msg = "Temp: " + String(temp) + "\nHumi: " + String(hum);
-        bot.sendMessage(chat_id, msg, "");
-      }
+    if (text == "/led_on") {
+      ledState = true;
+      digitalWrite(LED_PIN, HIGH);
+      Blynk.virtualWrite(V4, 1);
+      bot.sendMessage(chat_id, "Đèn LED đã BẬT.", "");
+    } 
+    else if (text == "/led_off") {
+      ledState = false;
+      digitalWrite(LED_PIN, LOW);
+      Blynk.virtualWrite(V4, 0);
+      bot.sendMessage(chat_id, "Đèn LED đã TẮT.", "");
+    } 
+    else if (text == "/led_status") {
+      String status = ledState ? "ĐANG BẬT" : "ĐANG TẮT";
+      bot.sendMessage(chat_id, "Trạng thái LED: " + status, "");
+    } 
+    else if (text.startsWith("/get_weather")) { // Đã bổ sung Khí Gas vào đây
+      float t = dht.readTemperature();
+      float h = dht.readHumidity();
+      String msg = "📊 **Thông số hiện tại:**\n";
+      msg += "🌡️ Nhiệt độ: " + String(t, 1) + " °C\n";
+      msg += "💧 Độ ẩm: " + String(h, 1) + " %\n";
+      msg += "💨 Khí Gas: " + String(gasValue) + " ppm";
+      bot.sendMessage(chat_id, msg, "");
     }
-    n = bot.getUpdates(bot.last_message_received + 1);
   }
 }
 
-// =====================================
-// SETUP
-// =====================================
-void setup() {
-  Serial.begin(115200);
-
-  pinMode(LED_PIN, OUTPUT);
-  dht.begin();
-
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-  display.clearDisplay();
-
-  WiFi.begin(ssid, pass);
-  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
-
-  timer.setInterval(2000L, sendData);
+void checkTelegram() {
+  if (WiFi.status() == WL_CONNECTED) {
+    int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+    while (numNewMessages) {
+      handleNewMessages(numNewMessages);
+      numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+    }
+  }
 }
 
-// =====================================
-// LOOP
-// =====================================
+// ==========================================
+// 3. ĐỌC CẢM BIẾN, CẬP NHẬT OLED VÀ BLYNK
+// ==========================================
+void updateSystem() {
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  gasValue = random(100, 500); // Giả lập khí gas vì Wokwi chưa có MQ-2 thật
+  
+  if (isnan(h) || isnan(t)) {
+    Serial.println("Lỗi đọc DHT22!");
+    return;
+  }
+
+  // Cập nhật OLED
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.print("LED: "); display.print(ledState ? "ON" : "OFF");
+  display.setCursor(0, 15);
+  display.print("Temp: "); display.print(t, 1); display.print(" C");
+  display.setCursor(0, 30);
+  display.print("Hum : "); display.print(h, 1); display.print(" %");
+  display.setCursor(0, 45);
+  display.print("Gas : "); display.print(gasValue);
+  display.setCursor(64, 45);
+  display.print(" | TEAM 16");
+  display.display();
+
+  // Gửi lên Blynk
+  Blynk.virtualWrite(V0, t);
+  Blynk.virtualWrite(V1, h);
+  Blynk.virtualWrite(V2, gasValue);
+
+  // Cảnh báo Telegram khi có biến động lớn
+  if (lastTemp != -999.0) {
+    if (abs(t - lastTemp) >= 1.0 || abs(h - lastHum) >= 2.0) {
+      String msg = "⚠️ **Cảnh báo thay đổi môi trường!**\n";
+      msg += "🌡️ Nhiệt độ: " + String(t, 1) + " °C\n";
+      msg += "💧 Độ ẩm: " + String(h, 1) + " %\n";
+      msg += "💨 Khí Gas: " + String(gasValue) + " ppm";
+      bot.sendMessage(CHAT_ID, msg, "");
+    }
+  }
+  lastTemp = t;
+  lastHum = h;
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+  dht.begin();
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("Lỗi OLED"));
+  }
+  display.clearDisplay();
+  display.display();
+
+  WiFi.begin(ssid, pass);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi connected!");
+  client.setInsecure();
+  Blynk.config(auth);
+  Blynk.connect();
+
+  timer.setInterval(2000L, updateSystem);
+  timer.setInterval(1000L, checkTelegram);
+}
+
 void loop() {
-  Blynk.run();
+  if (Blynk.connected()) { Blynk.run(); }
   timer.run();
-  handleTelegram();
 }
