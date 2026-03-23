@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+//Trần Quang Tiến
+//Nguyễn Trọng Qúy
+//Trần Hưng Trường Vủ
+=======
 /*
   THÔNG TIN NHÓM 7
   1. Trần Hưng Trường Vủ
@@ -5,6 +10,7 @@
   3. Trần Quang Tiến
 */
 
+>>>>>>> 450decd1405d28629bdeb20efe3828b71a88164f
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>
