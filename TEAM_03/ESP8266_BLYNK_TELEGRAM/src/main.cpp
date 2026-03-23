@@ -2,8 +2,8 @@
 	THÔNG TIN NHÓM X
 	1. Trương Trường Phúc
 	2. Lê Thanh Nhật
-  	3. Hoàng Văn Thắng
-  	4. Nguyễn Đức Dương
+  	3. Hoàng Văn Thắng - Telegram : caubemenhac
+  	4. Nguyễn Đức Dương - Telegram : NDuong10
 	5. Phan Văn Hữu Thắng
 	*/
 
