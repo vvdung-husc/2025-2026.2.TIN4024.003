@@ -13,7 +13,7 @@ static const unsigned long BLYNK_RECONNECT_INTERVAL = 5000; // Thử kết nối
 BLYNK_WRITE(V1) {
   int v = param.asInt();
   ledState = (v != 0);
-  digitalWrite(LED_BUILTIN, ledState ? LOW : HIGH);
+  digitalWrite(D5, ledState ? HIGH : LOW);
 }
 
 void blynkInit() {
@@ -47,7 +47,7 @@ void blynkSendSensor(float temp, float hum, int gas) {
 
 void blynkSetLed(bool on) {
   ledState = on;
-  digitalWrite(LED_BUILTIN, ledState ? LOW : HIGH);
+  digitalWrite(D5, ledState ? HIGH : LOW);
   Blynk.virtualWrite(V1, ledState ? 1 : 0);
 }
 
