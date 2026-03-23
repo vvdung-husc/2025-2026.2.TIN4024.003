@@ -7,16 +7,24 @@
 static bool ledState = false;
 static BlynkTimer blynkTimer;
 
-void onVirtualLedWrite(const BlynkParam &param) {
-  int v = param[0].asInt();
+// Cú pháp chuẩn của Blynk để nhận tín hiệu từ nút bấm V1 trên app
+BLYNK_WRITE(V1) {
+  int v = param.asInt();
   ledState = (v != 0);
   digitalWrite(LED_BUILTIN, ledState ? LOW : HIGH);
 }
 
 void blynkInit() {
-  // Blynk tự handle kết nối
-  Blynk.begin(auth, WIFI_SSID, WIFI_PASS);
-  Blynk.attachVirtual(V1, onVirtualLedWrite);
+  // Set timeout cho Blynk.begin() để không hang
+  Blynk.config(auth);
+  Blynk.connect();
+  // Đợi tối đa 5 giây để Blynk kết nối, nếu không thì tiếp tục
+  unsigned long start = millis();
+  while (!Blynk.connected() && millis() - start < 5000) {
+    delay(100);
+  }
+  Serial.print("Blynk connected: ");
+  Serial.println(Blynk.connected() ? "YES" : "NO");
   blynkTimer.setInterval(2000L, [](){ /* placeholder */ });
 }
 

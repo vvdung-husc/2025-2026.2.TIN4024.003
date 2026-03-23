@@ -40,6 +40,10 @@ float lastTemp = NAN, lastHum = NAN; // Lưu giá trị cảm biến trước đ
 unsigned long lastSensorMillis = 0;   // thời điểm đọc cảm biến gần nhất
 unsigned long startMillis;            // thời điểm khởi động để tính uptime
 
+// Global sensor data để Telegram có thể truy cập
+float currentTemp = NAN;
+float currentHum = NAN;
+
 // Cấu hình khoảng thời gian và ngưỡng
 const unsigned long SENSOR_INTERVAL = 2000;           // đọc DHT mỗi 2s
 const unsigned long TELEGRAM_POLL_INTERVAL = 3000;    // kiểm tra Telegram mỗi 3s
@@ -115,7 +119,9 @@ void notifyTelegram(String text) {
 // Hàm khởi tạo
 void setup() {
 	Serial.begin(115200);
-	delay(100);
+	delay(1000);
+	Serial.println("\n\n=== ESP8266 STARTING ===");
+	Serial.println("Setup started...");
 	pinMode(LED_PIN, OUTPUT);
 	// Tắt LED ban đầu (đối với LED tích hợp thường là HIGH = tắt)
 	digitalWrite(LED_PIN, HIGH);
@@ -143,7 +149,8 @@ void setup() {
 	}
 
 	// Khởi tạo dịch vụ Blynk và Telegram
-	blynkInit();
+	// TODO: Fix Blynk.begin() timeout issue
+	// blynkInit();
 	telegramInit();
 
 	// Thiết lập biến thời gian
@@ -160,7 +167,7 @@ void setup() {
 // Vòng lặp chính
 void loop() {
 	// Dịch vụ Blynk và Telegram xử lý nội bộ
-	blynkTick();
+	// blynkTick();  // TODO: Fix Blynk.begin() timeout
 	telegramTick();
 
 	unsigned long now = millis();
@@ -175,6 +182,10 @@ void loop() {
 			Serial.printf("Temp: %.1f C  Hum: %.1f %%\n", temp, hum);
 			int gas = readMQ2OrRandom();
 			updateOLED(temp, hum, gas);
+			
+			// Update global variables cho Telegram
+			currentTemp = temp;
+			currentHum = hum;
 
 			// Gửi thông báo Telegram khi có thay đổi vượt ngưỡng
 			bool notify = false;
@@ -187,7 +198,7 @@ void loop() {
 			}
 			lastTemp = temp; lastHum = hum;
 			// Gửi dữ liệu lên Blynk
-			blynkSendSensor(temp, hum, gas);
+			// blynkSendSensor(temp, hum, gas);  // TODO: Fix Blynk.begin()
 		}
 	}
 }
