@@ -1,10 +1,10 @@
 /*
 	THÔNG TIN NHÓM 03 - Telegram : iotteam03
 	1. Trương Trường Phúc - Telegram : mmedia9999
-	2. Lê Thanh Nhật  - Telegram : @nhatfunky123
+	2. Lê Thanh Nhật  - Telegram : nhatfunky123
   	3. Hoàng Văn Thắng - Telegram : caubemenhac
   	4. Nguyễn Đức Dương - Telegram : NDuong10
-	5. Phan Văn Hữu Thắng - Telegram : @huuthang1208
+	5. Phan Văn Hữu Thắng - Telegram : huuthang1208
 	*/
 
 #define BLYNK_TEMPLATE_ID "TMPL6NkrRnQam"
