@@ -2,7 +2,7 @@
 	THÔNG TIN NHÓM 05
 	1. Nguyễn Huỳnh Minh Tiến 
 	2. Dương Hữu Tiến 
-	3. Lê Gia Huy
+	3. Lê Gia Huy - Telegram: Gia Huy, username: @legiahuyyyy
 	4. Nguyễn Phú Tuấn
 	5. Phan Bá Hóa
 	*/

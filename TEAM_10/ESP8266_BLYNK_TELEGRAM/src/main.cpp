@@ -1,6 +1,6 @@
 /*
   THÔNG TIN NHÓM 10
-  1. Đinh Tuấn Anh
+  1. Đinh Tuấn Anh - telegram : Tuấn Anh Đinh
   2. Phan Thanh Vũ
   3. Lê Trần Hải Đạt
   4. Đặng Văn Phi
