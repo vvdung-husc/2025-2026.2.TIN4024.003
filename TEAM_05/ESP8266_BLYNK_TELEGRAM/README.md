@@ -10,6 +10,11 @@ Nội dung chính:
   - LED (3): qua trở lần lượt tới D5 (green), D6 (red), D7 (yellow) và các chân GND
   - MQ2 (nếu có): analog -> A0
 
+  - MQ2 mô phỏng (Wokwi): nếu dùng mô phỏng, `diagram.json` đã thêm mô-đun `wokwi-mq2` và nối `A0`.
+
+- Phiên bản 1 LED (hiện đang dùng):
+  - LED trạng thái: D5 -> (220Ω) -> LED -> GND
+
 - Cấu hình secrets: tạo hoặc sửa `src/secrets.h` (file mẫu đã có trong repo). Thêm thông tin WiFi, Blynk token, Telegram bot token.
   - Lưu ý: không commit token thật lên Git.
 

@@ -2,8 +2,7 @@
     "version": 1,
     "author": "Thejan Aruna",
     "editor": "wokwi",
-    "parts": [
-        {
+    "parts": [{
             "type": "esp8266-nodemcuv2",
             "id": "esp",
             "top": 0,
@@ -29,6 +28,13 @@
             }
         },
         {
+            "type": "wokwi-mq2",
+            "id": "mq2",
+            "top": -80,
+            "left": 170,
+            "attrs": {}
+        },
+        {
             "type": "wokwi-led",
             "id": "led1",
             "top": -147.6,
@@ -38,26 +44,7 @@
                 "flip": ""
             }
         },
-        {
-            "type": "wokwi-led",
-            "id": "led2",
-            "top": -147.6,
-            "left": 61.8,
-            "attrs": {
-                "color": "yellow",
-                "flip": ""
-            }
-        },
-        {
-            "type": "wokwi-led",
-            "id": "led3",
-            "top": -147.6,
-            "left": 13.8,
-            "attrs": {
-                "color": "green",
-                "flip": ""
-            }
-        },
+
         {
             "type": "wokwi-resistor",
             "id": "r1",
@@ -66,16 +53,6 @@
             "rotate": 90,
             "attrs": {
                 "value": "220"
-            }
-        },
-        {
-            "type": "wokwi-resistor",
-            "id": "r2",
-            "top": 24,
-            "left": 114.65,
-            "rotate": 90,
-            "attrs": {
-                "value": "330"
             }
         }
     ],
@@ -124,16 +101,32 @@
             ]
         ],
         [
-            "r2:2",
-            "esp:D7",
-            "yellow", [
-                "h0",
-                "v104.4"
+            "mq2:VCC",
+            "esp:3V3",
+            "red", [
+                "v0",
+                "h0"
+            ]
+        ],
+        [
+            "mq2:GND",
+            "esp:GND.1",
+            "black", [
+                "v0",
+                "h0"
+            ]
+        ],
+        [
+            "mq2:A",
+            "esp:A0",
+            "green", [
+                "v0",
+                "h0"
             ]
         ],
         [
             "r1:2",
-            "esp:D6",
+            "esp:D5",
             "magenta", [
                 "h0",
                 "v85.2"
@@ -166,44 +159,11 @@
             ]
         ],
         [
-            "led3:C",
-            "esp:GND.2",
-            "black", [
-                "v76.8",
-                "h86.4"
-            ]
-        ],
-        [
-            "led2:C",
-            "esp:GND.2",
-            "black", [
-                "v76.8",
-                "h38.4"
-            ]
-        ],
-        [
             "led1:C",
             "esp:GND.2",
             "black", [
                 "v76.8",
                 "h-9.6"
-            ]
-        ],
-        [
-            "led3:A",
-            "esp:D5",
-            "cyan", [
-                "v96",
-                "h86",
-                "v182.4"
-            ]
-        ],
-        [
-            "led2:A",
-            "r2:1",
-            "yellow", [
-                "v86.4",
-                "h-0.4"
             ]
         ],
         [
