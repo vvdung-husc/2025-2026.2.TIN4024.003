@@ -4,6 +4,10 @@
 #include <EEPROM.h>
 #include "secrets.h"
 
+// Access to sensor data from main.cpp
+extern float currentTemp;
+extern float currentHum;
+
 static BearSSL::WiFiClientSecure client;
 static UniversalTelegramBot bot(TELEGRAM_BOT_TOKEN, client);
 static unsigned long lastTelegramCheck = 0;
@@ -83,11 +87,17 @@ static void handleNewMessages(int numNewMessages) {
             bot.sendMessage(fromChatId, "LED turned OFF", "");
         } else if (text == "/status") {
             bot.sendMessage(fromChatId, "Use device UI to view status", "");
+        } else if (text == "/get_weather") {
+            char weatherMsg[128];
+            snprintf(weatherMsg, sizeof(weatherMsg), 
+                    "🌡️ Current Weather:\nTemp: %.1f°C\nHumidity: %.1f%%", 
+                    currentTemp, currentHum);
+            bot.sendMessage(fromChatId, weatherMsg, "");
         } else if (text == "/forget_chat") {
             telegramForgetChatId();
             bot.sendMessage(fromChatId, "Chat forgotten", "");
         } else {
-            bot.sendMessage(fromChatId, "Commands: /ledon /ledoff /status /forget_chat", "");
+            bot.sendMessage(fromChatId, "Commands: /ledon /ledoff /status /get_weather /forget_chat", "");
         }
     }
 }
@@ -97,8 +107,7 @@ void telegramTick() {
     if (now - lastTelegramCheck < POLL_INTERVAL) return;
     lastTelegramCheck = now;
     int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
-    while (numNewMessages) {
+    if (numNewMessages) {
         handleNewMessages(numNewMessages);
-        numNewMessages = bot.getUpdates(bot.last_message_received + 1);
     }
 }
