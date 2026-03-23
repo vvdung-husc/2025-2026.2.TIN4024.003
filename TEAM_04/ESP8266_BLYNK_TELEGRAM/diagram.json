@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "author": "Gemini",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-v1", "id": "esp", "top": -60.32, "left": -52.8, "attrs": {} },
+    { "type": "board-ssd1306", "id": "oled", "top": -80, "left": 150, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht", "top": 80, "left": 200, "attrs": {} },
+    { "type": "wokwi-led", "id": "led", "top": 63.6, "left": -140.2, "attrs": { "color": "red" } },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 128.75,
+      "left": -124.8,
+      "attrs": { "value": "1000" }
+    }
+  ],
+  "connections": [
+    [ "esp:22", "oled:SCL", "cyan", [ "v0" ] ],
+    [ "esp:21", "oled:SDA", "green", [ "v0" ] ],
+    [ "esp:4", "dht:SDA", "yellow", [ "v0" ] ],
+    [ "esp:2", "led:A", "orange", [ "v0" ] ],
+    [ "dht:VCC", "esp:3V3", "red", [ "v0" ] ],
+    [ "dht:GND", "esp:GND.1", "black", [ "v0" ] ],
+    [ "dht:SDA", "esp:D4", "green", [ "v0" ] ],
+    [ "oled:GND", "esp:GND.1", "black", [ "v0" ] ],
+    [ "oled:VCC", "esp:3V3", "red", [ "v0" ] ],
+    [ "oled:SCL", "esp:D22", "green", [ "v0" ] ],
+    [ "oled:SDA", "esp:D21", "green", [ "v0" ] ],
+    [ "led:A", "esp:D2", "green", [ "v0" ] ],
+    [ "led:C", "r1:1", "green", [ "v0" ] ],
+    [ "r1:2", "esp:GND.1", "green", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}

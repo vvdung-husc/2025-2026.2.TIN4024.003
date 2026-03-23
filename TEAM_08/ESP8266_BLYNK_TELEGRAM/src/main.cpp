@@ -1,339 +1,373 @@
-// =============================================
-//   IoT - Team X   (Blynk + Telegram + OLED)
-// =============================================
+/*
+THÔNG TIN NHÓM 08
+1. Trương Hữu Ngọc
+2. Hồ Bảo Toàn
+3. Nguyễn Vỹ Nguyên
+4. Nguyễn Văn Nhật Quang
 
-#define BLYNK_TEMPLATE_ID "TMPL6AJWRTv7y"
-#define BLYNK_TEMPLATE_NAME "Blynk Traffic DHT sensor"
-#define BLYNK_AUTH_TOKEN "EZPKS73v1Rey8uiWh1M34pFWEIMu4Thz"
+*/
+#define BLYNK_TEMPLATE_ID "TMPL6mcSAdOVC"
+#define BLYNK_TEMPLATE_NAME "ESP8266 BLYNK TELEGRAM"
+#define BLYNK_AUTH_TOKEN "Za4JrX_t85HA-Iu7JmyC-fMas7kf5_3_"
 
-#include <WiFi.h>
-#include <WiFiClient.h>
-#include <BlynkSimpleEsp32.h>
-#include <DHT.h>
+// #include <Arduino.h>
+// #include <WiFi.h>
+// #include <WiFiClientSecure.h>
+// #include <BlynkSimpleEsp32.h>
+// #include <DHT.h>
+// #include <TM1637Display.h>
+// #include <UniversalTelegramBot.h>
+// #include <ArduinoJson.h>
+// #include <Wire.h>
+// #include <Adafruit_GFX.h>
+// #include <Adafruit_SSD1306.h>
+
+#include <Arduino.h>
 #include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include <UniversalTelegramBot.h>
+#include <DHT.h>
+#include <U8g2lib.h>
+#include <TM1637Display.h>
+#include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
-#include <ArduinoJson.h>
+#include <BlynkSimpleEsp8266.h>
+#include <UniversalTelegramBot.h>
 
-// ── WiFi ───────────────────────────────────────
+// ===== THÔNG TIN TELEGRAM =====
+#define BOTtoken "8660322756:AAEootdYRngv0BH9YgW4vBsfg1Wb0hEBBXU"
+#define CHAT_ID "-5194733008"
+
+// ===== WIFI =====
 char ssid[] = "Wokwi-GUEST";
 char pass[] = "";
 
-// ── Blynk & Timer ──────────────────────────────
-BlynkTimer timer;
+// ===== PIN CONFIG =====
+// #define DHTPIN 16
+// #define DHTTYPE DHT22
+// #define CLK 18
+// #define DIO 19
+// #define LED_PIN 4
+// #define BTN_PIN 23
+// #define GAS_PIN 34
 
-// ── OLED SSD1306 (thay TM1637) ─────────────────
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
-#define OLED_RESET -1
-#define SCREEN_ADDRESS 0x3C // Thường là 0x3C hoặc 0x3D, kiểm tra bằng I2C scanner nếu cần
-
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
-// ── Pins ───────────────────────────────────────
-#define DHTPIN 16
+// #define SCREEN_WIDTH 128
+// #define SCREEN_HEIGHT 64
+#define DHTPIN 14 // D5
 #define DHTTYPE DHT22
-#define LED_PIN 21
-#define BTN_PIN 23
-#define MQ2_PIN 34 // Analog pin cho MQ2 (nếu có thật)
 
-// ── Telegram ───────────────────────────────────
-#define BOTtoken "8660322756:AAEootdYRngv0BH9YgW4vBsfg1Wb0hEBBXU"
-#define CHAT_ID "-1003885166476" // Group ID của nhóm "IoT - Team X"
+#define LED_PIN 2 // D4
 
+#define OLED_SDA 4 // D2
+#define OLED_SCL 5 // D1
+
+#define BTN_PIN 0 // D3
+
+#define GAS_PIN A0 // Analog
+
+#define CLK 12 // D6
+#define DIO 13 // D7
+
+// ===== KHỞI TẠO ĐỐI TƯỢNG =====
+DHT dht(DHTPIN, DHTTYPE);
+TM1637Display display(CLK, DIO);
+BlynkTimer timer;
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
+// Khởi tạo OLED với địa chỉ 0x3C (thường dùng trên Wokwi)
+// Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+U8G2_SH1106_128X64_NONAME_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE);
 
-unsigned long lastTimeBotRan = 0;
-const int bot_delay = 1000;
-
-// ── Biến hệ thống ──────────────────────────────
+// ===== BIẾN HỆ THỐNG =====
 unsigned long uptimeSeconds = 0;
-bool ledState = false; // Trạng thái LED (đồng bộ Blynk ↔ Telegram)
-bool showTemperature = true;
+bool counterActive = true;
+int displayMode = 0;
 
-float lastTemp = -999; // Để phát hiện thay đổi gửi Telegram
-float lastHum = -999;
-int lastGas = -1;
+float temp = 0, humid = 0;
+float lastTemp = 0, lastHumid = 0;
+int gasValue = 0;
 
-// Giá trị ngưỡng thay đổi để gửi thông báo Telegram (đơn vị: °C, %, ppm)
-const float TEMP_CHANGE_THRESHOLD = 0.8;
-const float HUM_CHANGE_THRESHOLD = 3.0;
-const int GAS_CHANGE_THRESHOLD = 15;
+unsigned long lastTimeBotRan;
+int botRequestDelay = 1000; // Kiểm tra tin nhắn mỗi 1 giây
 
-// ── Đối tượng cảm biến ─────────────────────────
-DHT dht(DHTPIN, DHTTYPE);
-
-// ── Chống dội nút ──────────────────────────────
-bool IsReady(unsigned long &ulTimer, uint32_t ms)
+// ===== ĐỒNG BỘ TRẠNG THÁI =====
+void updateSystemState()
 {
-  unsigned long now = millis();
-  if (now - ulTimer < ms)
-    return false;
-  ulTimer = now;
-  return true;
+  digitalWrite(LED_PIN, counterActive ? HIGH : LOW);
+  Blynk.virtualWrite(V4, counterActive);
 }
 
-// ── Cập nhật LED phần cứng & Blynk ─────────────
-void updateLedState()
-{
-  digitalWrite(LED_PIN, ledState ? HIGH : LOW);
-  Blynk.virtualWrite(V4, ledState ? 1 : 0);
-}
-
-// ── Xử lý nút bấm vật lý ───────────────────────
-void updateButton()
-{
-  static unsigned long lastDebounce = 0;
-  static int lastBtnState = HIGH;
-
-  if (!IsReady(lastDebounce, 50))
-    return;
-
-  int reading = digitalRead(BTN_PIN);
-  if (reading == lastBtnState)
-    return;
-  lastBtnState = reading;
-
-  if (reading == LOW)
-  { // Nhấn nút (active LOW)
-    ledState = !ledState;
-    Serial.println(ledState ? "Button → LED ON" : "Button → LED OFF");
-    updateLedState();
-
-    // Gửi thông báo Telegram khi nhấn nút vật lý (tuỳ chọn)
-    // bot.sendMessage(CHAT_ID, ledState ? "LED bật từ nút vật lý" : "LED tắt từ nút vật lý", "");
-  }
-}
-
-// ── Đọc cảm biến & gửi Blynk + kiểm tra Telegram ────────
-void sendSensorData()
-{
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
-
-  if (isnan(h) || isnan(t))
-  {
-    Serial.println("DHT lỗi!");
-    return;
-  }
-
-  // Gas: nếu không gắn thật → random 300–800 (ppm giả lập)
-  int gasValue;
-#ifdef WOKWI // Nếu chạy trên Wokwi thì luôn random
-  gasValue = random(320, 780);
-#else
-  int raw = analogRead(MQ2_PIN);
-  gasValue = map(raw, 0, 4095, 200, 10000); // Giả lập mapping, chỉnh lại nếu có calib thật
-#endif
-
-  Blynk.virtualWrite(V1, t);
-  Blynk.virtualWrite(V2, h);
-  Blynk.virtualWrite(V3, gasValue); // Thêm V3 cho gas (tạo widget Gauge/Chart trên Blynk)
-
-  // Kiểm tra thay đổi để gửi Telegram
-  bool shouldNotify = false;
-  String msg = "📊 Cập nhật từ Team X:\n";
-
-  if (abs(t - lastTemp) >= TEMP_CHANGE_THRESHOLD)
-  {
-    msg += "Nhiệt độ: " + String(t, 1) + " °C\n";
-    lastTemp = t;
-    shouldNotify = true;
-  }
-  if (abs(h - lastHum) >= HUM_CHANGE_THRESHOLD)
-  {
-    msg += "Độ ẩm: " + String(h, 1) + " %\n";
-    lastHum = h;
-    shouldNotify = true;
-  }
-  if (abs(gasValue - lastGas) >= GAS_CHANGE_THRESHOLD)
-  {
-    msg += "Khí gas: " + String(gasValue) + " ppm\n";
-    lastGas = gasValue;
-    shouldNotify = true;
-  }
-
-  if (shouldNotify)
-  {
-    bot.sendMessage(CHAT_ID, msg, "");
-  }
-
-  uptimeSeconds++;
-  Blynk.virtualWrite(V0, uptimeSeconds);
-}
-
-// ── Hiển thị OLED luân phiên ───────────────────
-void updateOLED()
-{
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-
-  display.println("IoT - Team X");
-
-  if (ledState)
-  {
-    display.setCursor(90, 0);
-    display.print("LED:ON");
-  }
-  else
-  {
-    display.setCursor(90, 0);
-    display.print("LED:OFF");
-  }
-
-  display.setCursor(0, 12);
-  if (showTemperature)
-  {
-    float t = dht.readTemperature();
-    if (!isnan(t))
-    {
-      display.print("Nhiet do: ");
-      display.print(t, 1);
-      display.println(" C");
-    }
-  }
-  else
-  {
-    display.print("Uptime: ");
-    display.print(uptimeSeconds);
-    display.println(" s");
-  }
-
-  int gas = random(320, 780); // hoặc đọc analogRead nếu có thật
-  display.setCursor(0, 28);
-  display.print("Khi gas: ");
-  display.print(gas);
-  display.println(" ppm");
-
-  display.setCursor(0, 44);
-  display.print("Do am: ");
-  display.print(dht.readHumidity(), 1);
-  display.println(" %");
-
-  display.setCursor(0, 56);
-  display.println("Team X - 2026");
-
-  display.display();
-  showTemperature = !showTemperature; // Luân phiên mỗi lần gọi
-}
-
-// ── Xử lý lệnh Telegram ────────────────────────
+// ===== XỬ LÝ TIN NHẮN TELEGRAM =====
 void handleNewMessages(int numNewMessages)
 {
   for (int i = 0; i < numNewMessages; i++)
   {
-    String chat_id = bot.messages[i].chat_id;
+    String chat_id = String(bot.messages[i].chat_id);
     if (chat_id != CHAT_ID)
     {
-      bot.sendMessage(chat_id, "Unauthorized!", "");
+      bot.sendMessage(chat_id, "Người dùng không xác định", "");
       continue;
     }
 
     String text = bot.messages[i].text;
     String from_name = bot.messages[i].from_name;
 
-    if (text == "/start")
+    if (text == "/led_on")
     {
-      String welcome = "Xin chào " + from_name + "!\n";
-      welcome += "Nhóm IoT - Team X\n\n";
-      welcome += "/on     - Bật LED\n";
-      welcome += "/off    - Tắt LED\n";
-      welcome += "/state  - Xem trạng thái LED\n";
-      welcome += "/status - Xem nhiệt độ, độ ẩm, gas\n";
-      bot.sendMessage(chat_id, welcome, "");
+      counterActive = true;
+      updateSystemState();
+      bot.sendMessage(CHAT_ID, "✅ LED đã được BẬT bởi " + from_name, "");
     }
-
-    else if (text == "/on")
+    else if (text == "/led_off")
     {
-      ledState = true;
-      updateLedState();
-      bot.sendMessage(chat_id, "Đã bật LED 💡", "");
+      counterActive = false;
+      updateSystemState();
+      bot.sendMessage(CHAT_ID, "❌ LED đã được TẮT bởi " + from_name, "");
     }
-    else if (text == "/off")
+    else if (text == "/led_status")
     {
-      ledState = false;
-      updateLedState();
-      bot.sendMessage(chat_id, "Đã tắt LED", "");
+      String status = "💡 Trạng thái LED: " + String(counterActive ? "ĐANG BẬT" : "ĐANG TẮT");
+      bot.sendMessage(CHAT_ID, status, "");
     }
-    else if (text == "/state" || text == "/get_state")
+    else if (text == "/get_weather")
     {
-      String st = ledState ? "LED đang BẬT" : "LED đang TẮT";
-      bot.sendMessage(chat_id, st, "");
+      String weather = "🌡️ *Thông tin thời tiết hiện tại:*\n";
+      weather += "Nhiệt độ: " + String(temp, 1) + "°C\n";
+      weather += "Độ ẩm: " + String(humid, 1) + "%";
+      bot.sendMessage(CHAT_ID, weather, "Markdown");
     }
-    else if (text == "/status")
+    else if (text == "/start")
     {
-      float t = dht.readTemperature();
-      float h = dht.readHumidity();
-      int g = random(320, 780); // hoặc analogRead
-      String rep = "Trạng thái hiện tại:\n";
-      rep += "Nhiệt độ: " + String(t, 1) + " °C\n";
-      rep += "Độ ẩm: " + String(h, 1) + " %\n";
-      rep += "Khí gas: " + String(g) + " ppm\n";
-      rep += "LED: " + String(ledState ? "BẬT" : "TẮT");
-      bot.sendMessage(chat_id, rep, "");
+      String welcome = "Chào mừng " + from_name + ".\n";
+      welcome += "Các lệnh hỗ trợ:\n";
+      welcome += "/led_on : Bật LED\n";
+      welcome += "/led_off : Tắt LED\n";
+      welcome += "/led_status : Kiểm tra trạng thái LED\n";
+      welcome += "/get_weather : Xem nhiệt độ, độ ẩm";
+      bot.sendMessage(CHAT_ID, welcome, "");
     }
   }
 }
 
-// ── SETUP ──────────────────────────────────────
+// ===== ĐỌC CẢM BIẾN =====
+void sendSensorData()
+{
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  gasValue = analogRead(GAS_PIN);
+
+  if (!isnan(h) && !isnan(t))
+  {
+    temp = t;
+    humid = h;
+
+    Blynk.virtualWrite(V1, temp);
+    Blynk.virtualWrite(V2, humid);
+    Blynk.virtualWrite(V3, gasValue);
+
+    // Tự động báo cáo nếu có thay đổi lớn
+    if (abs(temp - lastTemp) >= 0.5 || abs(humid - lastHumid) >= 2.0)
+    {
+      String msg = "📊 *Thay đổi môi trường:*\nTemp: " + String(temp, 1) + "°C | Hum: " + String(humid, 1) + "%";
+      bot.sendMessage(CHAT_ID, msg, "Markdown");
+      lastTemp = temp;
+      lastHumid = humid;
+    }
+
+    if (gasValue > 2500)
+    {
+      bot.sendMessage(CHAT_ID, "⚠️ *CẢNH BÁO:* Phát hiện nồng độ Gas cao (" + String(gasValue) + ")!", "Markdown");
+    }
+  }
+}
+
+// void updateDisplay()
+// {
+//   // 1. TM1637 (Uptime)
+//   if (counterActive)
+//   {
+//     display.showNumberDec(uptimeSeconds % 10000);
+//   }
+//   else
+//   {
+//     display.clear();
+//   }
+
+//   // 2. OLED
+//   oled.clearDisplay();
+//   oled.setTextSize(1);
+//   oled.setTextColor(SSD1306_WHITE);
+
+//   // Nếu pause thì hiển thị trạng thái
+//   if (!counterActive)
+//   {
+//     oled.setCursor(0, 0);
+//     oled.println("--- PAUSED ---");
+//   }
+//   else
+//   {
+//     oled.setCursor(0, 0);
+//     oled.println("--- MONITORING ---");
+//   }
+
+//   // Hiển thị Nhiệt độ
+//   oled.setCursor(0, 20);
+//   oled.print("Temp:  ");
+//   oled.print(temp, 1);
+//   oled.println(" C");
+
+//   // Hiển thị Độ ẩm
+//   oled.setCursor(0, 35);
+//   oled.print("Humid: ");
+//   oled.print(humid, 1);
+//   oled.println(" %");
+
+//   // Hiển thị Gas
+//   oled.setCursor(0, 50);
+//   oled.print("Gas:   ");
+//   oled.print(gasValue);
+
+//   // Thanh bar Gas
+//   int barWidth = map(gasValue, 0, 4095, 0, 50);
+//   oled.drawRect(70, 50, 52, 10, SSD1306_WHITE);
+//   oled.fillRect(71, 51, barWidth, 8, SSD1306_WHITE);
+
+//   oled.display();
+// }
+void updateDisplay()
+{
+  // ===== TM1637 =====
+  if (counterActive)
+    display.showNumberDec(uptimeSeconds % 10000);
+  else
+    display.clear();
+
+  // ===== OLED (U8g2) =====
+  oled.clearBuffer();
+
+  if (!counterActive)
+    oled.drawStr(0, 10, "--- PAUSED ---");
+  else
+    oled.drawStr(0, 10, "--- MONITOR ---");
+
+  char buf[30];
+
+  sprintf(buf, "Temp: %.1f C", temp);
+  oled.drawStr(0, 25, buf);
+
+  sprintf(buf, "Hum : %.1f %%", humid);
+  oled.drawStr(0, 40, buf);
+
+  sprintf(buf, "Gas : %d", gasValue);
+  oled.drawStr(0, 55, buf);
+
+  // Thanh bar gas (ESP8266 max 1023)
+  int barWidth = map(gasValue, 0, 1023, 0, 50);
+  oled.drawFrame(70, 45, 52, 10);
+  oled.drawBox(71, 46, barWidth, 8);
+
+  oled.sendBuffer();
+}
+
+// void setup()
+// {
+//   Serial.begin(115200);
+//   pinMode(LED_PIN, OUTPUT);
+//   pinMode(BTN_PIN, INPUT_PULLUP);
+
+//   Wire.begin(21, 22);
+//   dht.begin();
+//   display.setBrightness(0x0f);
+//   client.setCACert(TELEGRAM_CERTIFICATE_ROOT);
+
+//   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+//   Blynk.syncVirtual(V4);
+//   updateSystemState();
+
+//   // Khởi tạo OLED
+//   if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+//   {
+//     Serial.println(F("SSD1306 allocation failed"));
+//   }
+//   oled.clearDisplay();
+//   oled.display();
+
+//   // Giữ nguyên các timer cũ
+//   timer.setInterval(2000L, sendSensorData);
+//   timer.setInterval(1000L, []()
+//                     {
+//     if(counterActive) uptimeSeconds++;
+//     Blynk.virtualWrite(V0, uptimeSeconds); });
+//   timer.setInterval(500L, updateDisplay); // Cập nhật cả 2 màn hình mỗi 0.5s
+
+//   bot.sendMessage(CHAT_ID, "🤖 Hệ thống đã khởi động và sẵn sàng nhận lệnh = /start!", "");
+// }
 void setup()
 {
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
   pinMode(BTN_PIN, INPUT_PULLUP);
-  // pinMode(MQ2_PIN, INPUT);   // analog không cần pinMode
 
-  digitalWrite(LED_PIN, LOW);
-
+  Wire.begin(OLED_SDA, OLED_SCL); // ✅ sửa lại
   dht.begin();
+  display.setBrightness(0x0f);
 
-  // Khởi tạo OLED
-  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
-  {
-    Serial.println(F("OLED SSD1306 allocation failed"));
-    for (;;)
-      ;
-  }
-  display.clearDisplay();
-  display.display();
+  client.setInsecure(); // ✅ sửa cho ESP8266
 
-  // Kết nối WiFi
-  WiFi.begin(ssid, pass);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("\nWiFi connected");
-
-  // Blynk
   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
   Blynk.syncVirtual(V4);
+  updateSystemState();
 
-  // Telegram client
-  client.setCACert(TELEGRAM_CERTIFICATE_ROOT);
-  bot.sendMessage(CHAT_ID, "Thiết bị IoT - Team X đã khởi động!");
+  // OLED
+  oled.begin();
+  oled.clearBuffer();
+  oled.setFont(u8g2_font_ncenB08_tr);
+  oled.drawStr(0, 20, "System Starting...");
+  oled.sendBuffer();
 
-  // Timer
-  timer.setInterval(3000L, sendSensorData); // Đọc cảm biến + gửi thông báo
-  timer.setInterval(4000L, updateOLED);     // Cập nhật OLED
+  timer.setInterval(2000L, sendSensorData);
+  timer.setInterval(1000L, []()
+                    {
+    if(counterActive) uptimeSeconds++; 
+    Blynk.virtualWrite(V0, uptimeSeconds); });
+
+  timer.setInterval(500L, updateDisplay);
+
+  bot.sendMessage(CHAT_ID, "🤖 He thong da khoi dong!", "");
 }
 
-// ── LOOP ───────────────────────────────────────
 void loop()
 {
   Blynk.run();
   timer.run();
 
-  updateButton();
+  // -------- BUTTON toggle system --------
+  static bool lastBtn = HIGH;
+  bool btn = digitalRead(BTN_PIN);
 
-  // Telegram polling
-  if (millis() - lastTimeBotRan > bot_delay)
+  // LED phản ánh trạng thái (giống LED_BLUE trong ví dụ)
+  digitalWrite(LED_PIN, counterActive ? HIGH : LOW);
+
+  if (lastBtn == HIGH && btn == LOW)
+  {
+    counterActive = !counterActive; // toggle trạng thái hệ thống
+    updateSystemState();
+
+    // Gửi Telegram
+    bot.sendMessage(CHAT_ID,
+                    "Nút nhấn vật lý: " + String(counterActive ? "BẬT" : "TẮT"), "");
+
+    // Điều khiển TM1637 giống logic mẫu
+    if (!counterActive)
+      display.clear();
+    else
+      display.showNumberDec(uptimeSeconds % 10000, true);
+
+    delay(200); // chống rung đơn giản
+  }
+
+  lastBtn = btn;
+
+  // Kiểm tra tin nhắn Telegram
+  if (millis() > lastTimeBotRan + botRequestDelay)
   {
     int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
     while (numNewMessages)
@@ -345,13 +379,8 @@ void loop()
   }
 }
 
-// ── Đồng bộ từ Blynk app (Switch V4) ───────────
 BLYNK_WRITE(V4)
 {
-  ledState = param.asInt();
-  Serial.println(ledState ? "Blynk → LED ON" : "Blynk → LED OFF");
-  updateLedState();
-
-  // Thông báo Telegram khi điều khiển từ Blynk (tuỳ chọn)
-  // bot.sendMessage(CHAT_ID, ledState ? "LED bật từ Blynk" : "LED tắt từ Blynk", "");
+  counterActive = param.asInt();
+  updateSystemState();
 }
