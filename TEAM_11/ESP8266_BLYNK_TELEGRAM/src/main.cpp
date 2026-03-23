@@ -57,6 +57,9 @@ char auth[] = BLYNK_AUTH_TOKEN;
 char ssid[] = "Wokwi-GUEST";
 char pass[] = "";
 
+// THÊM BIẾN NÀY ĐỂ CHỐNG SPAM TIN NHẮN
+unsigned long lastWeatherAlertTime = 0;
+
 // --- 6. BLYNK CONNECTED ---
 BLYNK_CONNECTED() {
   Blynk.syncVirtual(V0);
@@ -82,10 +85,10 @@ void updateSensors() {
   }
   Blynk.virtualWrite(V3, gas);
 
-  // Cảnh báo gas
+  // --- Cảnh báo gas ---
   if (gas > 2000 && !gasAlertSent) {
     String alertMsg = "⚠️ CẢNH BÁO KHÍ GAS CAO!\n";
-    alertMsg += "Gas value: " + String(gas);
+    alertMsg += "Mức Gas hiện tại: " + String(gas);
 
     Serial.print("Sending gas alert to: ");
     Serial.println(activeChatId);
@@ -99,20 +102,27 @@ void updateSensors() {
     gasAlertSent = false;
   }
 
-  // Gửi nhiệt độ/độ ẩm khi thay đổi
+  // --- Gửi nhiệt độ/độ ẩm khi thay đổi (Đã tối ưu) ---
   if (!isnan(h) && !isnan(t)) {
-    if (isnan(lastTemp) || isnan(lastHum) || abs(t - lastTemp) > 0.5 || abs(h - lastHum) > 1) {
-      String msg = "📢 Sensor Update\n";
-      msg += "🌡 Temp: " + String(t) + " C\n";
-      msg += "💧 Humidity: " + String(h) + " %";
+    // Tăng mức chênh lệch lên: Nhiệt độ lệch >= 1.0 độ HOẶC độ ẩm lệch >= 5.0%
+    if (isnan(lastTemp) || isnan(lastHum) || abs(t - lastTemp) >= 1.0 || abs(h - lastHum) >= 5.0) {
+      
+      // Chống spam: Đảm bảo khoảng cách giữa 2 lần gửi tin nhắn ít nhất là 60 giây (60000 ms)
+      if (millis() - lastWeatherAlertTime > 60000) {
+        String msg = "📢 Cập nhật thay đổi môi trường:\n";
+        msg += "🌡 Nhiệt độ: " + String(t) + " °C\n";
+        msg += "💧 Độ ẩm: " + String(h) + " %";
 
-      Serial.print("Sending sensor update to: ");
-      Serial.println(activeChatId);
+        Serial.print("Sending sensor update to: ");
+        Serial.println(activeChatId);
 
-      bot.sendMessage(activeChatId, msg, "");
+        bot.sendMessage(activeChatId, msg, "");
 
-      lastTemp = t;
-      lastHum = h;
+        // Cập nhật lại mốc so sánh
+        lastTemp = t;
+        lastHum = h;
+        lastWeatherAlertTime = millis();
+      }
     }
   }
 
