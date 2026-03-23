@@ -149,8 +149,7 @@ void setup() {
 	}
 
 	// Khởi tạo dịch vụ Blynk và Telegram
-	// TODO: Fix Blynk.begin() timeout issue
-	// blynkInit();
+	blynkInit();     // Non-blocking initialization
 	telegramInit();
 
 	// Thiết lập biến thời gian
@@ -167,7 +166,7 @@ void setup() {
 // Vòng lặp chính
 void loop() {
 	// Dịch vụ Blynk và Telegram xử lý nội bộ
-	// blynkTick();  // TODO: Fix Blynk.begin() timeout
+	blynkTick();     // Non-blocking tick with watchdog feeding
 	telegramTick();
 
 	unsigned long now = millis();
@@ -197,8 +196,8 @@ void loop() {
 				notifyTelegram(String(msg));
 			}
 			lastTemp = temp; lastHum = hum;
-			// Gửi dữ liệu lên Blynk
-			// blynkSendSensor(temp, hum, gas);  // TODO: Fix Blynk.begin()
+			// Gửi dữ liệu lên Blynk (nếu đã kết nối)
+			blynkSendSensor(temp, hum, gas);
 		}
 	}
 }
