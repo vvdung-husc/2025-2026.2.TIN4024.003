@@ -1,7 +1,7 @@
 	/*
 	THÔNG TIN NHÓM TEAM_01
 	1. Trần Hoàng Lộc (22T1020654) - Telegram : heishoangloc
-	2. 
+	2. Võ Nguyễn Huyền Vi (21t1020828) Telegram : vixinkdep
 	3. 
 	*/
 #define BLYNK_TEMPLATE_ID "TMPL68GG9v0-1"
