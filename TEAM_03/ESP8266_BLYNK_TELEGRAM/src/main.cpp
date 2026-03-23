@@ -1,6 +1,6 @@
 /*
-	THÔNG TIN NHÓM X
-	1. Trương Trường Phúc
+	THÔNG TIN NHÓM 03 - Telegram : iotteam03
+	1. Trương Trường Phúc - Telegram : mmedia9999
 	2. Lê Thanh Nhật
   	3. Hoàng Văn Thắng - Telegram : caubemenhac
   	4. Nguyễn Đức Dương - Telegram : NDuong10
