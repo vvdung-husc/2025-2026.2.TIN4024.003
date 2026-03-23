@@ -19,8 +19,8 @@
 
 // Telegram and EEPROM moved into telegram_service
 
-#define LED_PIN LED_BUILTIN // GPIO2 (LED tích hợp trên NodeMCU)
-#define DHTPIN 0                    // Chân DHT22
+#define LED_PIN D5 // Sử dụng 1 LED ngoài trên D5
+#define DHTPIN 0                    // Chân DHT22 (D3 trên NodeMCU)
 #define DHTTYPE DHT22               // Loại cảm biến DHT
 #define MQ2_PIN A0                  // Chân analog cho MQ2 (khí gas)
 #define OLED_SDA 4                  // Chân SDA cho OLED (D2 trên NodeMCU)
@@ -123,8 +123,8 @@ void setup() {
 	Serial.println("\n\n=== ESP8266 STARTING ===");
 	Serial.println("Setup started...");
 	pinMode(LED_PIN, OUTPUT);
-	// Tắt LED ban đầu (đối với LED tích hợp thường là HIGH = tắt)
-	digitalWrite(LED_PIN, HIGH);
+	// Tắt LED ban đầu (ngoại vi, LOW = tắt)
+	digitalWrite(LED_PIN, LOW);
 
 	// Khởi tạo cảm biến và màn hình
 	dht.begin();
