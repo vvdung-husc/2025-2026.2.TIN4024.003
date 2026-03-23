@@ -1,6 +1,6 @@
 /*
 THÔNG TIN NHÓM 08
-1. Trương Hữu Ngọc
+1. Trương Hữu Ngọc - Telegram: Ngọc Trương
 2. Hồ Bảo Toàn
 3. Nguyễn Vỹ Nguyên
 4. Nguyễn Văn Nhật Quang
