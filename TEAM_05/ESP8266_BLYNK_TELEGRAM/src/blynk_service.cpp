@@ -6,23 +6,34 @@
 
 static bool ledState = false;
 static BlynkTimer blynkTimer;
+static unsigned long lastBlynkConnectAttempt = 0;
+static const unsigned long BLYNK_RECONNECT_INTERVAL = 5000; // Thử kết nối lại mỗi 5s
 
-void onVirtualLedWrite(const BlynkParam &param) {
-  int v = param[0].asInt();
+// Cú pháp chuẩn của Blynk để nhận tín hiệu từ nút bấm V1 trên app
+BLYNK_WRITE(V1) {
+  int v = param.asInt();
   ledState = (v != 0);
   digitalWrite(LED_BUILTIN, ledState ? LOW : HIGH);
 }
 
 void blynkInit() {
-  // Blynk tự handle kết nối
-  Blynk.begin(auth, WIFI_SSID, WIFI_PASS);
-  Blynk.attachVirtual(V1, onVirtualLedWrite);
+  // Non-blocking configuration only
+  Serial.print("Blynk config: ");
+  Blynk.config(auth);
+  Serial.println("done (NOT attempting to connect in init)");
+  // Blynk.connect() is blocking - will only be called once async attempt has started
+  lastBlynkConnectAttempt = millis();
   blynkTimer.setInterval(2000L, [](){ /* placeholder */ });
 }
 
 void blynkTick() {
-  Blynk.run();
-  blynkTimer.run();
+  // CRITICAL: Do NOT call Blynk.connect() from loop - it blocks and triggers Soft WDT!
+  // Only run Blynk if already connected, to avoid blockingoperations
+  if (Blynk.connected()) {
+    Blynk.run();
+    blynkTimer.run();
+  }
+  yield(); // Feed watchdog timer
 }
 
 void blynkSendSensor(float temp, float hum, int gas) {
