@@ -194,8 +194,8 @@
 ```cpp
 	/*
 	THÔNG TIN NHÓM X
-	1. Nguyễn Văn Bình
-	2. Lê Nguyễn Hương Nguyên
+	1. Nguyễn Văn Bình - Telegram : binhnv
+	2. Lê Nguyễn Hương Nguyên - Telegram : nguyen2019
 	3. ...
 	*/
 ```
