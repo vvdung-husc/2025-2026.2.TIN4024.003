@@ -3,7 +3,7 @@
 	1. Nguyễn Huỳnh Minh Tiến - Telegram: MinhTien - @tiencut2711 
 	2. Dương Hữu Tiến 
 	3. Lê Gia Huy - Telegram: Gia Huy, username: @legiahuyyyy
-	4. Nguyễn Phú Tuấn
+	4. Nguyễn Phú Tuấn - Telegram: Phu Tuan, username:flabNguyen
 	5. Phan Bá Hóa - Telegram: PBH 09, username: @phanbahoa
 	*/
 
