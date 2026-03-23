@@ -1,9 +1,10 @@
+
 #define BLYNK_PRINT Serial
 
 /* ===== BLYNK ===== */
 #define BLYNK_TEMPLATE_ID "TMPL6pwGzIarE"
 #define BLYNK_TEMPLATE_NAME "ESP8266"
-#define BLYNK_AUTH_TOKEN "EoArjdBI12gdwkE1dg8ROU_9vmOuNnbE"
+#define BLYNK_AUTH_TOKEN "xxxxxxxxx"
 
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
@@ -17,7 +18,7 @@ char ssid[] = "LAB123";
 char pass[] = "55555555";
 
 /* ===== TELEGRAM ===== */
-#define BOTtoken "8339212597:AAFFy_Wh8ayLi_m3vHcv_TZjklBveeJk5iQ"
+#define BOTtoken "xxxxxxxxx"
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
 
