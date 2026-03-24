@@ -1,10 +1,10 @@
 #	/*
 	THÔNG TIN NHÓM 05
-	1. Nguyễn Huỳnh Minh Tiến 
+	1. Nguyễn Huỳnh Minh Tiến - Telegram: MinhTien - @tiencut2711 
 	2. Dương Hữu Tiến 
 	3. Lê Gia Huy - Telegram: Gia Huy, username: @legiahuyyyy
-	4. Nguyễn Phú Tuấn
-	5. Phan Bá Hóa
+	4. Nguyễn Phú Tuấn - Telegram: Phu Tuan, username:flabNguyen
+	5. Phan Bá Hóa - Telegram: PBH 09, username: @phanbahoa
 	*/
 
 // Thêm thư viện chính
@@ -19,8 +19,8 @@
 
 // Telegram and EEPROM moved into telegram_service
 
-#define LED_PIN LED_BUILTIN // GPIO2 (LED tích hợp trên NodeMCU)
-#define DHTPIN 0                    // Chân DHT22
+#define LED_PIN D5 // Sử dụng 1 LED ngoài trên D5
+#define DHTPIN 0                    // Chân DHT22 (D3 trên NodeMCU)
 #define DHTTYPE DHT22               // Loại cảm biến DHT
 #define MQ2_PIN A0                  // Chân analog cho MQ2 (khí gas)
 #define OLED_SDA 4                  // Chân SDA cho OLED (D2 trên NodeMCU)
@@ -39,6 +39,10 @@ U8G2_SH1106_128X64_NONAME_F_HW_I2C oled(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 float lastTemp = NAN, lastHum = NAN; // Lưu giá trị cảm biến trước đó
 unsigned long lastSensorMillis = 0;   // thời điểm đọc cảm biến gần nhất
 unsigned long startMillis;            // thời điểm khởi động để tính uptime
+
+// Global sensor data để Telegram có thể truy cập
+float currentTemp = NAN;
+float currentHum = NAN;
 
 // Cấu hình khoảng thời gian và ngưỡng
 const unsigned long SENSOR_INTERVAL = 2000;           // đọc DHT mỗi 2s
@@ -115,10 +119,12 @@ void notifyTelegram(String text) {
 // Hàm khởi tạo
 void setup() {
 	Serial.begin(115200);
-	delay(100);
+	delay(1000);
+	Serial.println("\n\n=== ESP8266 STARTING ===");
+	Serial.println("Setup started...");
 	pinMode(LED_PIN, OUTPUT);
-	// Tắt LED ban đầu (đối với LED tích hợp thường là HIGH = tắt)
-	digitalWrite(LED_PIN, HIGH);
+	// Tắt LED ban đầu (ngoại vi, LOW = tắt)
+	digitalWrite(LED_PIN, LOW);
 
 	// Khởi tạo cảm biến và màn hình
 	dht.begin();
@@ -143,7 +149,7 @@ void setup() {
 	}
 
 	// Khởi tạo dịch vụ Blynk và Telegram
-	blynkInit();
+	blynkInit();     // Non-blocking initialization
 	telegramInit();
 
 	// Thiết lập biến thời gian
@@ -160,7 +166,7 @@ void setup() {
 // Vòng lặp chính
 void loop() {
 	// Dịch vụ Blynk và Telegram xử lý nội bộ
-	blynkTick();
+	blynkTick();     // Non-blocking tick with watchdog feeding
 	telegramTick();
 
 	unsigned long now = millis();
@@ -175,6 +181,10 @@ void loop() {
 			Serial.printf("Temp: %.1f C  Hum: %.1f %%\n", temp, hum);
 			int gas = readMQ2OrRandom();
 			updateOLED(temp, hum, gas);
+			
+			// Update global variables cho Telegram
+			currentTemp = temp;
+			currentHum = hum;
 
 			// Gửi thông báo Telegram khi có thay đổi vượt ngưỡng
 			bool notify = false;
@@ -186,7 +196,7 @@ void loop() {
 				notifyTelegram(String(msg));
 			}
 			lastTemp = temp; lastHum = hum;
-			// Gửi dữ liệu lên Blynk
+			// Gửi dữ liệu lên Blynk (nếu đã kết nối)
 			blynkSendSensor(temp, hum, gas);
 		}
 	}
