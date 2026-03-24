@@ -6,23 +6,43 @@
 
 static bool ledState = false;
 static BlynkTimer blynkTimer;
+static unsigned long lastBlynkConnectAttempt = 0;
+static const unsigned long BLYNK_RECONNECT_INTERVAL = 5000; // Thử kết nối lại mỗi 5s
 
-void onVirtualLedWrite(const BlynkParam &param) {
-  int v = param[0].asInt();
+// Cú pháp chuẩn của Blynk để nhận tín hiệu từ nút bấm V1 trên app
+BLYNK_WRITE(V1) {
+  int v = param.asInt();
   ledState = (v != 0);
-  digitalWrite(LED_BUILTIN, ledState ? LOW : HIGH);
+  digitalWrite(D5, ledState ? HIGH : LOW);
 }
 
 void blynkInit() {
-  // Blynk tự handle kết nối
-  Blynk.begin(auth, WIFI_SSID, WIFI_PASS);
-  Blynk.attachVirtual(V1, onVirtualLedWrite);
+  // Non-blocking configuration only
+  Serial.print("Blynk config: ");
+  Blynk.config(auth);
+  Serial.println("done");
+  lastBlynkConnectAttempt = millis();
   blynkTimer.setInterval(2000L, [](){ /* placeholder */ });
 }
 
 void blynkTick() {
-  Blynk.run();
-  blynkTimer.run();
+  // Thử connect nếu chưa connect và đủ interval (non-blocking)
+  if (!Blynk.connected() && (millis() - lastBlynkConnectAttempt >= BLYNK_RECONNECT_INTERVAL)) {
+    Serial.print("Attempting Blynk connect...");
+    if (Blynk.connect(5000)) {  // Timeout 5s
+      Serial.println(" OK");
+    } else {
+      Serial.println(" failed");
+    }
+    lastBlynkConnectAttempt = millis();
+  }
+  
+  // Chỉ run nếu connected để tránh block
+  if (Blynk.connected()) {
+    Blynk.run();
+    blynkTimer.run();
+  }
+  yield(); // Feed watchdog
 }
 
 void blynkSendSensor(float temp, float hum, int gas) {
@@ -36,7 +56,7 @@ void blynkSendSensor(float temp, float hum, int gas) {
 
 void blynkSetLed(bool on) {
   ledState = on;
-  digitalWrite(LED_BUILTIN, ledState ? LOW : HIGH);
+  digitalWrite(D5, ledState ? HIGH : LOW);
   Blynk.virtualWrite(V1, ledState ? 1 : 0);
 }
 

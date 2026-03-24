@@ -1,11 +1,11 @@
 /*
  * PROJECT: ESP32 BLYNK SMART HOME
  * NHÓM 11:
- * Trần Quốc Tiến
- * Đặng Tấn Phát
- * Trần Đức Quốc Chí
- * Hồ Văn Thạnh
- * Lê Tấn Toàn
+ * Trần Quốc Tiến - Telegram : User Name
+ * Đặng Tấn Phát - Telegram : Minh Hoàng
+ * Trần Đức Quốc Chí - Telegram : Quốc Chí
+ * Hồ Văn Thạnh - Telegram : Thanh
+ * Lê Tấn Toàn - Telegram : Jame Vihical
  */
 
 #define BLYNK_TEMPLATE_ID   "TMPL6c0cqfIJ6"
