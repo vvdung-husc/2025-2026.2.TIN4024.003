@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "author": "Quoc Tien Tran",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht1", "top": -172.5, "left": -149.4, "attrs": {} },
+    { "type": "wokwi-gas-sensor", "id": "gas1", "top": 185.1, "left": -242.6, "attrs": {} },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -99.6,
+      "left": 128.6,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 15.8,
+      "left": 182.4,
+      "attrs": { "color": "green", "xray": "1" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "esp:23", "led1:A", "red", [] ],
+    [ "esp:GND.1", "led1:C", "black", [ "v-172.8", "h138.99" ] ],
+    [ "esp:3V3", "dht1:VCC", "red", [] ],
+    [ "esp:GND.1", "dht1:GND", "black", [] ],
+    [ "esp:4", "dht1:SDA", "blue", [ "h-225.56", "v-76.8", "h-0.1" ] ],
+    [ "esp:5V", "gas1:VCC", "red", [ "v28.8", "h-100.61" ] ],
+    [ "esp:GND.1", "gas1:GND", "black", [ "v67.2", "h-100.61" ] ],
+    [ "esp:34", "gas1:AO", "purple", [] ],
+    [ "btn1:1.l", "esp:GND.2", "black", [ "h0" ] ],
+    [ "esp:22", "btn1:2.l", "green", [ "h0" ] ]
+  ],
+  "dependencies": {}
+}
