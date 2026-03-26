@@ -35,6 +35,9 @@ __CHÚ Ý__
  - _Sử dụng Wokwi và các cảm biến tương ứng để mô phỏng_
  - _Không yêu cầu phần lập trình_
 
+### Hiện tại các tập tin Hướng dẫn đang không tồn tại (sẽ bổ sung sau)
+[Tham khảo hình thức làm bài tiểu luận](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/_Documents/bieu_mau_tieu_luan.docx)
+
 >[Hướng dẫn hình thức làm bài Tiểu luận](https://husc.edu.vn/khaothi/downloads/2024/20240117091441_huong_dan_hinh_thuc_lam_bai_thi_tieu_luan.pdf)
 >
 >[Hướng dẫn nộp bài Tiểu luận](https://husc.edu.vn/khaothi/downloads/2024/20240117091501_huong_dan_nop_tieu_luan.pdf)
