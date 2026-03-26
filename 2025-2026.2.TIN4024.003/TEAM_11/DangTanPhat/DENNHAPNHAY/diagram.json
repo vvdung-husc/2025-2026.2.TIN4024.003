@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "author": "Dang Tan Phat",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 196.7, "left": 302.2, "attrs": {} },
+    {
+      "type": "wokwi-led",
+      "id": "red",
+      "top": 56.4,
+      "left": 265.8,
+      "rotate": 90,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "yellow",
+      "top": 94.8,
+      "left": 265.8,
+      "rotate": 90,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "green",
+      "top": 133.2,
+      "left": 265.8,
+      "rotate": 90,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 196.8,
+      "left": 181.85,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": 225.6,
+      "left": 220.25,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": 216,
+      "left": 201.05,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    }
+  ],
+  "connections": [
+    [ "esp:26", "r1:1", "red", [] ],
+    [ "red:C", "esp:GND", "black", [] ],
+    [ "esp:25", "r2:1", "yellow", [] ],
+    [ "yellow:C", "esp:GND", "black", [] ],
+    [ "esp:33", "r3:1", "green", [] ],
+    [ "green:C", "esp:GND", "black", [] ],
+    [ "red:C", "esp:GND.2", "black", [ "h-86.4", "v269.2", "h124.8" ] ],
+    [ "red:A", "r1:1", "red", [ "h0" ] ],
+    [ "r3:2", "esp:D33", "yellow", [ "v27.6", "h76.8" ] ],
+    [ "r2:2", "esp:D32", "green", [ "v8.4", "h57.6" ] ],
+    [ "r1:2", "esp:D25", "red", [ "v56.4", "h96" ] ],
+    [ "yellow:A", "r3:1", "yellow", [ "h0" ] ],
+    [ "green:C", "esp:GND.2", "black", [ "h-86.4", "v192.4", "h124.8" ] ],
+    [ "green:A", "r2:1", "green", [ "h0" ] ],
+    [ "yellow:C", "esp:GND.2", "black", [ "h-86.4", "v230.8", "h124.8" ] ]
+  ],
+  "dependencies": {}
+}
