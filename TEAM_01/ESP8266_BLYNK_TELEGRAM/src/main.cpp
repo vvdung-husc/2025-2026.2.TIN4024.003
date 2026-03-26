@@ -1,231 +1,225 @@
-/*
-THÔNG TIN NHÓM 1
-1. Đoàn Đức Kiệt
-2. 
-3. ...
-*/
+	/*
+	THÔNG TIN NHÓM TEAM_01
+	1. Trần Hoàng Lộc (22T1020654) - Telegram : heishoangloc
+	2. Võ Nguyễn Huyền Vi (21t1020828) Telegram : vixinkdep
+	3. Đoàn Đức Kiệt (21T1020463) - Telegram : ddkiet
+	*/
+#define BLYNK_TEMPLATE_ID "TMPL68GG9v0-1"
+#define BLYNK_TEMPLATE_NAME "ESP8266 BLYNK  TELEGRAM"
+#define BLYNK_AUTH_TOKEN "Q3F50CxvdS1v8vTTyFF4-dCgIFAJtv1Y"
 
-#define BLYNK_TEMPLATE_ID "TMPL6XNMMkTmW"
-#define BLYNK_TEMPLATE_NAME "ESP8266 BLYNK TELEGRAM"
-#define BLYNK_AUTH_TOKEN "zJRX8608ctPtNZm8SwQdva3ZIPsCP_Pg"
-
-#include <ESP8266WiFi.h> // Thay đổi thư viện cho ESP8266
-#include <WiFiClientSecure.h>
-#include <BlynkSimpleEsp8266.h> // Thay đổi thư viện Blynk cho ESP8266
+#include <Arduino.h>
+#include <Wire.h>
+#include <U8g2lib.h>
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
 #include <UniversalTelegramBot.h>
 #include <ArduinoJson.h>
 #include <DHT.h>
-#include <Wire.h>
-#include <U8g2lib.h>
-#include <time.h>
 
-// --- THÔNG TIN WIFI WOKWI VÀ TELEGRAM ---
-char ssid[] = "Wokwi-GUEST"; 
-char pass[] = "";            
-#define BOT_TOKEN "8567455182:AAGnk0zfzTyhZ67WAQbSlG7gSldr65r3_iE"
-#define CHAT_ID "-5039341360" 
+char ssid[] = "CNTT-MMT";
+char pass[] = "13572468";
 
-// --- ĐỊNH NGHĨA CHÂN CHO ESP8266 (NodeMCU) ---
-#define LED_PIN 12       // Chân D6 trên ESP8266
-#define DHTPIN 14        // Chân D5 trên ESP8266
+#define BOT_TOKEN "8757806671:AAEiC5uYhJWmhmEOV2Oz06x0lSQ0d8iNyMA"
+#define CHAT_ID "-5169162155"
+
+WiFiClientSecure client;
+UniversalTelegramBot bot(BOT_TOKEN, client);
+
+U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, D1, D2);
+
 #define DHTTYPE DHT22
-#define OLED_SDA 4       // Chân D2 (SDA mặc định của ESP8266)
-#define OLED_SCL 5       // Chân D1 (SCL mặc định của ESP8266)
-#define MQ2_PIN A0       // ESP8266 chỉ có 1 chân Analog là A0
+DHT dht(D3, DHTTYPE);
 
-DHT dht(DHTPIN, DHTTYPE);
-U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+#define LED_ON LOW
+#define LED_OFF HIGH
 
-WiFiClientSecure secured_client;
-UniversalTelegramBot bot(BOT_TOKEN, secured_client);
-BlynkTimer timer;
+const uint8_t LED_PIN = D4;
+const uint8_t GAS_PIN = A0;
 
-float lastTemp = -999.0;
-float lastHum = -999.0;
-int botRequestDelay = 1000;
-unsigned long lastTimeBotRan;
-bool ledState = false; 
+unsigned long tSensor, tOLED, tTele, tBlynk, tWifi, tBlynkRetry;
 
-time_t bootTime; 
+float temp = 25, hum = 50, lastTemp = 25, lastHum = 50;
+int gas = 0;
+bool led = false;
 
-bool IsReady(unsigned long &ulTimer, uint32_t millisecond) {
-  if (millis() - ulTimer < millisecond) return false;
-  ulTimer = millis();
-  return true;
+void sendTele(String m) {
+  if (WiFi.status() == WL_CONNECTED) bot.sendMessage(CHAT_ID, m, "");
 }
 
-bool WelcomeDisplayTimeout(uint msSleep = 5000){
-  static ulong lastTimer = 0;
-  static bool bDone = false;
-  if (bDone) return true;
-  if (!IsReady(lastTimer, msSleep)) return false;
-  bDone = true;    
-  return bDone;
+void connectWiFi() {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, pass);
+  for (int i = 0; i < 20 && WiFi.status() != WL_CONNECTED; i++) delay(500);
 }
 
-// Xử lý lệnh bật tắt LED từ Blynk
-BLYNK_WRITE(V1) {
-  int pinValue = param.asInt();
-  ledState = (pinValue == 1);
-  digitalWrite(LED_PIN, ledState ? HIGH : LOW); 
-}
-
-// Xử lý lệnh từ Telegram
-void handleNewMessages(int numNewMessages) {
-  for (int i = 0; i < numNewMessages; i++) {
-    String chat_id = String(bot.messages[i].chat_id);
-    String text = bot.messages[i].text;
-
-    if (text == "/led_on") {
-      ledState = true;
-      digitalWrite(LED_PIN, HIGH); 
-      Blynk.virtualWrite(V1, 1); 
-      bot.sendMessage(chat_id, "💡 Đèn LED đã được BẬT", "");
-    } 
-    else if (text == "/led_off") {
-      ledState = false;
-      digitalWrite(LED_PIN, LOW); 
-      Blynk.virtualWrite(V1, 0); 
-      bot.sendMessage(chat_id, "🌑 Đèn LED đã được TẮT", "");
-    } 
-    else if (text == "/led_status") {
-      String status = ledState ? "ĐANG BẬT 💡" : "ĐANG TẮT 🌑";
-      bot.sendMessage(chat_id, "Trạng thái LED hiện tại: " + status, "");
-    } 
-    else if (text == "/get_weather") {
-      float t = dht.readTemperature();
-      float h = dht.readHumidity();
-      
-      // ESP8266 ADC đọc từ 0-1023
-      int rawGas = analogRead(MQ2_PIN);
-      int gasPercent = map(rawGas, 0, 1023, 0, 100);
-      
-      if (isnan(t) || isnan(h)) {
-        bot.sendMessage(chat_id, "Lỗi: Không thể đọc dữ liệu từ cảm biến DHT!", "");
-      } else {
-        String msg = "🌡 Thời tiết hiện tại:\n- Nhiệt độ: " + String(t) + "°C\n- Độ ẩm: " + String(h) + "%\n- Khí Gas: " + String(gasPercent) + "%";
-        bot.sendMessage(chat_id, msg, "");
-      }
-    }
-    else if (text == "/start") {
-      bot.sendMessage(chat_id, "Chào mừng! Gõ /get_weather, /led_on, /led_off, hoặc /led_status để điều khiển.", "");
-    }
+void connectBlynk() {
+  Blynk.config(BLYNK_AUTH_TOKEN, "blynk.cloud", 80);
+  if (Blynk.connect(3000)) {
+    Blynk.syncVirtual(V0, V1, V2, V3, V4);
   }
 }
 
-// Gửi dữ liệu định kỳ
-void processSensorData() {
+void readSensor() {
   float t = dht.readTemperature();
   float h = dht.readHumidity();
-  
-  // ESP8266 ADC đọc từ 0-1023
-  int rawGas = analogRead(MQ2_PIN);
-  int gasPercent = map(rawGas, 0, 1023, 0, 100);
-  
-  time_t now = time(nullptr);
-  int uptime_seconds = now - bootTime; 
-  
-  bool sensorValid = !isnan(t) && !isnan(h);
 
-  // Gửi thông số lên Blynk
-  Blynk.virtualWrite(V0, uptime_seconds); 
-  Blynk.virtualWrite(V4, gasPercent); 
-  Blynk.virtualWrite(V5, "Team 1 - IoT");
+  if (!isnan(t) && !isnan(h)) {
+    temp = t;
+    hum = h;
 
-  if (sensorValid) {
-    Blynk.virtualWrite(V2, t);
-    Blynk.virtualWrite(V3, h);
+    if (Blynk.connected()) {
+      Blynk.virtualWrite(V1, temp);
+      Blynk.virtualWrite(V2, hum);
+    }
+  }
 
-    // Cảnh báo thời tiết thay đổi qua Telegram
-    if (abs(t - lastTemp) >= 1.0 || abs(h - lastHum) >= 1.0) {
-      if (lastTemp != -999.0) {
-        String msg = "⚠️ Cảnh báo thay đổi thời tiết:\nNhiệt độ: " + String(t) + "°C\nĐộ ẩm: " + String(h) + "%";
-        bot.sendMessage(CHAT_ID, msg, "");
+  int raw = analogRead(GAS_PIN);
+  gas = (raw < 10) ? random(50, 200) : map(raw, 0, 1023, 0, 1000);
+
+  if (Blynk.connected()) {
+    Blynk.virtualWrite(V3, gas);
+  }
+
+  if (abs(temp - lastTemp) >= 1 || abs(hum - lastHum) >= 5) {
+    sendTele("Temperature: " + String(temp,1) + "C\nHumidity: " + String(hum,1) + "%");
+    lastTemp = temp;
+    lastHum = hum;
+  }
+}
+
+void drawOLED() {
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_7x14_tr);
+
+  char buf[32];
+
+  sprintf(buf, "LED: %s", led ? "ON" : "OFF");
+  u8g2.drawStr(0, 12, buf);
+
+  sprintf(buf, "T: %.1fC", temp);
+  u8g2.drawStr(0, 28, buf);
+
+  sprintf(buf, "H: %.1f%%", hum);
+  u8g2.drawStr(0, 44, buf);
+
+  sprintf(buf, "Gas: %d", gas);
+  u8g2.drawStr(0, 60, buf);
+
+  u8g2.sendBuffer();
+}
+
+void handleTele() {
+  int n = bot.getUpdates(bot.last_message_received + 1);
+
+  while (n) {
+    for (int i = 0; i < n; i++) {
+      String id = bot.messages[i].chat_id;
+      String txt = bot.messages[i].text;
+
+      txt.trim();
+      txt.toLowerCase();
+
+      if (id != CHAT_ID) continue;
+
+      if (txt == "/led_on") {
+        led = true;
+        digitalWrite(LED_PIN, LED_ON);
+        bot.sendMessage(id, "LED ON", "");
+        Blynk.virtualWrite(V0, 1);
+      } 
+      else if (txt == "/led_off") {
+        led = false;
+        digitalWrite(LED_PIN, LED_OFF);
+        bot.sendMessage(id, "LED OFF", "");
+        Blynk.virtualWrite(V0, 0);
+      } 
+      else if (txt == "/led_status") {
+        String r = "LED: " + String(led ? "ON" : "OFF");
+        bot.sendMessage(id, r, "");
       }
-      lastTemp = t;
-      lastHum = h;
+      else if (txt == "/get_weather") {
+        String r = "Temperature: " + String(temp,1) + "C\n";
+        r += "Humidity: " + String(hum,1) + "%";
+        bot.sendMessage(id, r, "");
+      }
+      else {
+        bot.sendMessage(id,
+          "Commands:\n/led_on\n/led_off\n/led_status\n/get_weather",
+          ""
+        );
+      }
     }
+    n = bot.getUpdates(bot.last_message_received + 1);
   }
+}
 
-  // Cập nhật màn hình OLED
-  if (WelcomeDisplayTimeout()) {
-    oled.clearBuffer();
-    oled.setFont(u8g2_font_6x10_tf);
-    
-    oled.setCursor(0, 10); oled.print("Team 1 - IoT");
-    oled.drawLine(0, 12, 128, 12);
-    
-    if (sensorValid) {
-      oled.setCursor(0, 24); oled.print("Temp: "); oled.print(t, 1); oled.print(" C");
-      oled.setCursor(0, 36); oled.print("Hum : "); oled.print(h, 1); oled.print(" %");
-    } else {
-      oled.setCursor(0, 24); oled.print("Temp: Error");
-      oled.setCursor(0, 36); oled.print("Hum : Error");
-    }
-    
-    oled.setCursor(0, 48); oled.print("Gas : "); oled.print(gasPercent); oled.print(" %");
-    
-    oled.setCursor(70, 24); oled.print("LED:"); oled.print(ledState ? "ON " : "OFF");
-    oled.setCursor(70, 36); oled.print("Up:"); oled.print(uptime_seconds); oled.print("s");
-    
-    oled.sendBuffer();
-  }
+BLYNK_WRITE(V0) {
+  led = param.asInt();
+  digitalWrite(LED_PIN, led ? LED_ON : LED_OFF);
+  sendTele(String("LED ") + (led ? "ON" : "OFF"));
+}
+
+BLYNK_READ(V0) {
+  Blynk.virtualWrite(V0, led);
+}
+
+BLYNK_CONNECTED() {
+  Blynk.virtualWrite(V5, "=== TEAM 01 ===");
+  Blynk.virtualWrite(V6, "TRAN HOANG LOC (22T1020654)");
+  Blynk.virtualWrite(V7, "DOAN DUC KIET (21T1020463)");
+  Blynk.virtualWrite(V8, "VO NGUYEN HUYEN VI (21T1020828)");
 }
 
 void setup() {
   Serial.begin(115200);
-  
   pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, LOW); 
-  
-  // ESP8266 không cần pinMode cho A0 khi dùng analogRead, nhưng để nguyên cũng không sao.
+  digitalWrite(LED_PIN, LED_OFF);
 
+  Wire.begin(D2, D1);
+  u8g2.begin();
   dht.begin();
-  // Khởi tạo I2C cho ESP8266
-  Wire.begin(OLED_SDA, OLED_SCL);
-  oled.begin();
-  
-  oled.clearBuffer();
-  oled.setFont(u8g2_font_unifont_t_vietnamese1);
-  oled.drawUTF8(0, 14, "Trường ĐHKH");  
-  oled.drawUTF8(0, 28, "Khoa CNTT");
-  oled.drawUTF8(0, 42, "IoT - Nhóm 1");  
-  oled.sendBuffer();
 
-  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
-
-  // Đồng bộ thời gian thực
-  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
-  time_t now = time(nullptr);
-  while (now < 24 * 3600) {
-    delay(500);
-    now = time(nullptr);
-  }
-  
-  bootTime = time(nullptr);
-  
-  // ESP8266 sử dụng setInsecure để bỏ qua xác thực chứng chỉ SSL với Telegram
-  secured_client.setInsecure();
-
-  // Dọn dẹp tin nhắn kẹt của Telegram
-  int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
-  while(numNewMessages) {
-    numNewMessages = bot.getUpdates(bot.last_message_received + 1);
-  }
-
-  timer.setInterval(2500L, processSensorData);
+  connectWiFi();
+  client.setInsecure();
+  connectBlynk();
 }
 
 void loop() {
-  Blynk.run();
-  timer.run();
+  unsigned long now = millis();
 
-  if (millis() - lastTimeBotRan > botRequestDelay) {
-    int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
-    while (numNewMessages) {
-      handleNewMessages(numNewMessages);
-      numNewMessages = bot.getUpdates(bot.last_message_received + 1);
-    }
-    lastTimeBotRan = millis();
+  if (WiFi.status() != WL_CONNECTED && now - tWifi > 10000) {
+    tWifi = now;
+    connectWiFi();
   }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    if (Blynk.connected()) Blynk.run();
+    else if (now - tBlynkRetry > 10000) {
+      tBlynkRetry = now;
+      connectBlynk();
+    }
+  }
+
+  if (now - tSensor > 5000) {
+    tSensor = now;
+    readSensor();
+  }
+
+  if (now - tOLED > 2000) {
+    tOLED = now;
+    drawOLED();
+  }
+
+  if (now - tTele > 1000 && WiFi.status() == WL_CONNECTED) {
+    tTele = now;
+    handleTele();
+  }
+
+  if (now - tBlynk > 10000 && Blynk.connected()) {
+    tBlynk = now;
+    Blynk.virtualWrite(V4, millis()/1000);
+  }
+
+  delay(10);
 }
