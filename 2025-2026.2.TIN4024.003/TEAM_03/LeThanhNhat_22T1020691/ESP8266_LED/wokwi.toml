@@ -1,8 +1,0 @@
-[wokwi]
-version = 1
-firmware = ".pio/build/nodemcuv2/firmware.bin"
-elf = ".pio/build/nodemcuv2/firmware.elf"
-
-[wokwi.metadata]
-author = "TEAM_03"
-notes = "DHT22 -> D3, OLED SDA -> D2, SCL -> D1, LED -> D4"

@@ -1,3 +1,0 @@
-# Format: exact_secret==>replacement
-# Example to replace leaked OpenWeather key with REDACTED
-YOUR_OPENWEATHER_KEY==>REDACTED
