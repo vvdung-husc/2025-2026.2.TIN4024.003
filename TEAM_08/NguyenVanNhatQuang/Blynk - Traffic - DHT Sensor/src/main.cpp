@@ -1,6 +1,6 @@
 #define BLYNK_TEMPLATE_ID "TMPL6iZTQKKP0"
 #define BLYNK_TEMPLATE_NAME "ESMART1"
-#define BLYNK_AUTH_TOKEN "bIYHqwdJ5-rWVrPuA7kOaVXKuKz2uVkf"
+#define BLYNK_AUTH_TOKEN "NbIYHqwdJ5-rWVrPuA7kOaVXKuKz2uVkf"
 
 #include <Arduino.h>
 #include <WiFi.h>
