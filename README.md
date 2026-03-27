@@ -194,8 +194,8 @@
 ```cpp
 	/*
 	THÔNG TIN NHÓM X
-	1. Nguyễn Văn Bình
-	2. Lê Nguyễn Hương Nguyên
+	1. Nguyễn Văn Bình - Telegram : binhnv
+	2. Lê Nguyễn Hương Nguyên - Telegram : nguyen2019
 	3. ...
 	*/
 ```
@@ -210,8 +210,10 @@
  4. ### ***Telegram***
   - Tạo tên nhóm **IoT - Team X** và thêm các thành viên vào nhóm và tài khoản ***vvdung_husc (hoặc 0396634274)***
   - Hiển thị thông tin nhiệt độ, độ ẩm khi có thay đổi từ thiết bị
-  - Điều khiển tắt/mở và nhận trạng thái đèn LED bằng lệnh nhập từ khung chat
+  - Điều khiển tắt/mở và nhận trạng thái ***(/led_on, /led_off, /led_status)*** đèn LED bằng lệnh nhập từ khung chat
+  - Gửi lệnh ***(/get_weather)*** từ khung chat để nhận nhiệt độ, độ ẩm hiện tại. 
  5. ### Gửi đính kèm lên github 2 ảnh của Blynk (***web***) và Telegram (***với đầy đủ tên thành viên***)
+ 6. ### **Nên sử dụng ESP32 để viết code mô phỏng trước, và hoàn thiện trên ESP8266 tại LAB**
 -------------------------------
 
 ![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/esp32-devkitC-v4-pinout.png)
