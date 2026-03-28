@@ -1,28 +1,73 @@
 #include <Arduino.h>
-#include "DHT.h"
+#include <Wire.h>
+#include <U8g2lib.h>
+#include <DHT.h>
 
-// Dựa theo sơ đồ V3 bạn gửi: DHT nối vào D2 (GPIO 4)
-#define DHTPIN 4     
-#define DHTTYPE DHT11 
+// OLED SH1106
+U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
+// DHT
+#define DHTPIN D3
+#define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
 
-void setup() {
-  Serial.begin(115200);
+// MQ2
+#define MQ2_PIN A0
+
+// LED ngoài
+#define LED_PIN D6
+
+float temperature;
+float humidity;
+int gasValue;
+
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(LED_PIN, OUTPUT);
+
   dht.begin();
-  Serial.println(F("\n--- Bat dau do nhiet do ---"));
+  u8g2.begin();
+
+  Serial.println("System Start");
 }
 
-void loop() {
-  delay(2000); // DHT11 cần 2 giây để đo một lần
+void loop()
+{
+  // LED nhấp nháy
+  digitalWrite(LED_PIN, HIGH);
+  delay(500);
+  digitalWrite(LED_PIN, LOW);
+  delay(500);
 
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
+  // đọc DHT
+  temperature = dht.readTemperature();
+  humidity = dht.readHumidity();
 
-  if (isnan(h) || isnan(t)) {
-    Serial.println(F("Loi: Khong doc duoc DHT! Kiem tra day tai chan D2"));
-  } else {
-    Serial.print(F("Naaaaaaaaa: ")); Serial.print(t);
-    Serial.print(F("C | Do am: ")); Serial.print(h); Serial.println(F("%"));
-  }
+  // đọc MQ2
+  gasValue = analogRead(MQ2_PIN);
+
+  // OLED
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_6x10_tr);
+
+  u8g2.drawStr(0,10,"TRUONG DAI HOC");
+  u8g2.drawStr(0,20,"KHOA HOC HUE");
+
+  u8g2.setCursor(0,40);
+  u8g2.print("Temp: ");
+  u8g2.print(temperature);
+
+  u8g2.setCursor(0,52);
+  u8g2.print("Hum : ");
+  u8g2.print(humidity);
+
+  u8g2.setCursor(0,64);
+  u8g2.print("Gas : ");
+  u8g2.print(gasValue);
+
+  u8g2.sendBuffer();
+
+  delay(2000);
 }
