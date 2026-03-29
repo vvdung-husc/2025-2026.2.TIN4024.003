@@ -7,9 +7,7 @@ const char* ssid = "Wokwi-GUEST";
 const char* password = "";
 
 // Telegram
-// #define BOT_TOKEN "xxx"
-// #define CHAT_ID "xxx"
-#include "secret.h" //tạo file secret.h trong src để tránh lộ thông tin 
+#include "secret.h"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOT_TOKEN, client);
@@ -28,11 +26,11 @@ void handleNewMessages(int numNewMessages) {
 
     if (text == "/start") {
       bot.sendMessage(CHAT_ID,
-        "Xin chào, hệ thống đã thông suốt DNS.\n"
-        "Sử dụng các lệnh sau để điều khiển đèn LED:\n\n"
-        "/led_on : Bật đèn\n"
-        "/led_off : Tắt đèn\n"
-        "/get_state : Kiểm tra trạng thái",
+        "🤖 Xin chào Trần Đức Quốc Chí, hệ thống đã thông suốt DNS.\n"
+        "📌 Sử dụng các lệnh sau để điều khiển đèn LED:\n\n"
+        "💡 /led_on : Bật đèn\n"
+        "🌙  /led_off : Tắt đèn\n"
+        "📊 /get_state : Kiểm tra trạng thái",
         "");
     }
 
@@ -40,36 +38,32 @@ void handleNewMessages(int numNewMessages) {
       autoMode = false;
       digitalWrite(LED_PIN, HIGH);
       ledState = true;
-      bot.sendMessage(CHAT_ID, "LED bật (manual)", "");
+      bot.sendMessage(CHAT_ID, "🔴 Đã bật đèn", "");
     }
 
     if (text == "/led_off") {
       autoMode = false;
       digitalWrite(LED_PIN, LOW);
       ledState = false;
-      bot.sendMessage(CHAT_ID, "LED tắt (manual)", "");
+      bot.sendMessage(CHAT_ID, "⚫ Đã tắt đèn", "");
     }
 
-    if (text == "/get_state") {
-      String msg = "LED: ";
-      msg += (ledState ? "ON" : "OFF");
-      msg += "\nMode: ";
-      msg += (autoMode ? "AUTO" : "MANUAL");
+if (text == "/get_state") {
+      String msg = "📊 **KẾT QUẢ KIỂM TRA:**\n";
+      
+      if (ledState) {
+        msg += "🔴 Trạng thái : Đèn đang sáng";
+      } else {
+        msg += "⚫ Trạng thái : Đèn đang tắt";
+      }
 
-      bot.sendMessage(CHAT_ID, msg, "");
+      bot.sendMessage(CHAT_ID, msg, "Markdown");
     }
 
-    if (text == "/auto_on") {
-      autoMode = true;
-      bot.sendMessage(CHAT_ID, "Đã bật chế độ AUTO", "");
-    }
-
-    if (text == "/auto_off") {
-      autoMode = false;
-      bot.sendMessage(CHAT_ID, "Đã tắt AUTO", "");
-    }
   }
+
 }
+
 
 void setup() {
   Serial.begin(115200);
@@ -91,7 +85,7 @@ void setup() {
 }
 
 void loop() {
-  // 📩 Telegram
+  // Telegram
   int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
 
   while (numNewMessages) {
@@ -99,7 +93,7 @@ void loop() {
     numNewMessages = bot.getUpdates(bot.last_message_received + 1);
   }
 
-  // 🕵️ PIR xử lý
+  // PIR xử lý
   if (autoMode) {
     bool motion = digitalRead(PIR_PIN);
 
@@ -108,7 +102,7 @@ void loop() {
       digitalWrite(LED_PIN, HIGH);
       ledState = true;
 
-      bot.sendMessage(CHAT_ID, "⚠️ Có chuyển động!", "");
+      bot.sendMessage(CHAT_ID, " Có chuyển động!", "");
     }
 
     if (!motion && lastMotionState) {
