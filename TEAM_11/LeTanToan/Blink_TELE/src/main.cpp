@@ -1,4 +1,4 @@
-/*
+/*Không up lên được cái chung nên e up riêng ạ
  * PROJECT: ESP32 BLYNK SMART HOME - NHÓM 11
  * BOARD: ESP32
  * CONNECTIVITY: WiFi (Blynk IoT Cloud & Telegram Bot)
