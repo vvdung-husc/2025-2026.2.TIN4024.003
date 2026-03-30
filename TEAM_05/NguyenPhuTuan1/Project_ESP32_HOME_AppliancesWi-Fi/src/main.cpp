@@ -1,8 +1,8 @@
 #define BLYNK_TEMPLATE_ID "TMPL6LXR3wKk8"
 #define BLYNK_TEMPLATE_NAME "ESP32 HOME CONTROL"
-#define BLYNK_AUTH_TOKEN "F1rpsN-yoCXNmVWq5IKK5BQg0tVPYvan"
 #define BLYNK_PRINT Serial
 
+#include "secrets.h"
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
@@ -15,8 +15,6 @@ char ssid[] = "Wokwi-GUEST";
 char password[] = "";
 
 // Telegram
-#define BOT_TOKEN "token_that_is_public"
-#define CHAT_ID "YOUR_TELEGRAM_CHAT_ID"
 WiFiClientSecure secured_client;
 UniversalTelegramBot bot(BOT_TOKEN, secured_client);
 
