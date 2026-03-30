@@ -1,0 +1,29 @@
+[wokwi]
+version = 1
+firmware = '.pio\build\nodemcu-32s\firmware.bin'
+elf = '.pio\build\nodemcu-32s\firmware.elf'
+[wifi]
+ssid = "Wokwi-GUEST"
+password = ""
+
+[[parts]]
+type = "esp32"
+port = "/dev/ttyACM0"
+
+[[parts]]
+type = "led"
+pin = "5"
+color = "red"
+
+[[parts]]
+type = "led"
+pin = "4"
+color = "blue"
+
+[[parts]]
+type = "dht22"
+pin = "15"
+
+[[parts]]
+type = "photoresistor-sensor"
+pin = "34"
