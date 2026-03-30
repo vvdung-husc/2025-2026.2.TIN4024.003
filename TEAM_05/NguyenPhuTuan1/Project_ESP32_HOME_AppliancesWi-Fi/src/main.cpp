@@ -15,8 +15,8 @@ char ssid[] = "Wokwi-GUEST";
 char password[] = "";
 
 // Telegram
-#define BOT_TOKEN "8044446031:AAGghQhARa6eiLzS9WLTyvBXoxVFlcY5oEc"
-#define CHAT_ID "-1002619419433"
+#define BOT_TOKEN "token_that_is_public"
+#define CHAT_ID "YOUR_TELEGRAM_CHAT_ID"
 WiFiClientSecure secured_client;
 UniversalTelegramBot bot(BOT_TOKEN, secured_client);
 
