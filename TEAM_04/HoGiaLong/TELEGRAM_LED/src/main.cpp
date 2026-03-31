@@ -9,8 +9,8 @@
     const char* password = "";
 
     // Điền Token và Group ID
-    #define BOTtoken "8625646799:AAEK-DqWasVZro6sf_pLqm4h_wOxU-060EM"
-    #define GROUP_ID "-5199891425"
+    #define BOTtoken ""
+    #define GROUP_ID ""
 
     WiFiClientSecure client;
     UniversalTelegramBot bot(BOTtoken, client);
