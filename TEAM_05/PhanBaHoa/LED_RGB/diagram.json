@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "author": "Phan Bá Hoá",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-neopixel", "id": "rgb1", "top": -80.3, "left": 95, "attrs": {} },
+    { "type": "wokwi-neopixel", "id": "rgb2", "top": -80.3, "left": 56.6, "attrs": {} },
+    { "type": "wokwi-neopixel", "id": "rgb3", "top": -80.3, "left": 18.2, "attrs": {} },
+    { "type": "wokwi-neopixel", "id": "rgb4", "top": -80.3, "left": -20.2, "attrs": {} },
+    { "type": "wokwi-neopixel", "id": "rgb5", "top": -80.3, "left": -49, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:GND.3", "rgb1:VSS", "black", [ "v0" ] ],
+    [ "rgb1:VSS", "rgb2:VSS", "black", [ "v0" ] ],
+    [ "rgb2:VSS", "rgb3:VSS", "black", [ "v0" ] ],
+    [ "rgb3:VSS", "rgb4:VSS", "black", [ "v0" ] ],
+    [ "rgb4:VSS", "rgb5:VSS", "black", [ "v0" ] ],
+
+    [ "esp:5V", "rgb1:VDD", "red", [ "v0" ] ],
+    [ "rgb1:VDD", "rgb2:VDD", "red", [ "v0" ] ],
+    [ "rgb2:VDD", "rgb3:VDD", "red", [ "v0" ] ],
+    [ "rgb3:VDD", "rgb4:VDD", "red", [ "v0" ] ],
+    [ "rgb4:VDD", "rgb5:VDD", "red", [ "v0" ] ],
+
+    [ "esp:5", "rgb5:DIN", "green", [ "v0" ] ],
+    [ "rgb5:DOUT", "rgb4:DIN", "green", [ "v0" ] ],
+    [ "rgb4:DOUT", "rgb3:DIN", "green", [ "v0" ] ],
+    [ "rgb3:DOUT", "rgb2:DIN", "green", [ "v0" ] ],
+    [ "rgb2:DOUT", "rgb1:DIN", "green", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}
