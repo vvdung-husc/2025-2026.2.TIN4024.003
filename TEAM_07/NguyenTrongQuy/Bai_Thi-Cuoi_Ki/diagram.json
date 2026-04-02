@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "author": "Nguyen Trong Quy",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -76.8, "left": -158.36, "attrs": {} },
+    {
+      "type": "wokwi-photoresistor-sensor",
+      "id": "ldr1",
+      "top": 108.8,
+      "left": -373.6,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-stepper-motor",
+      "id": "stepper1",
+      "top": -149.99,
+      "left": 10.03,
+      "attrs": { "size": "17" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "stepper1:A-", "esp:19", "green", [ "v0" ] ],
+    [ "stepper1:A+", "esp:18", "green", [ "v0" ] ],
+    [ "stepper1:B+", "esp:17", "green", [ "v0" ] ],
+    [ "stepper1:B-", "esp:16", "green", [ "v0" ] ],
+    [ "esp:5V", "ldr1:VCC", "red", [ "h0" ] ],
+    [ "esp:VP", "ldr1:AO", "green", [ "h0" ] ],
+    [ "ldr1:GND", "esp:GND.1", "black", [ "h0" ] ]
+  ],
+  "dependencies": {}
+}
