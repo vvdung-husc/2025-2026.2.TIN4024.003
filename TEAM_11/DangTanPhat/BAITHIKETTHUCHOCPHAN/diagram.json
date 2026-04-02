@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "author": "Dang Tan Phat",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": -2.4,
+      "left": -4.8,
+      "attrs": {}
+    },
+    {
+      "type": "board-ssd1306",
+      "id": "oled",
+      "top": -147.2,
+      "left": 172.97,
+      "attrs": { "i2cAddress": "0x3c" }
+    }
+  ],
+  "connections": [
+    [ "esp:3V3", "oled:VCC", "red", [ "v0" ] ],
+    [ "esp:GND.1", "oled:GND", "black", [ "v0" ] ],
+    [ "esp:21", "oled:SDA", "green", [ "h57.6", "v-76.8" ] ],
+    [ "esp:22", "oled:SCL", "blue", [ "h67.2", "v-86.4" ] ]
+  ],
+  "dependencies": {}
+}
