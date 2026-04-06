@@ -5,13 +5,13 @@
   "parts": [
     { "type": "board-esp32-devkit-v1", "id": "esp", "top": -60.32, "left": -52.8, "attrs": {} },
     { "type": "board-ssd1306", "id": "oled", "top": -80, "left": 150, "attrs": {} },
-    { "type": "wokwi-dht22", "id": "dht", "top": 80, "left": 200, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht", "top": 48.3, "left": 177, "attrs": {} },
     { "type": "wokwi-led", "id": "led", "top": 63.6, "left": -140.2, "attrs": { "color": "red" } },
     {
       "type": "wokwi-resistor",
       "id": "r1",
-      "top": 128.75,
-      "left": -124.8,
+      "top": 157.55,
+      "left": -105.6,
       "attrs": { "value": "1000" }
     }
   ],
@@ -20,16 +20,16 @@
     [ "esp:21", "oled:SDA", "green", [ "v0" ] ],
     [ "esp:4", "dht:SDA", "yellow", [ "v0" ] ],
     [ "esp:2", "led:A", "orange", [ "v0" ] ],
-    [ "dht:VCC", "esp:3V3", "red", [ "v0" ] ],
-    [ "dht:GND", "esp:GND.1", "black", [ "v0" ] ],
-    [ "dht:SDA", "esp:D4", "green", [ "v0" ] ],
-    [ "oled:GND", "esp:GND.1", "black", [ "v0" ] ],
-    [ "oled:VCC", "esp:3V3", "red", [ "v0" ] ],
-    [ "oled:SCL", "esp:D22", "green", [ "v0" ] ],
-    [ "oled:SDA", "esp:D21", "green", [ "v0" ] ],
-    [ "led:A", "esp:D2", "green", [ "v0" ] ],
+    [ "dht:VCC", "esp:3V3", "red", [ "v28.8", "h-124.8", "v-96" ] ],
+    [ "dht:GND", "esp:GND.1", "black", [ "v19.2", "h-115.2", "v-96" ] ],
+    [ "dht:SDA", "esp:D4", "green", [ "v9.6", "h-105.5", "v-115.2" ] ],
+    [ "oled:GND", "esp:GND.1", "black", [ "v-12.86", "h-82.57", "v172.8" ] ],
+    [ "oled:VCC", "esp:3V3", "red", [ "v-22.46", "h71.18", "v288", "h-201.6", "v-96" ] ],
+    [ "oled:SCL", "esp:D22", "green", [ "v-32.06", "h-130.27", "v76.8" ] ],
+    [ "oled:SDA", "esp:D21", "green", [ "v-51.26", "h-149.7", "v124.8" ] ],
+    [ "led:A", "esp:D2", "green", [ "v38.4", "h192", "v-76.8" ] ],
     [ "led:C", "r1:1", "green", [ "v0" ] ],
-    [ "r1:2", "esp:GND.1", "green", [ "v0" ] ]
+    [ "r1:2", "esp:GND.1", "green", [ "h152.4", "v-76.8" ] ]
   ],
   "dependencies": {}
 }

@@ -19,8 +19,9 @@
 char ssid[] = "LAB123";
 char pass[] = "55555555";
 
-/* ===== TELEGRAM ===== */
+// TELEGRAM
 #define BOTtoken "8339212597:AAFFy_Wh8ayLi_m3vHcv_TZjklBveeJk5iQ"
+
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
 
@@ -173,10 +174,18 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   pinMode(BTN_PIN, INPUT_PULLUP);
   digitalWrite(LED_PIN, HIGH);
-dht.begin();
-  display.setBrightness(7);
 
-  connectWiFi();
+  WiFi.begin(ssid, password);
+
+  Serial.print("Dang ket noi WiFi");
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("WiFi connected");
 
   client.setInsecure();
 
