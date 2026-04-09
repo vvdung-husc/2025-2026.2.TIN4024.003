@@ -1,0 +1,30 @@
+{"version": 1,
+  "author": "Minh Thân Hoàng Phước",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 30,
+      "left": 180,
+      "attrs": { "color": "green", "label": "IR1 (Ngoai)", "key": "1" } 
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn2",
+      "top": 100,
+      "left": 180,
+      "attrs": { "color": "blue", "label": "IR2 (Trong)", "key": "2" } 
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "btn1:2.r", "esp:14", "green", [ "v0" ] ],
+    [ "btn1:1.r", "esp:GND.2", "black", [ "v0", "v15" ] ],
+    [ "btn2:2.r", "esp:27", "blue", [ "v0" ] ],
+    [ "btn2:1.r", "esp:GND.2", "black", [ "v0", "v-30" ] ]
+  ],
+  "dependencies": {}
+}
