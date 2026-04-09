@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="VoNguyenHuyenVi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 IoT Dashboard</title>
+<style>
+
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; malrgin: 0; padding: 0; }
+
+:root {
+  --bg:        #ffffff;
+  --bg2:       #fffff1;
+  --bg3:       #f0f0f0;
+  --border:    #1e3a5f;
+  --accent:    #00d4ff;
+  --accent2:   #00ff9d;
+  --accent3:   #ff6b35;
+  --accent4:   #a855f7;
+  --text:      #1a2235;
+  --muted:     #1a2235;
+  --danger:    #ef4444;
+  --warning:   #f59e0b;
+  --radius:    10px;
+  --radius-sm: 6px;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 34px;
+  height: 34px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logo svg { width: 18px; height: 18px; }
+
+.brand h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.brand p {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.badge-alert {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #f87171;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 20px;
+  animation: blink 1s infinite;
+}
+.badge-alert.show { display: flex; }
+.badge-alert-dot {
+  width: 6px; height: 6px;
+  background: var(--danger);
+  border-radius: 50%;
+}
+
+.badge-wifi {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  color: var(--accent);
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.wifi-dot {
+  width: 7px; height: 7px;
+  background: var(--accent2);
+  border-radius: 50%;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.ip-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+.main {
+  padding: 18px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── GRID HELPERS ── */
+.row-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.col-span-2 { grid-column: span 2; }
+
+/* ============================================================
+   METRIC CARDS
+   ============================================================ */
+.metric-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition: border-color 0.25s, transform 0.2s;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--mc-color, var(--accent)), transparent);
+}
+
+.metric-card:hover {
+  border-color: rgba(0, 212, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.mc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.mc-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mc-label svg {
+  width: 13px; height: 13px;
+  color: var(--mc-color, var(--accent));
+}
+
+.mc-status {
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(0, 255, 157, 0.1);
+  color: var(--accent2);
+  border: 1px solid rgba(0, 255, 157, 0.2);
+}
+
+.mc-status.warn {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--warning);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.mc-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.mc-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--mc-color, var(--accent));
+  transition: color 0.3s;
+}
+
+.mc-unit {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.mc-sub {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.mc-bar-track {
+  height: 3px;
+  background: var(--bg3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.mc-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--mc-color, var(--accent));
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 0%;
+}
+
+/* ============================================================
+   PANEL (generic container)
+   ============================================================ */
+.panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.panel-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.live-dot {
+  width: 6px; height: 6px;
+  background: var(--accent2);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   CHART
+   ============================================================ */
+.chart-container {
+  position: relative;
+  height: 130px;
+}
+
+/* ============================================================
+   DEVICE CONTROL
+   ============================================================ */
+.device-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  margin-bottom: 8px;
+  transition: border-color 0.2s;
+}
+
+.device-item:last-of-type { margin-bottom: 12px; }
+
+.device-item:hover { border-color: var(--border); }
+
+.device-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.device-icon {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.device-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.device-pin {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.device-state {
+  font-size: 10px;
+  margin-top: 2px;
+  color: var(--muted);
+  transition: color 0.25s;
+}
+
+.device-state.on { color: var(--accent2); }
+
+/* ── TOGGLE SWITCH ── */
+.toggle {
+  position: relative;
+  width: 42px; height: 24px;
+  flex-shrink: 0;
+}
+
+.toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0; height: 0;
+}
+
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  background: #1e3a5f;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background 0.25s, border-color 0.25s;
+  border: 1px solid var(--border);
+}
+
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 2px; top: 2px;
+  background: var(--muted);
+  border-radius: 50%;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s;
+}
+
+.toggle input:checked + .toggle-track {
+  background: rgba(0, 255, 157, 0.15);
+  border-color: var(--accent2);
+}
+
+.toggle input:checked + .toggle-track::after {
+  transform: translateX(18px);
+  background: var(--accent2);
+}
+
+/* ── BUTTONS ── */
+.btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: var(--bg3);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: rgba(0, 212, 255, 0.08);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-primary:hover {
+  background: rgba(0, 212, 255, 0.18);
+}
+
+.btn-danger {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: var(--danger);
+}
+
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--danger);
+}
+
+/* ============================================================
+   THRESHOLD CONFIG
+   ============================================================ */
+.thresh-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.thresh-label {
+  font-size: 11px;
+  color: var(--muted);
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.thresh-input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 5px 10px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.thresh-input:focus {
+  border-color: var(--accent);
+}
+
+.thresh-unit {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  width: 26px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   LOG
+   ============================================================ */
+.log-box {
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  height: 148px;
+  overflow-y: auto;
+}
+
+.log-line {
+  display: flex;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.log-line:last-child { border-bottom: none; }
+
+.log-ts { color: var(--muted); flex-shrink: 0; }
+.log-ok   { color: var(--accent2); }
+.log-info { color: var(--accent); }
+.log-warn { color: var(--warning); }
+.log-err  { color: var(--danger); }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+}
+
+.footer-gpio { color: var(--muted); }
+.footer-uptime { color: var(--accent2); }
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.main > * {
+  animation: fadeInUp 0.4s ease both;
+}
+.main > *:nth-child(1) { animation-delay: 0.05s; }
+.main > *:nth-child(2) { animation-delay: 0.12s; }
+.main > *:nth-child(3) { animation-delay: 0.20s; }
+.main > *:nth-child(4) { animation-delay: 0.28s; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .row-4 { grid-template-columns: repeat(2, 1fr); }
+  .row-3 { grid-template-columns: 1fr 1fr; }
+  .col-span-2 { grid-column: span 1; }
+}
+
+@media (max-width: 600px) {
+  .main { padding: 12px 14px 20px; }
+  .header { padding: 8px 14px; }
+  .row-4, .row-3, .row-2 { grid-template-columns: 1fr; }
+  .col-span-2 { grid-column: span 1; }
+  .ip-label { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════════ -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">
+      <!-- chip icon -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0a0e1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="7" y="7" width="10" height="10" rx="1"/>
+        <path d="M7 9H5M7 12H5M7 15H5M17 9h2M17 12h2M17 15h2M9 7V5M12 7V5M15 7V5M9 17v2M12 17v2M15 17v2"/>
+      </svg>
+    </div>
+    <div class="brand">
+      <h1>ESP32 · IoT Dashboard</h1>
+      <p class="mono">Local Web Server &nbsp;·&nbsp; SPIFFS &nbsp;·&nbsp; v1.0.0</p>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <div class="badge-alert" id="alertBadge">
+      <span class="badge-alert-dot"></span>
+      CẢNH BÁO
+    </div>
+    <div class="badge-wifi">
+      <span class="wifi-dot"></span>
+      Đã kết nối
+    </div>
+    <span class="ip-label mono" id="ipDisplay">192.168.1.105</span>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════
+     MAIN
+══════════════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- ── ROW 1: METRIC CARDS ── -->
+  <div class="row-4">
+
+    <!-- Nhiệt độ -->
+    <div class="metric-card" style="--mc-color:#00d4ff">
+      <div class="mc-header">
+        <div class="mc-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+          </svg>
+          Nhiệt độ
+        </div>
+        <span class="mc-status" id="tempStatus">Bình thường</span>
+      </div>
+      <div class="mc-value-row">
+        <span class="mc-value mono" id="tempVal">--</span>
+        <span class="mc-unit">°C</span>
+      </div>
+      <div class="mc-sub">DHT22 · GPIO 4</div>
+      <div class="mc-bar-track">
+        <div class="mc-bar-fill" id="tempBar"></div>
+      </div>
+    </div>
+
+    <!-- Độ ẩm -->
+    <div class="metric-card" style="--mc-color:#00ff9d">
+      <div class="mc-header">
+        <div class="mc-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+          </svg>
+          Độ ẩm
+        </div>
+        <span class="mc-status" id="humStatus">Bình thường</span>
+      </div>
+      <div class="mc-value-row">
+        <span class="mc-value mono" id="humVal">--</span>
+        <span class="mc-unit">%</span>
+      </div>
+      <div class="mc-sub">DHT22 · GPIO 4</div>
+      <div class="mc-bar-track">
+        <div class="mc-bar-fill" id="humBar" style="background:#00ff9d"></div>
+      </div>
+    </div>
+
+    <!-- Ánh sáng -->
+    <div class="metric-card" style="--mc-color:#a855f7">
+      <div class="mc-header">
+        <div class="mc-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+          Ánh sáng
+        </div>
+        <span class="mc-status" id="lightStatus">Bình thường</span>
+      </div>
+      <div class="mc-value-row">
+        <span class="mc-value mono" id="lightVal">--</span>
+        <span class="mc-unit">lux</span>
+      </div>
+      <div class="mc-sub">Chiết áp · ADC1 (VP)</div>
+      <div class="mc-bar-track">
+        <div class="mc-bar-fill" id="lightBar" style="background:#a855f7"></div>
+      </div>
+    </div>
+
+    <!-- Âm thanh -->
+    <div class="metric-card" style="--mc-color:#ff6b35">
+      <div class="mc-header">
+        <div class="mc-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+          Âm thanh
+        </div>
+        <span class="mc-status" id="soundStatus">Yên tĩnh</span>
+      </div>
+      <div class="mc-value-row">
+        <span class="mc-value mono" id="soundVal">--</span>
+        <span class="mc-unit">dB</span>
+      </div>
+      <div class="mc-sub">Sound Sensor · GPIO 5</div>
+      <div class="mc-bar-track">
+        <div class="mc-bar-fill" id="soundBar" style="background:#ff6b35"></div>
+      </div>
+    </div>
+
+  </div><!-- /row-4 -->
+
+  <!-- ── ROW 2: CHART + DEVICE CONTROL ── -->
+  <div class="row-3">
+
+    <!-- Chart (chiếm 2 cột) -->
+    <div class="panel col-span-2">
+      <div class="panel-head">
+        <div class="panel-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          Lịch sử cảm biến — 30 điểm gần nhất
+          <span class="live-dot"></span>
+        </div>
+        <button class="btn" style="width:auto;flex:none;padding:4px 12px" onclick="clearChart()">Xóa</button>
+      </div>
+      <div class="chart-container">
+        <canvas id="sensorChart"></canvas>
+      </div>
+      <!-- Chú thích -->
+      <div style="display:flex;gap:16px;margin-top:10px">
+        <span style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)">
+          <span style="display:inline-block;width:20px;height:2px;background:#00d4ff;border-radius:1px"></span>
+          Nhiệt độ (°C)
+        </span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)">
+          <span style="display:inline-block;width:20px;height:2px;background:#00ff9d;border-radius:1px"></span>
+          Độ ẩm (%)
+        </span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)">
+          <span style="display:inline-block;width:20px;height:2px;background:#ff6b35;border-radius:1px;border-top:2px dashed #ff6b35;background:none"></span>
+          Âm thanh (dB/2)
+        </span>
+      </div>
+    </div>
+
+    <!-- Device Control -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          Điều khiển thiết bị
+        </div>
+      </div>
+
+      <!-- Relay -->
+      <div class="device-item">
+        <div class="device-left">
+          <div class="device-icon" style="background:rgba(239,68,68,0.12)" id="relayIcon">🔌</div>
+          <div>
+            <div class="device-name">Relay Module</div>
+            <div class="device-pin">GPIO 26 · OUT</div>
+            <div class="device-state" id="relayState">Tắt</div>
+          </div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="relayToggle" onchange="toggleDevice('relay', this)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+
+      <!-- LED -->
+      <div class="device-item">
+        <div class="device-left">
+          <div class="device-icon" style="background:rgba(0,212,255,0.08)" id="ledIcon">💡</div>
+          <div>
+            <div class="device-name">LED</div>
+            <div class="device-pin">GPIO 2 · OUT</div>
+            <div class="device-state" id="ledState">Tắt</div>
+          </div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="ledToggle" onchange="toggleDevice('led', this)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-danger" onclick="allOff()">Tắt tất cả</button>
+        <button class="btn btn-primary" onclick="fetchData()">Làm mới ↻</button>
+      </div>
+    </div>
+
+  </div><!-- /row-3 -->
+
+  <!-- ── ROW 3: THRESHOLD + LOG ── -->
+  <div class="row-2">
+
+    <!-- Threshold config -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Ngưỡng cảnh báo
+        </div>
+      </div>
+
+      <div class="thresh-row">
+        <span class="thresh-label">Nhiệt độ max</span>
+        <input class="thresh-input mono" type="number" id="threshTemp" value="35" min="0" max="80">
+        <span class="thresh-unit">°C</span>
+      </div>
+      <div class="thresh-row">
+        <span class="thresh-label">Độ ẩm max</span>
+        <input class="thresh-input mono" type="number" id="threshHum" value="80" min="0" max="100">
+        <span class="thresh-unit">%</span>
+      </div>
+      <div class="thresh-row">
+        <span class="thresh-label">Âm thanh max</span>
+        <input class="thresh-input mono" type="number" id="threshSound" value="70" min="0" max="120">
+        <span class="thresh-unit">dB</span>
+      </div>
+      <div class="thresh-row">
+        <span class="thresh-label">Ánh sáng max</span>
+        <input class="thresh-input mono" type="number" id="threshLight" value="1000" min="0" max="1200">
+        <span class="thresh-unit">lux</span>
+      </div>
+
+      <div class="btn-row" style="margin-top:4px">
+        <button class="btn btn-primary" onclick="saveThresh()">💾 Lưu vào SPIFFS</button>
+        <button class="btn btn-danger" onclick="resetThresh()">Đặt lại</button>
+      </div>
+    </div>
+
+    <!-- System Log -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          Nhật ký hệ thống
+          <span class="live-dot"></span>
+        </div>
+        <button class="btn" style="width:auto;flex:none;padding:3px 10px;font-size:10px" onclick="clearLog()">Xóa</button>
+      </div>
+
+      <div class="log-box" id="logBox">
+        <!-- Logs được thêm bởi JS -->
+      </div>
+    </div>
+
+  </div><!-- /row-2 -->
+
+</main>
+
+<!-- ══════════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════ -->
+<footer class="footer">
+  <span class="footer-gpio mono">GPIO · DHT22:4 | Sound:5 | Relay:26 | LED:2 | ADC1(VP)</span>
+  <span class="footer-uptime mono" id="uptimeEl">Uptime: 00:00:00</span>
+</footer>
+
+<!-- ══════════════════════════════════════════════════
+     CHART.JS — nhúng inline để SPIFFS không cần CDN
+     Thay bằng thư viện nhẹ hơn nếu cần tiết kiệm flash
+══════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- ══════════════════════════════════════════════════
+     APP LOGIC
+══════════════════════════════════════════════════ -->
+<script>
+/* ────────────────────────────────────────────────
+   CẤU HÌNH — đổi URL fetch cho phù hợp với ESP32
+   ──────────────────────────────────────────────── */
+const API = {
+  sensors:  '/api/sensors',     // GET  → { temp, hum, light, sound }
+  relay:    '/api/relay',       // POST → { state: true/false }
+  led:      '/api/led',         // POST → { state: true/false }
+  thresh:   '/api/threshold',   // POST → { temp, hum, sound, light }
+};
+const POLL_INTERVAL = 3000; // ms
+const MAX_POINTS    = 30;
+
+/* ────────────────────────────────────────────────
+   STATE
+   ──────────────────────────────────────────────── */
+let uptimeSec   = 0;
+let t0          = Date.now();
+let demoMode    = true; // true = dùng dữ liệu mô phỏng khi chưa có ESP32
+
+/* ────────────────────────────────────────────────
+   CHART SETUP
+   ──────────────────────────────────────────────── */
+const ctx = document.getElementById('sensorChart').getContext('2d');
+const chart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [
+      {
+        label: 'Nhiệt độ (°C)',
+        data: [],
+        borderColor: '#00d4ff',
+        backgroundColor: 'rgba(0,212,255,0.06)',
+        tension: 0.45,
+        pointRadius: 0,
+        borderWidth: 1.5,
+        fill: true,
+      },
+      {
+        label: 'Độ ẩm (%)',
+        data: [],
+        borderColor: '#00ff9d',
+        backgroundColor: 'rgba(0,255,157,0.06)',
+        tension: 0.45,
+        pointRadius: 0,
+        borderWidth: 1.5,
+        fill: true,
+      },
+      {
+        label: 'Âm thanh (dB/2)',
+        data: [],
+        borderColor: '#ff6b35',
+        backgroundColor: 'transparent',
+        tension: 0.35,
+        pointRadius: 0,
+        borderWidth: 1.5,
+        borderDash: [4, 3],
+        fill: false,
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 250 },
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#111827',
+        borderColor: '#1e3a5f',
+        borderWidth: 1,
+        titleColor: '#e2e8f0',
+        bodyColor: '#94a3b8',
+        padding: 10,
+        titleFont: { family: "'JetBrains Mono'", size: 11 },
+        bodyFont:  { family: "'JetBrains Mono'", size: 10 },
+      },
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(255,255,255,0.04)' },
+        ticks: {
+          color: '#475569',
+          font: { size: 9, family: "'JetBrains Mono'" },
+          maxTicksLimit: 7,
+        },
+      },
+      y: {
+        min: 0,
+        max: 100,
+        grid: { color: 'rgba(255,255,255,0.04)' },
+        ticks: {
+          color: '#475569',
+          font: { size: 9, family: "'JetBrains Mono'" },
+          stepSize: 20,
+        },
+      },
+    },
+  },
+});
+
+/* ────────────────────────────────────────────────
+   HELPERS
+   ──────────────────────────────────────────────── */
+function pad(n) { return String(Math.floor(n)).padStart(2, '0'); }
+function fmtUptime(s) {
+  return pad(s / 3600) + ':' + pad((s / 60) % 60) + ':' + pad(s % 60);
+}
+function nowLabel() {
+  const d = new Date();
+  return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+}
+
+/* ────────────────────────────────────────────────
+   LOG
+   ──────────────────────────────────────────────── */
+function addLog(msg, type) {
+  // type: 'ok' | 'info' | 'warn' | 'err'
+  const box = document.getElementById('logBox');
+  const el  = document.createElement('div');
+  el.className = 'log-line';
+  const cls  = { ok:'log-ok', info:'log-info', warn:'log-warn', err:'log-err' }[type] || 'log-info';
+  const tag  = { ok:'[OK]',   info:'[INFO]',   warn:'[WARN]',   err:'[ERR]'  }[type] || '[LOG]';
+  el.innerHTML =
+    `<span class="log-ts">${nowLabel()}</span>` +
+    `<span class="${cls}">${tag} ${msg}</span>`;
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+
+  // Giữ tối đa 100 dòng
+  while (box.children.length > 100) box.removeChild(box.firstChild);
+}
+
+function clearLog() {
+  document.getElementById('logBox').innerHTML = '';
+  addLog('Nhật ký đã được xóa', 'info');
+}
+
+/* ────────────────────────────────────────────────
+   UPDATE UI
+   ──────────────────────────────────────────────── */
+function updateCard(id, val, barId, barMax, statusId, statusTextOk, threshId, unit) {
+  document.getElementById(id).textContent = val;
+  const pct = Math.min(val / barMax * 100, 100);
+  document.getElementById(barId).style.width = pct + '%';
+
+  const thresh = parseFloat(document.getElementById(threshId).value) || barMax;
+  const statusEl = document.getElementById(statusId);
+  if (val > thresh) {
+    statusEl.textContent = '⚠ Vượt ngưỡng';
+    statusEl.className = 'mc-status warn';
+  } else {
+    statusEl.textContent = statusTextOk;
+    statusEl.className = 'mc-status';
+  }
+}
+
+function checkAlerts(temp, hum, light, sound) {
+  const tMax = parseFloat(document.getElementById('threshTemp').value)  || 35;
+  const hMax = parseFloat(document.getElementById('threshHum').value)   || 80;
+  const lMax = parseFloat(document.getElementById('threshLight').value) || 1000;
+  const sMax = parseFloat(document.getElementById('threshSound').value) || 70;
+
+  let alert = false;
+  if (temp  > tMax) { addLog(`Nhiệt độ ${temp.toFixed(1)}°C > ${tMax}°C`,  'warn'); alert = true; }
+  if (hum   > hMax) { addLog(`Độ ẩm ${hum}% > ${hMax}%`,                   'warn'); alert = true; }
+  if (light > lMax) { addLog(`Ánh sáng ${light} lux > ${lMax} lux`,         'warn'); alert = true; }
+  if (sound > sMax) { addLog(`Âm thanh ${sound} dB > ${sMax} dB`,           'warn'); alert = true; }
+
+  const badge = document.getElementById('alertBadge');
+  if (alert) badge.classList.add('show');
+  else badge.classList.remove('show');
+}
+
+function renderSensors(temp, hum, light, sound) {
+  updateCard('tempVal',   temp.toFixed(1),  'tempBar',   50,   'tempStatus',  'Bình thường', 'threshTemp',  '°C');
+  updateCard('humVal',    hum,              'humBar',    100,  'humStatus',   'Bình thường', 'threshHum',   '%');
+  updateCard('lightVal',  light,            'lightBar',  1200, 'lightStatus', 'Bình thường', 'threshLight', 'lux');
+  updateCard('soundVal',  sound,            'soundBar',  120,  'soundStatus', 'Yên tĩnh',    'threshSound', 'dB');
+
+  // Chart
+  const lbl = nowLabel();
+  chart.data.labels.push(lbl);
+  chart.data.datasets[0].data.push(temp);
+  chart.data.datasets[1].data.push(hum);
+  chart.data.datasets[2].data.push(+(sound / 2).toFixed(1));
+
+  if (chart.data.labels.length > MAX_POINTS) {
+    chart.data.labels.shift();
+    chart.data.datasets.forEach(d => d.data.shift());
+  }
+  chart.update();
+  checkAlerts(temp, hum, light, sound);
+}
+
+/* ────────────────────────────────────────────────
+   FETCH — thay bằng fetch thật khi có ESP32
+   ──────────────────────────────────────────────── */
+function fetchData() {
+  if (demoMode) {
+    // Dữ liệu mô phỏng — xóa phần này khi dùng với ESP32 thật
+    const temp  = parseFloat((20 + Math.random() * 20).toFixed(1));
+    const hum   = Math.round(40 + Math.random() * 45);
+    const light = Math.round(100 + Math.random() * 1000);
+    const sound = Math.round(20 + Math.random() * 70);
+    renderSensors(temp, hum, light, sound);
+    return;
+  }
+
+  /* ── Khi đã có ESP32 thật, bỏ comment đoạn này ──
+  fetch(API.sensors)
+    .then(r => r.json())
+    .then(d => {
+      renderSensors(d.temp, d.hum, d.light, d.sound);
+    })
+    .catch(err => {
+      addLog('Lỗi kết nối API: ' + err.message, 'err');
+    });
+  ────────────────────────────────────────────────── */
+}
+
+/* ────────────────────────────────────────────────
+   DEVICE TOGGLE
+   ──────────────────────────────────────────────── */
+function toggleDevice(dev, el) {
+  const on = el.checked;
+  const stateEl = document.getElementById(dev + 'State');
+  stateEl.textContent = dev === 'relay'
+    ? (on ? 'Đang chạy' : 'Tắt')
+    : (on ? 'Đang sáng' : 'Tắt');
+  stateEl.className = 'device-state' + (on ? ' on' : '');
+  addLog((dev === 'relay' ? 'Relay' : 'LED') + (on ? ' BẬT' : ' TẮT'), on ? 'ok' : 'info');
+
+  if (!demoMode) {
+    fetch(API[dev], {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ state: on }),
+    }).catch(err => addLog('Lỗi gửi lệnh ' + dev + ': ' + err.message, 'err'));
+  }
+}
+
+function allOff() {
+  ['relay', 'led'].forEach(dev => {
+    const cb = document.getElementById(dev + 'Toggle');
+    if (cb.checked) { cb.checked = false; toggleDevice(dev, cb); }
+  });
+}
+
+/* ────────────────────────────────────────────────
+   THRESHOLD
+   ──────────────────────────────────────────────── */
+function saveThresh() {
+  const data = {
+    temp:  parseFloat(document.getElementById('threshTemp').value),
+    hum:   parseFloat(document.getElementById('threshHum').value),
+    sound: parseFloat(document.getElementById('threshSound').value),
+    light: parseFloat(document.getElementById('threshLight').value),
+  };
+  addLog('Đã lưu ngưỡng cảnh báo vào SPIFFS', 'ok');
+
+  if (!demoMode) {
+    fetch(API.thresh, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }).catch(err => addLog('Lỗi lưu ngưỡng: ' + err.message, 'err'));
+  }
+}
+
+function resetThresh() {
+  document.getElementById('threshTemp').value  = 35;
+  document.getElementById('threshHum').value   = 80;
+  document.getElementById('threshSound').value = 70;
+  document.getElementById('threshLight').value = 1000;
+  addLog('Đã đặt lại ngưỡng mặc định', 'info');
+}
+
+function clearChart() {
+  chart.data.labels = [];
+  chart.data.datasets.forEach(d => d.data = []);
+  chart.update();
+  addLog('Đã xóa biểu đồ', 'info');
+}
+
+/* ────────────────────────────────────────────────
+   UPTIME
+   ──────────────────────────────────────────────── */
+setInterval(() => {
+  uptimeSec++;
+  document.getElementById('uptimeEl').textContent = 'Uptime: ' + fmtUptime(uptimeSec);
+}, 1000);
+
+/* ────────────────────────────────────────────────
+   KHỞI ĐỘNG
+   ──────────────────────────────────────────────── */
+(function init() {
+  addLog('Hệ thống khởi động', 'ok');
+  addLog('SPIFFS mounted OK', 'info');
+  addLog('DHT22 sẵn sàng · GPIO 4', 'ok');
+  addLog('Sound sensor · GPIO 5', 'ok');
+  addLog('Web server đang lắng nghe port 80', 'info');
+  addLog('Demo mode: ON (dữ liệu mô phỏng)', 'warn');
+
+  fetchData();
+  setInterval(fetchData, POLL_INTERVAL);
+})();
+</script>
+</body>
+</html>
