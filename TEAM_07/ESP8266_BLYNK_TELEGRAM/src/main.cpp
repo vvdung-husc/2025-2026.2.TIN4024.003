@@ -1,11 +1,13 @@
-
-#define BLYNK_PRINT Serial
-
 /* ===== BLYNK ===== */
 #define BLYNK_TEMPLATE_ID "TMPL6pwGzIarE"
 #define BLYNK_TEMPLATE_NAME "ESP8266"
-#define BLYNK_AUTH_TOKEN "xxxxxxxxx"
-
+#define BLYNK_AUTH_TOKEN "EoArjdBI12gdwkE1dg8ROU_9vmOuNnbE"
+/*
+  THÔNG TIN NHÓM 7
+  1. Trần Hưng Trường Vủ-@truongvu_75
+  2. Nguyễn Trọng Quý-@trongquy1811
+  3. Trần Quang Tiến-@tientraan
+*/
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 #include <BlynkSimpleEsp8266.h>
@@ -17,8 +19,9 @@
 char ssid[] = "LAB123";
 char pass[] = "55555555";
 
-/* ===== TELEGRAM ===== */
-#define BOTtoken "xxxxxxxxx"
+// TELEGRAM
+#define BOTtoken "8339212597:AAFFy_Wh8ayLi_m3vHcv_TZjklBveeJk5iQ"
+
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
 
@@ -172,10 +175,17 @@ void setup() {
   pinMode(BTN_PIN, INPUT_PULLUP);
   digitalWrite(LED_PIN, HIGH);
 
-  dht.begin();
-  display.setBrightness(7);
+  WiFi.begin(ssid, password);
 
-  connectWiFi();
+  Serial.print("Dang ket noi WiFi");
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("WiFi connected");
 
   client.setInsecure();
 
