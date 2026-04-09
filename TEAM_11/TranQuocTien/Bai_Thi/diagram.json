@@ -6,7 +6,6 @@
     { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
     { "type": "wokwi-potentiometer", "id": "pot1", "top": -58.9, "left": -115.4, "attrs": {} },
     { "type": "wokwi-relay-module", "id": "relay1", "top": 230.6, "left": -96, "attrs": {} },
-    { "type": "wokwi-lcd1602-i2c", "id": "lcd1", "top": -120, "left": 150, "attrs": {} },
     {
       "type": "wokwi-led",
       "id": "led1",
@@ -39,10 +38,6 @@
     [ "relay1:VCC", "esp:5V", "red", [ "h-19.2", "v-38.4" ] ],
     [ "relay1:GND", "esp:GND.1", "black", [ "h-28.8", "v-106" ] ],
     [ "esp:5", "relay1:IN", "green", [ "h43.24", "v192", "h-249.6", "v-38.2" ] ],
-    [ "lcd1:GND", "esp:GND.2", "black", [ "v0" ] ],
-    [ "lcd1:VCC", "esp:5V", "red", [ "v0" ] ],
-    [ "lcd1:SDA", "esp:21", "green", [ "v0" ] ],
-    [ "lcd1:SCL", "esp:22", "blue", [ "v0" ] ],
     [ "led1:C", "esp:GND.3", "black", [ "v0" ] ],
     [ "led1:A", "r1:1", "green", [ "v0" ] ],
     [ "r1:2", "esp:2", "green", [ "v0" ] ],
