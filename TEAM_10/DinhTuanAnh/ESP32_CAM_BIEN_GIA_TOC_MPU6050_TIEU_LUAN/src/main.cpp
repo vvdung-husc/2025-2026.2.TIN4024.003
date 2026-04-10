@@ -31,7 +31,7 @@ char pass[] = "";
 Adafruit_MPU6050 mpu;
 BlynkTimer timer;
 
-// Biến toàn cục để lưu trữ dữ liệu mới nhất cho Telegram Bot
+// Biến toàn cục
 float g_ax, g_ay, g_az, g_gx, g_gy, g_gz, g_temp;
 float last_mag = 1.0; 
 const float THRESHOLD = 0.25; 
@@ -41,24 +41,32 @@ const long ALARM_DURATION = 5000;
 unsigned long lastTelegramTime = 0;
 const long TELEGRAM_COOLDOWN = 10000; 
 
+// --- BIẾN ĐIỀU KHIỂN NHẤP NHÁY ---
+unsigned long lastBlinkTime = 0;
+const int BLINK_INTERVAL = 200; // Đèn chớp mỗi 200ms
+
 void handleLED() {
   if (isAlarming) {
+    // Kiểm tra xem đã hết thời gian cảnh báo chưa
     if (millis() - alarmStartTime < ALARM_DURATION) {
-      digitalWrite(LED_PIN, !digitalRead(LED_PIN)); 
+      // Logic nhấp nháy đèn LED
+      if (millis() - lastBlinkTime >= BLINK_INTERVAL) {
+        lastBlinkTime = millis();
+        digitalWrite(LED_PIN, !digitalRead(LED_PIN)); // Đảo trạng thái LED
+      }
     } else {
       isAlarming = false;         
-      digitalWrite(LED_PIN, LOW); 
+      digitalWrite(LED_PIN, LOW); // Tắt hẳn LED khi hết thời gian
     }
   } else {
     digitalWrite(LED_PIN, LOW);   
   }
 }
 
-// Hàm bổ sung: Xử lý tin nhắn đến từ Telegram
 void handleNewMessages(int numNewMessages) {
   for (int i = 0; i < numNewMessages; i++) {
     String chat_id = String(bot.messages[i].chat_id);
-    if (chat_id != CHAT_ID) continue; // Chỉ trả lời tin nhắn từ CHAT_ID đã cấu hình
+    if (chat_id != CHAT_ID) continue;
 
     String text = bot.messages[i].text;
     if (text == "/trangthai" || text == "/start") {
@@ -75,7 +83,6 @@ void handleNewMessages(int numNewMessages) {
   }
 }
 
-// Kiểm tra tin nhắn Telegram định kỳ
 void checkTelegram() {
   int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
   while(numNewMessages) {
@@ -100,7 +107,6 @@ void updateSystem() {
   sensors_event_t a, g, temp;
   if (!mpu.getEvent(&a, &g, &temp)) return;
 
-  // Cập nhật vào biến toàn cục
   g_ax = a.acceleration.x / 9.806;
   g_ay = a.acceleration.y / 9.806;
   g_az = a.acceleration.z / 9.806;
@@ -109,7 +115,6 @@ void updateSystem() {
   g_gz = g.gyro.z * 57.295;
   g_temp = temp.temperature;
 
-  // Gửi Blynk
   Blynk.virtualWrite(V0, g_ax); Blynk.virtualWrite(V1, g_ay); Blynk.virtualWrite(V2, g_az);
   Blynk.virtualWrite(V3, g_gx); Blynk.virtualWrite(V4, g_gy); Blynk.virtualWrite(V5, g_gz);
   Blynk.virtualWrite(V6, g_temp);
@@ -133,7 +138,6 @@ void updateSystem() {
     Blynk.virtualWrite(V7, "He thong: AN TOAN");
   }
 
-  // Cập nhật OLED
   display.clearDisplay();
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
@@ -159,8 +163,11 @@ void setup() {
 
   Blynk.begin(auth, ssid, pass);
   timer.setInterval(500L, updateSystem);
-  timer.setInterval(100L, handleLED);
-  timer.setInterval(1000L, checkTelegram); // Kiểm tra tin nhắn mỗi 1 giây
+  
+  // Rút ngắn thời gian kiểm tra handleLED để nhấp nháy mượt hơn
+  timer.setInterval(50L, handleLED); 
+  
+  timer.setInterval(1000L, checkTelegram);
 }
 
 void loop() {
