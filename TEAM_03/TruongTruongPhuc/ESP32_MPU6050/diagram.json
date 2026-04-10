@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "author": "Trương Trường Phúc",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": -9.6,
+      "left": -100.76,
+      "attrs": { "builder": "esp-idf" }
+    },
+    { "type": "wokwi-mpu6050", "id": "imu1", "top": 90.22, "left": 50.32, "attrs": {} },
+    { "type": "wokwi-led", "id": "led1", "top": -42, "left": -274.6, "attrs": { "color": "red" } },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 41.8,
+      "left": -279.25,
+      "rotate": 270,
+      "attrs": { "resistance": "220", "value": "220" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "imu1:VCC", "esp:3V3", "red", [ "v-115.2", "h-259.27" ] ],
+    [ "imu1:GND", "esp:GND.2", "black", [ "v-76.8", "h-153.52" ] ],
+    [ "imu1:SCL", "esp:22", "blue", [ "v0" ] ],
+    [ "imu1:SDA", "esp:21", "green", [ "v-28.8", "h-95.92" ] ],
+    [ "esp:32", "r1:1", "orange", [] ],
+    [ "r1:2", "led1:A", "orange", [] ],
+    [ "led1:C", "esp:GND.1", "black", [ "v144", "h163.45" ] ]
+  ],
+  "dependencies": {}
+}

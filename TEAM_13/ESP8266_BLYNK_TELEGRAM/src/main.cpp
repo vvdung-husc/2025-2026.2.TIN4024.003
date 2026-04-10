@@ -2,7 +2,7 @@
 /*
  THÔNG TIN NHÓM 13
  1. Thân Hoàng Phước Minh
- 2. Nguyễn Tấn Nhân
+ 2.Nguyễn Tấn Nhân
  3. Nguyễn Thành Trung
 */
 

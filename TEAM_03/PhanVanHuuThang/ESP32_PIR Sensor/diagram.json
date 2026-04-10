@@ -1,0 +1,41 @@
+  {
+    "version": 1,
+    "author": "Thắng Phan Văn Hữu",
+    "editor": "wokwi",
+    "parts": [
+      { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+      {
+        "type": "wokwi-pir-motion-sensor",
+        "id": "pir1",
+        "top": -111.2,
+        "left": -199.38,
+        "attrs": {}
+      },
+      {
+        "type": "wokwi-led",
+        "id": "led1",
+        "top": -22.8,
+        "left": 138.2,
+        "attrs": { "color": "red" }
+      },
+      {
+        "type": "wokwi-resistor",
+        "id": "r1",
+        "top": 52.8,
+        "left": 133.85,
+        "rotate": 90,
+        "attrs": { "value": "1000" }
+      }
+    ],
+    "connections": [
+      [ "esp:TX", "$serialMonitor:RX", "", [] ],
+      [ "esp:RX", "$serialMonitor:TX", "", [] ],
+      [ "led1:A", "r1:1", "green", [ "h28.8" ] ],
+      [ "pir1:VCC", "esp:5V", "red", [ "v0" ] ],
+      [ "pir1:GND", "esp:GND.2", "black", [ "h244.5" ] ],
+      [ "pir1:OUT", "esp:27", "green", [ "v0" ] ],
+      [ "r1:2", "esp:21", "green", [ "v8.4", "h-139.24" ] ],
+      [ "led1:C", "esp:GND.2", "black", [ "v0" ] ]
+    ],
+    "dependencies": {}
+  }

@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "author": "Flood Warning System",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": -19.2,
+      "left": -4.76,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot1",
+      "top": -126.1,
+      "left": -125,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledGreen",
+      "top": -51.6,
+      "left": 128.6,
+      "attrs": {
+        "color": "green"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledYellow",
+      "top": -51.6,
+      "left": 176.6,
+      "attrs": {
+        "color": "yellow"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledRed",
+      "top": -51.6,
+      "left": 224.6,
+      "attrs": {
+        "color": "red"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 140.6,
+      "left": -96,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    [
+      "esp:TX",
+      "$serialMonitor:RX",
+      "",
+      []
+    ],
+    [
+      "esp:RX",
+      "$serialMonitor:TX",
+      "",
+      []
+    ],
+    [
+      "pot1:GND",
+      "esp:GND.1",
+      "black",
+      [
+        "v191.2"
+      ]
+    ],
+    [
+      "pot1:VCC",
+      "esp:3V3",
+      "red",
+      [
+        "h-0.8",
+        "v66.4"
+      ]
+    ],
+    [
+      "pot1:SIG",
+      "esp:34",
+      "green",
+      [
+        "h-0.4",
+        "v104.8"
+      ]
+    ],
+    [
+      "btn1:1.l",
+      "esp:33",
+      "blue",
+      [
+        "h-9.6",
+        "v-77.6"
+      ]
+    ],
+    [
+      "btn1:2.l",
+      "esp:GND.1",
+      "black",
+      [
+        "h-9.6",
+        "v29",
+        "h96",
+        "v-67.2"
+      ]
+    ],
+    [
+      "ledRed:C",
+      "esp:GND.3",
+      "black",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "ledGreen:C",
+      "esp:GND.3",
+      "black",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "ledYellow:C",
+      "esp:GND.3",
+      "black",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "ledGreen:A",
+      "esp:16",
+      "green",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "ledYellow:A",
+      "esp:17",
+      "gold",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "ledRed:A",
+      "esp:18",
+      "red",
+      [
+        "v0"
+      ]
+    ]
+  ],
+  "dependencies": {}
+}
