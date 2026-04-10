@@ -1,0 +1,36 @@
+[33me71b957[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: commit: Xóa thư mục ESP_Telegram để làm lại
+[33mc09893a[m HEAD@{1}: commit: Add ESP_Telegram
+[33mca584c8[m HEAD@{2}: reset: moving to origin/main
+[33m78fcb73[m HEAD@{3}: rebase (abort): returning to refs/heads/main
+[33mca584c8[m HEAD@{4}: rebase (start): checkout origin/main
+[33m78fcb73[m HEAD@{5}: reset: moving to HEAD
+[33m78fcb73[m HEAD@{6}: reset: moving to HEAD
+[33m78fcb73[m HEAD@{7}: commit: Nộp bài ESP_Telegram
+[33m78dfe91[m HEAD@{8}: pull origin main: Fast-forward
+[33m1bfe648[m HEAD@{9}: pull origin main: Fast-forward
+[33m2aac4ff[m HEAD@{10}: pull origin main: Fast-forward
+[33me905307[m HEAD@{11}: pull origin main: Fast-forward
+[33ma643bf1[m HEAD@{12}: pull: Fast-forward
+[33m54bde83[m HEAD@{13}: commit: Add Nguyen Quang Hung to TEAM_09 member info
+[33m391a389[m HEAD@{14}: pull origin main: Fast-forward
+[33m9705dea[m HEAD@{15}: pull --rebase origin main (finish): returning to refs/heads/main
+[33m9705dea[m HEAD@{16}: pull --rebase origin main (pick): Update TEAM_09 members: add Nguyen Quang Hung
+[33mc8c7393[m HEAD@{17}: pull --rebase origin main (start): checkout c8c7393c9f5892d19002c79549ab4cffc71c64d1
+[33mc813f97[m HEAD@{18}: commit: Update TEAM_09 members: add Nguyen Quang Hung
+[33mff6258f[m HEAD@{19}: pull --rebase origin main (finish): returning to refs/heads/main
+[33mff6258f[m HEAD@{20}: pull --rebase origin main (pick): Add Traffic Light project (ESP32, button, LDR, TM1637)
+[33md73929c[m HEAD@{21}: pull --rebase origin main (start): checkout d73929ce4709c490579a3e1f8feef37c913ae1ea
+[33mfd260b0[m HEAD@{22}: pull --rebase origin main (finish): returning to refs/heads/main
+[33mfd260b0[m HEAD@{23}: pull --rebase origin main (pick): Add Traffic Light project (ESP32, button, LDR, TM1637)
+[33m87ad1c3[m HEAD@{24}: pull --rebase origin main (start): checkout 87ad1c3a2c183906912147d419efb1019bdb5d7d
+[33mbedb032[m HEAD@{25}: commit: Add Traffic Light project (ESP32, button, LDR, TM1637)
+[33mf2a1fef[m HEAD@{26}: pull origin main: Fast-forward
+[33m1d07072[m HEAD@{27}: pull origin main: Fast-forward
+[33m6ef8afe[m HEAD@{28}: pull --rebase origin main (finish): returning to refs/heads/main
+[33m6ef8afe[m HEAD@{29}: pull --rebase origin main (pick): Move LED Blink exercises to TEAM_09 - Nguyen Quang Hung
+[33m553ed11[m HEAD@{30}: pull --rebase origin main (start): checkout 553ed119455977a7fcac28e788451cd05c033c07
+[33m833edce[m HEAD@{31}: commit: Move LED Blink exercises to TEAM_09 - Nguyen Quang Hung
+[33m2373d4d[m HEAD@{32}: reset: moving to HEAD
+[33m2373d4d[m HEAD@{33}: pull origin main: Merge made by the 'ort' strategy.
+[33ma2eb49b[m HEAD@{34}: commit: Add LED Blink ESP32 - Nguyen Quang Hung (TEAM_00)
+[33m618e5c7[m HEAD@{35}: clone: from https://github.com/vvdung-husc/2025-2026.2.TIN4024.003.git
