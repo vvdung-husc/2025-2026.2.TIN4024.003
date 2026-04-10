@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "author": "Nguyen Duc Duong",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-pir-motion-sensor", "id": "pir1", "top": -140, "left": -151.38, "attrs": {} },
+    { "type": "wokwi-led", "id": "led1", "top": -110, "left": 210, "attrs": { "color": "red" } },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 61.55,
+      "left": 172.8,
+      "attrs": { "value": "220" }
+    }
+  ],
+  "connections": [
+    [ "esp:5V", "pir1:VCC", "red", [ "h-119.81", "v-249.6" ] ],
+    [ "esp:GND.1", "pir1:GND", "black", [ "h-100.61", "v-201.6" ] ],
+    [ "esp:13", "pir1:OUT", "green", [ "h-110.21", "v-211.2" ] ],
+    [ "esp:2", "r1:1", "yellow", [ "h33.64", "v-267.55" ] ],
+    [ "r1:2", "led1:A", "yellow", [ "v0" ] ],
+    [ "led1:C", "esp:GND.2", "black", [ "v0" ] ],
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ]
+  ],
+  "dependencies": {}
+}
