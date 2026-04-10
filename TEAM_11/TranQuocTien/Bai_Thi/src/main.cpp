@@ -2,7 +2,6 @@
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
 #include <Wire.h>
-#include <LiquidCrystal_I2C.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <ArduinoJson.h>
@@ -20,7 +19,6 @@ const String chatID = ID;      // Lấy từ secrets.h
 #define OLED_RESET    -1
 #define OLED_ADDR     0x3C
 
-LiquidCrystal_I2C lcd(0x27, 16, 2);
 Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // --- ĐỊNH NGHĨA CHÂN PIN ---
@@ -48,9 +46,6 @@ void setup() {
   digitalWrite(pumpRelayPin, LOW);
   digitalWrite(ledPin, LOW);
 
-  // Khởi tạo LCD
-  lcd.init();
-  lcd.backlight();
   
   // Khởi tạo OLED
   if(!oled.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR)) {
@@ -181,16 +176,8 @@ void checkTelegramCommands(int currentMoisture) {
   }
 }
 
-// Hàm cập nhật dữ liệu hiển thị lên LCD và OLED
+// Hàm cập nhật dữ liệu hiển thị lên OLED
 void updateDisplays(int moisture, bool pumpStatus) {
-  // Cập nhật LCD
-  lcd.setCursor(0, 0);
-  lcd.print("Moisture: ");
-  lcd.print(moisture);
-  lcd.print("%   ");
-  lcd.setCursor(0, 1);
-  lcd.print("Pump: ");
-  lcd.print(pumpStatus ? "ON " : "OFF");
 
   // Cập nhật OLED
   oled.clearDisplay();
