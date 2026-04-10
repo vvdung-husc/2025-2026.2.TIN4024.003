@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"name": "OLED",
+			"path": "."
+		},
+		{
+			"name": "LED_Blink",
+			"path": "../../../TEAM_00/vovietdung/LED_Blink"
+		}
+	],
+	"settings": {}
+}

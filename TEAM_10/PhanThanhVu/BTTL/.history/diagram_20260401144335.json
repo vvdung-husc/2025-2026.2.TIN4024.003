@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 67.2, "left": -4.76, "attrs": {} },
+    { "type": "wokwi-led", "id": "led1", "top": -90, "left": 99.8, "attrs": { "color": "red" } },
+    {
+      "type": "board-ssd1306",
+      "id": "oled1",
+      "top": 3.14,
+      "left": -258.97,
+      "attrs": { "i2cAddress": "0x3c" }
+    },
+    { "type": "wokwi-dht22", "id": "dht1", "top": -105.3, "left": 157.8, "attrs": {} },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 72,
+      "left": 105.05,
+      "rotate": 90,
+      "attrs": { "value": "1000" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "oled1:VCC", "esp:3V3", "red", [ "v-19.2", "h134.4" ] ],
+    [ "oled1:SCL", "esp:12", "green", [ "v-28.8", "h77.1", "v201.6" ] ],
+    [ "oled1:SDA", "esp:13", "green", [ "v-38.4", "h86.47", "v230.4" ] ],
+    [ "dht1:VCC", "esp:3V3", "red", [ "v9.6", "h-172.95" ] ],
+    [ "dht1:SDA", "esp:16", "green", [ "v0" ] ],
+    [ "dht1:GND", "esp:GND.3", "black", [ "v0" ] ],
+    [ "led1:C", "esp:GND.2", "green", [ "v0" ] ],
+    [ "led1:A", "r1:1", "green", [ "v0" ] ],
+    [ "oled1:GND", "esp:GND.1", "black", [ "h153.6", "v211.2" ] ],
+    [ "r1:2", "esp:5", "green", [ "v75.6" ] ]
+  ],
+  "dependencies": {}
+}
