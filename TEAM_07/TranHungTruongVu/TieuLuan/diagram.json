@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "author": "TruongVu",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot",
+      "top": 120,
+      "left": -140,
+      "attrs": { "label": "Water Level" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_green",
+      "top": -80.4,
+      "left": 186.2,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "res_g",
+      "top": 13,
+      "left": 181.55,
+      "rotate": 270,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_yellow",
+      "top": -80.4,
+      "left": 128.6,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "res_y",
+      "top": -6.2,
+      "left": 123.95,
+      "rotate": 270,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_red",
+      "top": -80.4,
+      "left": 234.2,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "res_r",
+      "top": 51.4,
+      "left": 229.55,
+      "rotate": 270,
+      "attrs": { "value": "220" }
+    }
+  ],
+  "connections": [
+    [ "esp:GND.1", "pot:GND", "black", [ "h-14.21", "v67.2", "h-101.4" ] ],
+    [ "esp:3V3", "pot:VCC", "red", [ "h-33.41", "v172.8", "h-62.2" ] ],
+    [ "esp:32", "pot:SIG", "green", [ "h-23.81", "v124.8", "h-81.8" ] ],
+    [ "esp:5", "res_g:1", "green", [ "h72.04", "v-67.2" ] ],
+    [ "res_g:2", "led_green:A", "green", [] ],
+    [ "esp:GND.2", "led_green:C", "black", [ "h81.64", "v-67.2" ] ],
+    [ "esp:18", "res_y:1", "gold", [] ],
+    [ "res_y:2", "led_yellow:A", "gold", [] ],
+    [ "esp:GND.2", "led_yellow:C", "black", [ "h14.44", "v-76.8" ] ],
+    [ "esp:2", "res_r:1", "blue", [ "h158.44", "v-67.2" ] ],
+    [ "res_r:2", "led_red:A", "blue", [] ],
+    [ "esp:GND.2", "led_red:C", "black", [ "h24.04", "v105.6", "h115.2", "v-144", "v-28.8" ] ]
+  ],
+  "dependencies": {}
+}
