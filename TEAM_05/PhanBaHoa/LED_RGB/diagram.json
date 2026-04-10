@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "author": "Phan Bá Hoá",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -9.6, "left": -177.56, "attrs": {} },
+    { "type": "wokwi-neopixel", "id": "rgb1", "top": -99.5, "left": -29.8, "attrs": {} },
+    { "type": "wokwi-neopixel", "id": "rgb2", "top": -99.5, "left": -106.6, "attrs": {} },
+    { "type": "wokwi-neopixel", "id": "rgb3", "top": -99.5, "left": -173.8, "attrs": {} },
+    { "type": "wokwi-neopixel", "id": "rgb4", "top": -99.5, "left": -231.4, "attrs": {} },
+    { "type": "wokwi-neopixel", "id": "rgb5", "top": -99.5, "left": -289, "attrs": {} },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": -34.15,
+      "left": -174.2,
+      "rotate": 180,
+      "attrs": { "value": "330" }
+    }
+  ],
+  "connections": [
+    [ "esp:GND.3", "rgb1:VSS", "black", [ "h86.4", "v-162.3" ] ],
+    [ "rgb1:VSS", "rgb2:VSS", "black", [ "h-0.8", "v18.3", "h-67.2", "v-18.3" ] ],
+    [ "rgb2:VSS", "rgb3:VSS", "black", [ "h-0.8", "v27.9", "h-57.6", "v-27.9" ] ],
+    [ "rgb3:VSS", "rgb4:VSS", "black", [ "h-0.8", "v18.3", "h-48", "v-18.3" ] ],
+    [ "rgb4:VSS", "rgb5:VSS", "black", [ "h-0.8", "v27.9", "h-48", "v-27.9" ] ],
+    [ "esp:5V", "rgb1:VDD", "red", [ "h-134.25", "v-326.4", "h259.2", "v38.4" ] ],
+    [ "rgb1:VDD", "rgb2:VDD", "red", [ "v-19.2", "h-86.4", "v19.2" ] ],
+    [ "rgb2:VDD", "rgb3:VDD", "red", [ "v57.6", "h-76.8", "v-57.6" ] ],
+    [ "rgb3:VDD", "rgb4:VDD", "red", [ "h-19.2", "v57.6", "h-57.6", "v-57.6" ] ],
+    [ "rgb4:VDD", "rgb5:VDD", "red", [ "h-19.2", "v48", "h-48", "v-48" ] ],
+    [ "esp:5", "r1:1", "green", [ "h48", "v-134.4", "h-76.8" ] ],
+    [ "r1:2", "rgb5:DIN", "green", [ "h-85.2", "v-67.2" ] ],
+    [ "rgb5:DOUT", "rgb4:DIN", "green", [ "h-9.6", "v-29.7", "h86.4", "v19.2" ] ],
+    [ "rgb4:DOUT", "rgb3:DIN", "green", [ "h-9.6", "v-39.3", "h86.4", "v28.8" ] ],
+    [ "rgb3:DOUT", "rgb2:DIN", "green", [ "h-9.6", "v-29.7", "h96.8" ] ],
+    [ "rgb2:DOUT", "rgb1:DIN", "green", [ "h-19.2", "v-39.3", "h116" ] ]
+  ],
+  "dependencies": {}
+}

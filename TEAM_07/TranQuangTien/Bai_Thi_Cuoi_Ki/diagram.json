@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "author": "Trần Quang Tiến",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 9.6, "left": 100.84, "attrs": {} },
+    { "type": "wokwi-relay-module", "id": "relay1", "top": -38.2, "left": 288, "attrs": {} },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "soilSensor",
+      "top": 238.7,
+      "left": -57.8,
+      "attrs": { "value": "500" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "pumpLed",
+      "top": 210,
+      "left": 330,
+      "attrs": { "color": "blue" }
+    },
+    { "type": "wokwi-resistor", "id": "r1", "top": 300, "left": 330, "attrs": { "value": "220" } }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "soilSensor:VCC", "esp:3V3", "red", [] ],
+    [ "soilSensor:GND", "esp:GND.1", "black", [] ],
+    [ "soilSensor:SIG", "esp:34", "green", [] ],
+    [ "relay1:VCC", "esp:5V", "red", [] ],
+    [ "relay1:GND", "esp:GND.2", "black", [] ],
+    [ "relay1:IN", "esp:26", "orange", [] ],
+    [ "relay1:COM", "esp:5V", "red", [] ],
+    [ "relay1:NO", "pumpLed:A", "blue", [] ],
+    [ "pumpLed:C", "r1:1", "black", [] ],
+    [ "r1:2", "esp:GND.3", "black", [] ]
+  ],
+  "dependencies": {}
+}
