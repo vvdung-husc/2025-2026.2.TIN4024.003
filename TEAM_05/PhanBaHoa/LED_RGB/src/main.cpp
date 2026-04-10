@@ -1,9 +1,3 @@
-/*
- * Dự án: Điều khiển LED RGB qua Blynk Web
- * Tác giả: Phan Bá Hóa
- */
-
-// --- 3 DÒNG NÀY PHẢI Ở TRÊN CÙNG ---
 #define BLYNK_TEMPLATE_ID "TMPL6pK8E6c7E"
 #define BLYNK_TEMPLATE_NAME "LED RGB SMART"
 #define BLYNK_AUTH_TOKEN "O_0jfBD80GMVLDCr_N_ELnwNaKHvCjtK"
