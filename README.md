@@ -60,7 +60,30 @@
 + [Cài đặt thư viện cho PlatformIO](https://khuenguyencreator.com/huong-dan-cai-dat-platform-io-lap-trinh-esp32/#Cai_dat_thu_vien_cho_Platformio)
 
 --------------------
+***2026-03-12***
+
+## ESP8266 - NodeMCU v2 và v3
+![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/NodeMCU-V2-vs-V3.jpg)
+
+## ESP8266 Controller
+![](https://github.com/vvdung/storage/blob/main/IOT/esp8266_controller.png)
+
+## [**Sơ đồ Board thực hành**](https://github.com/vvdung/storage/blob/main/IOT/CNTT%20Board%20schematic.pdf)
+
+## [Tải và cài đặt trình điều khiển (CH341 Windows Drivers)](https://drive.google.com/file/d/1Qbuh5fdXORbVRjsayQjNQgQ2_EU--v2r/view?usp=sharing)
+
+#### Tạo dự án - ESP32_Project 
++ Board ***NodeMCU 1.0*** trong 
++ Điều khiển đèn nhấp nháy trên Board ESP8266
++ Đọc thông tin nhiệt độ
++ Hiển thị lên màn hình OLED (SH1106)
+  > Thư viện hổ trợ U8g2 by oliver
+
+
+--------------------
 ***2026-03-09***
+
+[Telegram IoT Testing Link](https://t.me/+GzXzLiCzYOxkZTc1)
 
 ### - [Esp32 |  TELEGRAM BOT (***mã nguồn minh họa***)](https://wokwi.com/projects/425361659331202049)
 
@@ -76,8 +99,7 @@
 
 ## => Yêu cầu thực hiện được đoạn mã nguồn minh họa để hiển thị trong ứng dụng Telegram
 
-![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/ESP32_Telegram_02.png)
-
+![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/esp32_telegram_led_control.png)
 --------------------
 ***2026-03-05***
 
@@ -139,6 +161,7 @@
 
 + [https://it.iothings.vn/downloads/mp4](https://it.iothings.vn/downloads/mp4/)
 
+>>>>>>> f41be4aa6fe85225993beff762612d64b89070de
 -------------------------------
 
 ## [***1. Dự án - LED BLINK***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/Project_LED_Blink.md)
@@ -150,6 +173,47 @@
 ## [***4. Dự án - BLYNK_DHT***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/README.md#--blynk--traffic--dht-sensor)
 
 ## [***5. Dự án - BLYNK_API***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/README.md#-%C4%91%C4%83ng-k%C3%BD-t%C3%A0i-kho%E1%BA%A3n-httpsopenweathermaporg-s%E1%BB%AD-d%E1%BB%A5ng-api-httpip4iothingsvngeo1-v%C3%A0-api-httpsapiopenweathermaporgdata25weatherlatlatlonlonappidapi-key-%C4%91%E1%BB%83-th%E1%BB%B1c-hi%E1%BB%87n-tr%C3%AAn-blynk-nh%C6%B0-h%C3%ACnh-sau)
+
+## [***6. Dự án - TELEGRAM_LED***](https://github.com/vvdung-husc/2025-2026.2.TIN4024.003/blob/main/README.md#-y%C3%AAu-c%E1%BA%A7u-th%E1%BB%B1c-hi%E1%BB%87n-%C4%91%C6%B0%E1%BB%A3c-%C4%91o%E1%BA%A1n-m%C3%A3-ngu%E1%BB%93n-minh-h%E1%BB%8Da-%C4%91%E1%BB%83-hi%E1%BB%83n-th%E1%BB%8B-trong-%E1%BB%A9ng-d%E1%BB%A5ng-telegram)
+
+
+## [***7. Dự án - ESP8266_BLYNK_TELEGRAM  (Theo nhóm, hạn cuối 23/03/2026)***]()
+- ## Yêu cầu thực hiện theo nhóm
+  - Tạo dự án có tên **ESP8266_BLYNK_TELEGRAM** tại thư mục của nhóm mình
+
+	> ví dụ: ..\TEAM_X\ESP8266_BLYNK_TELEGRAM
+  - Thời gian đến hết ngày **23/03/2026**
+	
+	> Sau thời gian này các commit thay đổi nội dung của dự án sẽ không được tính.
+
+## Một số yêu cầu 
+
+1. ### ***Thông tin các thành viên trong mã nguồn***
+
+	> Ghi thông tin nhóm và tên các thành viên ở đầu mã nguồn ***main.cpp***  
+```cpp
+	/*
+	THÔNG TIN NHÓM X
+	1. Nguyễn Văn Bình - Telegram : binhnv
+	2. Lê Nguyễn Hương Nguyên - Telegram : nguyen2019
+	3. ...
+	*/
+```
+
+2. ### ***Hiển thị thông tin trên bảng OLED***
+3. ### ***Blynk***
+  - Hiển thị thời gian hoạt động của thiết bị (uptime)
+  - Hiển thị Switch điều khiển tắt mở đèn LED
+  - Hiển thị thông tin nhiệt độ, độ ẩm
+  - Hiển thị thông tin khí ga từ cảm biến MQ2 (nếu không có cảm biến thì sinh ngẫu nhiên)
+  - Hiển thị thông tin Team X ở cuối
+ 4. ### ***Telegram***
+  - Tạo tên nhóm **IoT - Team X** và thêm các thành viên vào nhóm và tài khoản ***vvdung_husc (hoặc 0396634274)***
+  - Hiển thị thông tin nhiệt độ, độ ẩm khi có thay đổi từ thiết bị
+  - Điều khiển tắt/mở và nhận trạng thái ***(/led_on, /led_off, /led_status)*** đèn LED bằng lệnh nhập từ khung chat
+  - Gửi lệnh ***(/get_weather)*** từ khung chat để nhận nhiệt độ, độ ẩm hiện tại. 
+ 5. ### Gửi đính kèm lên github 2 ảnh của Blynk (***web***) và Telegram (***với đầy đủ tên thành viên***)
+ 6. ### **Nên sử dụng ESP32 để viết code mô phỏng trước, và hoàn thiện trên ESP8266 tại LAB**
 -------------------------------
 
 ![](https://raw.githubusercontent.com/vvdung/storage/refs/heads/main/IOT/esp32-devkitC-v4-pinout.png)
