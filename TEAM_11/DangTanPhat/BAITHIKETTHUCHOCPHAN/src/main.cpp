@@ -152,6 +152,35 @@ bool waitForNTPTime() {
   return retry < maxRetry;
 }
 
+bool sendStartupTimeMessage() {
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Khong lay duoc gio hien tai de gui Telegram luc khoi dong!");
+    return false;
+  }
+
+  char currentTime[30];
+  strftime(currentTime, sizeof(currentTime), "%d/%m/%Y %H:%M:%S", &timeinfo);
+
+  String msg = "ESP32 vua khoi dong\n";
+  msg += "Thoi gian hien tai: ";
+  msg += currentTime;
+
+  bool ok = sendTelegramMessage(msg);
+
+  if (ok) {
+    Serial.println("Da gui Telegram luc khoi dong!");
+    showBootScreen("Da gui Telegram", currentTime);
+    delay(2000);
+  } else {
+    Serial.println("Gui Telegram luc khoi dong that bai!");
+    showBootScreen("Gui Telegram loi", currentTime);
+    delay(2000);
+  }
+
+  return ok;
+}
+
 // ==================== WIFI CONNECT =================
 void connectWiFi() {
   WiFi.mode(WIFI_STA);
@@ -262,6 +291,8 @@ void setup() {
   Serial.println("Dong bo NTP thanh cong!");
   showBootScreen("Dong bo NTP OK");
   delay(1500);
+
+  sendStartupTimeMessage();
 }
 
 // ======================== LOOP =====================

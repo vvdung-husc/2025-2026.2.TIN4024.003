@@ -9,167 +9,241 @@
 #include <BlynkSimpleEsp32.h>
 #include <DHT.h>
 #include <UniversalTelegramBot.h>
+#include <time.h>
 
-// Wi-Fi
 char ssid[] = "Wokwi-GUEST";
 char password[] = "";
 
-// Telegram
-WiFiClientSecure secured_client;
-UniversalTelegramBot bot(BOT_TOKEN, secured_client);
+constexpr uint8_t DHTPIN = 15;
+constexpr uint8_t DHTTYPE = DHT22;
+constexpr uint8_t LED_PIN = 22;
+constexpr uint8_t FAN_PIN = 23;
+constexpr uint8_t BTN_LED_PIN = 19;
+constexpr uint8_t BTN_FAN_PIN = 18;
+constexpr uint8_t LDR_PIN = 34;
 
-// DHT
-#define DHTPIN 15  // ⚠️ Đúng theo sơ đồ là chân 15
-#define DHTTYPE DHT22
-DHT dht(DHTPIN, DHTTYPE);
-
-// GPIO (chân theo sơ đồ thực tế ESP32 trên Wokwi)
-#define LED_PIN 22        // LED đỏ (đèn)
-#define FAN_PIN 23        // LED xanh (quạt)
-#define BTN_LED_PIN 19    // Nút nhấn điều khiển đèn
-#define BTN_FAN_PIN 18    // Nút nhấn điều khiển quạt
-#define LDR_PIN 34        // Cảm biến ánh sáng (photoresistor)
-
-bool ledState = false;
-bool fanState = false;
-
-// Virtual Pins
 #define VPIN_LIGHT_CONTROL V0
 #define VPIN_FAN_CONTROL V1
 #define VPIN_LIGHT_SENSOR V2
 #define VPIN_TEMP_SENSOR V3
 #define VPIN_STATUS V4
 
+WiFiClientSecure securedClient;
+UniversalTelegramBot bot(BOT_TOKEN, securedClient);
+DHT dht(DHTPIN, DHTTYPE);
 BlynkTimer timer;
 
-BLYNK_WRITE(VPIN_LIGHT_CONTROL) {
-  ledState = param.asInt();
-  digitalWrite(LED_PIN, ledState);
+bool ledState = false;
+bool fanState = false;
+bool timeSynced = false;
+unsigned long lastTelegramPoll = 0;
+
+void syncOutputs() {
+  digitalWrite(LED_PIN, ledState ? HIGH : LOW);
+  digitalWrite(FAN_PIN, fanState ? HIGH : LOW);
 }
 
-BLYNK_WRITE(VPIN_FAN_CONTROL) {
-  fanState = param.asInt();
-  digitalWrite(FAN_PIN, fanState);
-}
-
-// 📡 Gửi dữ liệu lên Blynk + Telegram
-void sendStatus() {
+String buildStatusMessage() {
   float temp = dht.readTemperature();
+  if (isnan(temp)) {
+    temp = 0.0f;
+  }
+
   int ldrValue = analogRead(LDR_PIN);
   int brightness = map(ldrValue, 0, 4095, 0, 100);
 
-  Blynk.virtualWrite(VPIN_TEMP_SENSOR, temp);
-  Blynk.virtualWrite(VPIN_LIGHT_SENSOR, brightness);
+  if (Blynk.connected()) {
+    Blynk.virtualWrite(VPIN_TEMP_SENSOR, temp);
+    Blynk.virtualWrite(VPIN_LIGHT_SENSOR, brightness);
+  }
 
-  String status = "🌡 Nhiệt độ: " + String(temp, 1) + "°C\n" +
-                  "☀️ Ánh sáng: " + String(brightness) + "%\n" +
-                  "💡 Đèn: " + String(ledState ? "BẬT" : "TẮT") + "\n" +
-                  "🌀 Quạt: " + String(fanState ? "BẬT" : "TẮT");
-
-  Blynk.virtualWrite(VPIN_STATUS, status);
-  bot.sendMessage(CHAT_ID, status, "");
-  Serial.println("[LOG] " + status);
+  return "Nhiet do: " + String(temp, 1) + " C\n" +
+         "Anh sang: " + String(brightness) + "%\n" +
+         "Den: " + String(ledState ? "BAT" : "TAT") + "\n" +
+         "Quat: " + String(fanState ? "BAT" : "TAT");
 }
 
-// 📲 Xử lý lệnh Telegram
-void handleTelegram() {
-  int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
-  for (int i = 0; i < numNewMessages; i++) {
-    String text = bot.messages[i].text;
-
-    if (text == "/led_on") {
-      ledState = true;
-      digitalWrite(LED_PIN, HIGH);
-      Blynk.virtualWrite(VPIN_LIGHT_CONTROL, HIGH);
-      bot.sendMessage(CHAT_ID, "💡 Đèn đã BẬT từ Telegram.");
-    } else if (text == "/led_off") {
-      ledState = false;
-      digitalWrite(LED_PIN, LOW);
-      Blynk.virtualWrite(VPIN_LIGHT_CONTROL, LOW);
-      bot.sendMessage(CHAT_ID, "💡 Đèn đã TẮT từ Telegram.");
-    } else if (text == "/fan_on") {
-      fanState = true;
-      digitalWrite(FAN_PIN, HIGH);
-      Blynk.virtualWrite(VPIN_FAN_CONTROL, HIGH);
-      bot.sendMessage(CHAT_ID, "🌀 Quạt đã BẬT từ Telegram.");
-    } else if (text == "/fan_off") {
-      fanState = false;
-      digitalWrite(FAN_PIN, LOW);
-      Blynk.virtualWrite(VPIN_FAN_CONTROL, LOW);
-      bot.sendMessage(CHAT_ID, "🌀 Quạt đã TẮT từ Telegram.");
-    } else if (text == "/status") {
-      sendStatus();
-    }
+void sendTelegramMessage(const String& message) {
+  if (WiFi.status() == WL_CONNECTED && timeSynced) {
+    bot.sendMessage(CHAT_ID, message, "");
   }
 }
 
-// 🧠 Xử lý nút nhấn vật lý
+void connectWifi() {
+  if (WiFi.status() == WL_CONNECTED) {
+    return;
+  }
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.print("Dang ket noi WiFi");
+
+  unsigned long start = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - start < 15000) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println(WiFi.status() == WL_CONNECTED ? "WiFi da ket noi." : "WiFi chua ket noi.");
+}
+
+void syncClock() {
+  configTime(7 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+  struct tm timeinfo;
+  timeSynced = getLocalTime(&timeinfo, 10000);
+  Serial.println(timeSynced ? "Da dong bo thoi gian." : "Khong dong bo duoc thoi gian.");
+}
+
+void connectBlynk() {
+  if (WiFi.status() != WL_CONNECTED || Blynk.connected()) {
+    return;
+  }
+
+  Blynk.config(BLYNK_AUTH_TOKEN);
+  Serial.println("Dang ket noi Blynk...");
+  Blynk.connect(5000);
+  Serial.println(Blynk.connected() ? "Blynk da ket noi." : "Blynk chua ket noi.");
+}
+
+void publishStateToBlynk() {
+  if (!Blynk.connected()) {
+    return;
+  }
+
+  Blynk.virtualWrite(VPIN_LIGHT_CONTROL, ledState ? 1 : 0);
+  Blynk.virtualWrite(VPIN_FAN_CONTROL, fanState ? 1 : 0);
+}
+
+void sendStatus() {
+  String status = buildStatusMessage();
+  if (Blynk.connected()) {
+    Blynk.virtualWrite(VPIN_STATUS, status);
+  }
+  sendTelegramMessage(status);
+  Serial.println("[STATUS]");
+  Serial.println(status);
+}
+
+void handleTelegram() {
+  if (WiFi.status() != WL_CONNECTED || !timeSynced) {
+    return;
+  }
+
+  int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+  while (numNewMessages > 0) {
+    for (int i = 0; i < numNewMessages; i++) {
+      String text = bot.messages[i].text;
+
+      if (text == "/start") {
+        sendTelegramMessage("Lenh ho tro: /led_on /led_off /fan_on /fan_off /status");
+      } else if (text == "/led_on") {
+        ledState = true;
+        syncOutputs();
+        publishStateToBlynk();
+        sendTelegramMessage("Den da BAT tu Telegram.");
+      } else if (text == "/led_off") {
+        ledState = false;
+        syncOutputs();
+        publishStateToBlynk();
+        sendTelegramMessage("Den da TAT tu Telegram.");
+      } else if (text == "/fan_on") {
+        fanState = true;
+        syncOutputs();
+        publishStateToBlynk();
+        sendTelegramMessage("Quat da BAT tu Telegram.");
+      } else if (text == "/fan_off") {
+        fanState = false;
+        syncOutputs();
+        publishStateToBlynk();
+        sendTelegramMessage("Quat da TAT tu Telegram.");
+      } else if (text == "/status") {
+        sendStatus();
+      }
+    }
+
+    numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+  }
+}
+
 void checkButtons() {
   if (digitalRead(BTN_LED_PIN) == LOW) {
     delay(200);
     ledState = !ledState;
-    digitalWrite(LED_PIN, ledState);
-    Blynk.virtualWrite(VPIN_LIGHT_CONTROL, ledState);
-    bot.sendMessage(CHAT_ID, "💡 Đèn đã " + String(ledState ? "BẬT" : "TẮT") + " bằng nút.");
+    syncOutputs();
+    publishStateToBlynk();
+    sendTelegramMessage("Den da " + String(ledState ? "BAT" : "TAT") + " bang nut.");
   }
 
   if (digitalRead(BTN_FAN_PIN) == LOW) {
     delay(200);
     fanState = !fanState;
-    digitalWrite(FAN_PIN, fanState);
-    Blynk.virtualWrite(VPIN_FAN_CONTROL, fanState);
-    bot.sendMessage(CHAT_ID, "🌀 Quạt đã " + String(fanState ? "BẬT" : "TẮT") + " bằng nút.");
+    syncOutputs();
+    publishStateToBlynk();
+    sendTelegramMessage("Quat da " + String(fanState ? "BAT" : "TAT") + " bang nut.");
   }
 }
 
-// 🚀 setup()
+BLYNK_WRITE(VPIN_LIGHT_CONTROL) {
+  ledState = param.asInt() == 1;
+  syncOutputs();
+}
+
+BLYNK_WRITE(VPIN_FAN_CONTROL) {
+  fanState = param.asInt() == 1;
+  syncOutputs();
+}
+
+BLYNK_CONNECTED() {
+  Blynk.syncVirtual(VPIN_LIGHT_CONTROL, VPIN_FAN_CONTROL);
+  publishStateToBlynk();
+}
+
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  dht.begin();
 
+  dht.begin();
   pinMode(LED_PIN, OUTPUT);
   pinMode(FAN_PIN, OUTPUT);
   pinMode(BTN_LED_PIN, INPUT_PULLUP);
   pinMode(BTN_FAN_PIN, INPUT_PULLUP);
+  syncOutputs();
 
-  secured_client.setInsecure(); // Cho phép HTTPS không kiểm chứng
+  securedClient.setInsecure();
 
-  WiFi.begin(ssid, password);
-  Serial.print("🔌 Kết nối WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+  connectWifi();
+  if (WiFi.status() == WL_CONNECTED) {
+    syncClock();
+    connectBlynk();
   }
-  Serial.println("\n✅ Đã kết nối WiFi!");
-
-  configTime(0, 0, "pool.ntp.org"); // Đồng bộ thời gian cho Telegram
-
-  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, password);
-  delay(2000);
 
   timer.setInterval(5000L, sendStatus);
-
-  timer.setInterval(10000L, []() {
-    if (!Blynk.connected()) {
-      Serial.println("[⚠️] Mất kết nối Blynk. Đang kết nối lại...");
-      Blynk.connect();
-    }
-  });
+  timer.setInterval(10000L, connectBlynk);
 }
 
-// 🔁 loop()
 void loop() {
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("[⚠️] Mất WiFi! Đang kết nối lại...");
+    timeSynced = false;
     WiFi.disconnect();
-    WiFi.begin(ssid, password);
-    delay(5000);
+    connectWifi();
+    if (WiFi.status() == WL_CONNECTED) {
+      syncClock();
+      connectBlynk();
+    }
+    delay(2000);
     return;
   }
 
-  Blynk.run();
+  if (Blynk.connected()) {
+    Blynk.run();
+  }
+
   timer.run();
   checkButtons();
-  handleTelegram();
+
+  if (millis() - lastTelegramPoll >= 2000) {
+    lastTelegramPoll = millis();
+    handleTelegram();
+  }
 }
