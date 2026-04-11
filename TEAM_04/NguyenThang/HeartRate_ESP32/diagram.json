@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "author": "Nguyen Thang",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp32", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-led", "id": "led_heart", "top": -60, "left": 230, "attrs": { "color": "red", "label": "Heart Beat" } },
+    { "type": "wokwi-led", "id": "led_status", "top": -60, "left": 290, "attrs": { "color": "green", "label": "Blynk OK" } },
+    { "type": "wokwi-led", "id": "led_warn", "top": -60, "left": 350, "attrs": { "color": "blue", "label": "Warning" } },
+    { "type": "wokwi-resistor", "id": "r1", "top": 10, "left": 230, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "r2", "top": 10, "left": 290, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "r3", "top": 10, "left": 350, "attrs": { "value": "220" } },
+    { "type": "wokwi-lcd1602", "id": "lcd", "top": 150, "left": 200, "attrs": { "pins": "i2c" } }
+  ],
+  "connections": [
+    ["esp32:D2", "r1:1", "red", []],
+    ["r1:2", "led_heart:A", "red", []],
+    
+    ["esp32:D4", "r2:1", "green", []],
+    ["r2:2", "led_status:A", "green", []],
+    
+    ["esp32:D5", "r3:1", "orange", []],
+    ["r3:2", "led_warn:A", "orange", []],
+
+    ["led_warn:C", "led_status:C", "black", ["v-20"]],
+    ["led_status:C", "led_heart:C", "black", ["v-20"]],
+    ["led_heart:C", "esp32:GND.1", "black", ["v-20", "h-70"]],
+
+    ["esp32:D21", "lcd:SDA", "blue", []],
+    ["esp32:D22", "lcd:SCL", "yellow", []],
+    ["esp32:3V3", "lcd:VCC", "red", []],
+    ["lcd:GND", "esp32:GND.1", "black", []]
+  ],
+  "dependencies": {}
+}
