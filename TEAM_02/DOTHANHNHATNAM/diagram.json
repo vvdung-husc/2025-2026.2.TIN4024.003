@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "author": "Gemini",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-ds18b20", "id": "temp", "top": -120, "left": -180, "attrs": {} },
+    { "type": "wokwi-photoresistor-sensor", "id": "ldr", "top": 40, "left": -180, "attrs": {} },
+    { "type": "wokwi-potentiometer", "id": "ph_sim", "top": 150, "left": -180, "attrs": {} },
+    { "type": "wokwi-led", "id": "led_pump", "top": -60, "left": 180, "attrs": { "color": "blue" } },
+    { "type": "wokwi-led", "id": "led_light", "top": 10, "left": 180, "attrs": { "color": "yellow" } },
+    { "type": "wokwi-led", "id": "led_ph", "top": 80, "left": 180, "attrs": { "color": "red" } }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "temp:VCC", "esp:3V3", "red", [ "v0" ] ],
+    [ "temp:GND", "esp:GND", "black", [ "v0" ] ],
+    [ "temp:DQ", "esp:4", "green", [ "v0" ] ],
+    [ "ldr:VCC", "esp:3V3", "red", [ "v0" ] ],
+    [ "ldr:GND", "esp:GND", "black", [ "v0" ] ],
+    [ "ldr:AO", "esp:35", "green", [ "v0" ] ],
+    [ "ph_sim:VCC", "esp:3V3", "red", [ "v0" ] ],
+    [ "ph_sim:GND", "esp:GND", "black", [ "v0" ] ],
+    [ "ph_sim:SIG", "esp:34", "green", [ "v0" ] ],
+    [ "led_pump:A", "esp:25", "green", [ "v0" ] ],
+    [ "led_pump:C", "esp:GND", "black", [ "v0" ] ],
+    [ "led_light:A", "esp:26", "green", [ "v0" ] ],
+    [ "led_light:C", "esp:GND", "black", [ "v0" ] ],
+    [ "led_ph:A", "esp:27", "green", [ "v0" ] ],
+    [ "led_ph:C", "esp:GND", "black", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}
