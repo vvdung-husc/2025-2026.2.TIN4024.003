@@ -1,9 +1,8 @@
 [wokwi]
 version = 1
-firmware = '.pio\build\nodemcu-32s\firmware.bin'
-elf = '.pio\build\nodemcu-32s\firmware.elf'
+firmware = ".pio/build/esp32dev/firmware.bin"
+elf = ".pio/build/esp32dev/firmware.elf"
 
 [wifi]
 ssid = "Wokwi-GUEST"
 password = ""
-

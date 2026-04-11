@@ -1,0 +1,100 @@
+{
+    "version": 1,
+    "author": "Nguyen Huynh Minh Tien",
+    "title": "ESP32 Air Quality Monitor (MQ-135)",
+    "description": "Air quality monitoring system with MQ-135 gas sensor, OLED display, and alert LED",
+    "parts": [{
+            "type": "wokwi-esp32-devkit-v1",
+            "id": "esp32",
+            "top": 0,
+            "left": 0,
+            "rotate": 0,
+            "attrs": {
+                "name": "ESP32"
+            }
+        },
+        {
+            "type": "wokwi-mq135",
+            "id": "mq135",
+            "top": 100,
+            "left": 300,
+            "rotate": 0,
+            "attrs": {
+                "name": "MQ-135"
+            }
+        },
+        {
+            "type": "wokwi-ssd1306",
+            "id": "oled",
+            "top": 0,
+            "left": 600,
+            "rotate": 0,
+            "attrs": {
+                "name": "OLED Display",
+                "lines": "16"
+            }
+        },
+        {
+            "type": "wokwi-led",
+            "id": "led",
+            "top": 200,
+            "left": 300,
+            "rotate": 0,
+            "attrs": {
+                "color": "red",
+                "name": "Alert LED"
+            }
+        },
+        {
+            "type": "wokwi-pushbutton",
+            "id": "button",
+            "top": 300,
+            "left": 300,
+            "rotate": 0,
+            "attrs": {
+                "name": "Button"
+            }
+        },
+        {
+            "type": "wokwi-resistor",
+            "id": "resistor_led",
+            "top": 180,
+            "left": 250,
+            "rotate": 90,
+            "attrs": {
+                "resistance": "220",
+                "name": "R1 (220Ω)"
+            }
+        },
+        {
+            "type": "wokwi-resistor",
+            "id": "resistor_button",
+            "top": 280,
+            "left": 250,
+            "rotate": 90,
+            "attrs": {
+                "resistance": "10000",
+                "name": "R2 (10kΩ)"
+            }
+        }
+    ],
+    "connections": [
+        ["esp32:3V3", "mq135:VCC", "green", []],
+        ["esp32:GND", "mq135:GND", "black", []],
+        ["mq135:AOUT", "esp32:34", "orange", []],
+
+        ["esp32:3V3", "oled:VCC", "green", []],
+        ["esp32:GND", "oled:GND", "black", []],
+        ["esp32:22", "oled:SCL", "blue", []],
+        ["esp32:21", "oled:SDA", "yellow", []],
+
+        ["esp32:13", "resistor_led:1", "red", []],
+        ["resistor_led:2", "led:A", "red", []],
+        ["led:C", "esp32:GND", "black", []],
+
+        ["button:1.l", "esp32:GND", "black", []],
+        ["button:1.r", "resistor_button:1", "purple", []],
+        ["resistor_button:2", "esp32:3V3", "green", []],
+        ["esp32:4", "button:1.r", "purple", []]
+    ]
+}
