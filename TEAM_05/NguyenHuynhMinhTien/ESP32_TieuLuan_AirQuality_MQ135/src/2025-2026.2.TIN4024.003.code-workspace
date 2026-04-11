@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../../.."
+		},
+		{
+			"name": "ESP32_TieuLuan_AirQuality_MQ135",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}

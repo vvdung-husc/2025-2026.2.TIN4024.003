@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "author": "Lộc Trần Hoàng",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 24.04, "attrs": {} },
+    {
+      "type": "board-ssd1306",
+      "id": "oled1",
+      "top": 22.34,
+      "left": -134.17,
+      "attrs": { "i2cAddress": "0x3c" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "oled1:VCC", "esp:3V3", "red", [ "v-28.8", "h105.6" ] ],
+    [ "oled1:GND", "esp:GND.1", "blue", [ "v-19.2", "h115.2", "v144" ] ],
+    [ "esp:22", "oled1:SCL", "green", [ "v-76.8", "h-201.9" ] ],
+    [ "oled1:SDA", "esp:21", "gold", [ "v-48", "h201.67", "v96" ] ]
+  ],
+  "dependencies": {}
+}
