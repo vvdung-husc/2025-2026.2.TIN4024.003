@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "author": "Phi",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp32", "top": 100, "left": 0, "attrs": {} },
+    { "type": "wokwi-hc-sr04", "id": "ultrasonic", "top": -100, "left": 150, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp32:GND.1", "ultrasonic:GND", "black", [ "v0" ] ],
+    [ "esp32:5V", "ultrasonic:VCC", "red", [ "v0" ] ],
+    [ "esp32:D5", "ultrasonic:TRIG", "blue", [ "v0" ] ],
+    [ "esp32:D18", "ultrasonic:ECHO", "green", [ "v0" ] ]
+  ]
+}
