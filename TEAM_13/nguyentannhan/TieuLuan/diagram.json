@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 28.8, "left": -33.56, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht1", "top": 0.3, "left": -149.4, "attrs": {} },
+    { "type": "wokwi-relay-module", "id": "relay1", "top": 269, "left": -76.8, "attrs": {} },
+    { "type": "wokwi-led", "id": "led1", "top": 54, "left": 167, "attrs": { "color": "red" } }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "dht1:VCC", "esp:3V3", "red", [ "v38.4", "h76.8", "v-96" ] ],
+    [ "dht1:GND", "esp:GND.1", "black", [ "v0" ] ],
+    [ "relay1:VCC", "esp:5V", "red", [ "h-19.2", "v-57.6" ] ],
+    [ "relay1:GND", "esp:GND.1", "black", [ "h-28.8", "v-115.6" ] ],
+    [ "esp:15", "dht1:SDA", "green", [ "h19.2", "v57.6", "h-211.3" ] ],
+    [ "relay1:IN", "esp:23", "green", [ "v28.6", "h201.6", "v-268.8" ] ],
+    [ "led1:A", "esp:2", "red", [ "v0" ] ],
+    [ "led1:C", "esp:GND.1", "black", [ "v259.2", "h-354.8", "v-172.8" ] ]
+  ],
+  "dependencies": {}
+}
